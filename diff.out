@@ -1,0 +1,158 @@
+diff --git a/jenkins-plugins.txt b/jenkins-plugins.txt
+index 21d842b..f4f382a 100644
+--- a/jenkins-plugins.txt
++++ b/jenkins-plugins.txt
+@@ -7,12 +7,12 @@ ace-editor:1.1
+ ant:1.10
+-antisamy-markup-formatter:2.1
++antisamy-markup-formatter:2.5
+ apache-httpcomponents-client-4-api:4.5.13-1.0
+-aws-java-sdk:1.11.687
++aws-java-sdk:1.11.955
+ aws-lambda:0.5.10
+ basic-branch-build-strategies:1.3.2
+ blueocean-autofavorite:1.2.4
+@@ -37,44 +37,45 @@ blueocean-rest:1.24.0
+ blueocean-web:1.24.0
+ bouncycastle-api:2.20
+-branch-api:2.6.5
++branch-api:2.7.0
+ build-timeout:1.19
+-cloudbees-bitbucket-branch-source:2.9.10
++cloudbees-bitbucket-branch-source:751.vda_24678a_f781
+ cloudbees-disk-usage-simple:0.10
+-cloudbees-folder:6.15
++cloudbees-folder:6.16
+ command-launcher:1.4
+ compress-artifacts:1.10
+ conditional-buildstep:1.4.1
+ config-file-provider:3.8.1
+-configuration-as-code:1.54
++configuration-as-code:1346.ve8cfa_3473c94
+ copyartifact:1.46.1
+-credentials-binding:1.27
++credentials-binding:1.27.1
+ dynamic-axis:1.0.3
+-docker-commons:1.16
++docker-commons:1.19
+ embeddable-build-status:2.0.3
+ favorite:2.3.2
+-git-client:3.10.0
+-git-server:1.9
+-git:4.10.0
++git-client:3.11.0
++git-server:1.10
++git:4.10.1
+ github-api:1.122
+-gitlab-oauth:1.6
++gitlab-oauth:1.13
++gitlab-plugin:1.5.27
+ gradle:1.35
+ handlebars:1.1.1
+ handy-uri-templates-2-api:2.1.8-1.0
+-hashicorp-vault-plugin:3.6.0
++hashicorp-vault-plugin:336.v182c0fbaaeb7
+ htmlpublisher:1.23
+ ivy:2.1
+-jackson2-api:2.12.4
++jackson2-api:2.13.1-246.va8a9f3eaf46a
+ javadoc:1.6
+ jdk-tool:1.4
+ jenkins-design-language:1.24.0
+@@ -85,16 +86,16 @@ job-dsl:1.77
+ jquery-detached:1.2.1
+ jquery:1.12.4-1
+ jsch:0.1.55.2
+-junit:1.50
++junit:1.53
+ kubernetes-cli:1.10.3
+ kubernetes:1.30.0
+ lockable-resources:2.5
+-mailer:1.34
++mailer:408.vd726a_1130320
+-matrix-project:1.19
++matrix-project:1.20
+-metrics:4.0.2.8
++metrics:4.1.6.1
+@@ -104,7 +105,7 @@ parameterized-scheduler:0.8
+-pipeline-build-step:2.15
++pipeline-build-step:2.16
+pipeline-maven:3.8.1
+@@ -124,34 +125,34 @@ run-condition:1.3
+ sauce-ondemand:1.187
+ scm-api:2.5.5
+-script-security:1.70
++script-security:1118.vba21ca2e3286
+ selenium-axis:0.0.5
+ sse-gateway:1.20
+-ssh-agent:1.17
++ssh-agent:1.24.1
+ ssh-credentials:1.18
+ ssh-slaves:1.30.0
+-structs:1.23
++structs:308.v852b473a2b8c
+ swarm:3.21
+ throttle-concurrents:2.0
+ timestamper:1.9.3
+-token-macro:2.15
++token-macro:267.vcdaea6462991
+ trilead-api:1.0.13
+ uno-choice:2.4.6
+ variant:1.2
+-warnings-ng:9.5.0
++warnings-ng:9.11.0
+ windows-slaves:1.1
+-workflow-api:2.46
++workflow-api:1108.v57edf648f5d4
+ workflow-basic-steps:2.19
+-workflow-cps-global-lib:2.19
+-workflow-cps:2.94
++workflow-cps-global-lib:561.va_ce0de3c2d69
++workflow-cps:2656.vf7a_e7b_75a_457
+ workflow-durable-task-step:2.40
+-workflow-job:2.41
+-workflow-multibranch:2.24
++workflow-job:1145.v7f2433caa07f
++workflow-multibranch:707.v71c3f0a_6ccdb_
+ workflow-scm-step:2.13
+-workflow-step-api:2.24
+-workflow-support:3.8
++workflow-step-api:622.vb_8e7c15b_c95a_
++workflow-support:804.vba10a18a1476
+ ws-cleanup:0.38
+@@ -167,18 +168,22 @@ node-iterator-api:1.5.0
+ h2-api:1.4.199
+ extended-read-permission:3.2
+ caffeine-api:2.9.2-29.v717aac953ff3
+-font-awesome-api:5.15.3-4
+-bootstrap4-api:4.6.0-1
+-echarts-api:5.1.2-5
++font-awesome-api:5.15.4-5
++bootstrap4-api:4.6.0-3
++echarts-api:5.2.2-2
+ checks-api:1.7.2
+-plugin-util-api:2.4.0
+-popper-api:1.16.0-7
++plugin-util-api:2.12.0
++popper-api:1.16.1-2
+ jquery3-api:3.6.0-2
+ google-play-android-publisher:4.1
+-gitlab-plugin:1.5.22
+ jjwt-api:0.11.2-5.143e44951c52
+-forensics-api:1.2.1
+-analysis-model-api:10.3.0
+-bootstrap5-api:5.0.2-1
+-data-tables-api:1.10.25-3
+-popper2-api:2.5.4-3
+\ No newline at end of file
++forensics-api:1.7.0
++analysis-model-api:10.9.1
++bootstrap5-api:5.1.3-4
++data-tables-api:1.11.3-6
++popper2-api:2.11.0-1
++javax-mail-api:1.6.2-2
++javax-activation-api:1.2.0-2
++sshd:3.0.4
++prism-api:1.25.0-2
++jersey2-api:2.35-1
+\ No newline at end of file
