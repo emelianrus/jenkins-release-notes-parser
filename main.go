@@ -1,38 +1,47 @@
 package main
 
+// "fmt"
+// "io/ioutil"
+// "os"
 import (
 	"fmt"
 	"io/ioutil"
 	"os"
 
-	git "github.com/emelianrus/jenkins-release-notes-parser/pkg/releasenotes/git"
+	"github.com/emelianrus/jenkins-release-notes-parser/pkg/releasenotes/git"
 	releaseParser "github.com/emelianrus/jenkins-release-notes-parser/pkg/releasenotes/releaseParser"
 )
 
 func main() {
 	byt, _ := ioutil.ReadFile("diff.out")
 	diff, _ := git.Parse(string(byt))
-
+	fmt.Println(diff)
 	project, _ := releaseParser.GetChangedVersions(diff)
-	for _, f := range project.Files {
+
+	for _, localPlugins := range project.Files {
 
 		var releaseNotes string
-		for _, p := range f.Plugins {
-			releases, err := releaseParser.GetReleases(p.Name)
+		for _, lp := range localPlugins.Plugins {
+			releases, err := releaseParser.GetPluginReleases(lp.Name)
 			if err != nil {
 				fmt.Println(err)
 				break
 			}
-			_, result := releaseParser.GetReleaseNotes(releases, p)
 
-			releaseNotes += result
+			parasedReleases := releases.GetReleasesBetweenVersions(lp.OldVersion, lp.NewVersion)
+
+			for _, rel := range parasedReleases {
+				releaseNotes += "# " + rel.Name + ":" + rel.TagName + "\n" + rel.Notes + "\n --- \n"
+
+			}
 		}
 
-		err := os.WriteFile(f.Name+"_RELEASE_NOTES.md", []byte(releaseNotes), 0644)
+		err := os.WriteFile(localPlugins.Name+"_RELEASE_NOTES.md", []byte(releaseNotes), 0644)
 
 		if err != nil {
 			fmt.Println(err)
 		}
 
 	}
+
 }

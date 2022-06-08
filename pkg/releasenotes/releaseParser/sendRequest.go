@@ -9,7 +9,7 @@ import (
 
 func SendRequest(url string) []byte {
 
-	fmt.Println("get URL:" + url)
+	fmt.Println("get URL: " + url)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatalln(err)

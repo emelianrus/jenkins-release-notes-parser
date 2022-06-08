@@ -2,6 +2,7 @@ package git
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	types "github.com/emelianrus/jenkins-release-notes-parser/types"
@@ -69,6 +70,7 @@ func Parse(diffString string) (*types.Diff, error) {
 		case isChunk && isSourceLine(line):
 			mode, err := lineMode(line)
 			if err != nil {
+				fmt.Println(err)
 				return nil, err
 			}
 
@@ -79,7 +81,6 @@ func Parse(diffString string) (*types.Diff, error) {
 			chunk.Lines = append(chunk.Lines, line)
 		}
 	}
-
 	return &diff, nil
 }
 
