@@ -50,18 +50,14 @@
           <tr>
             <th scope="row" rowspan="{{len $product.Versions}}">
                 <p>{{ $product.Name }}</p>
-                <p style="font-size:14px; font-weight: normal;">1.1.1 installed.</p>
+                <p style="font-size:14px; font-weight: normal;">{{ $product.InstalledVersion }} installed.</p>
 
             </th>
             {{range $index, $version := $product.Versions}}
             {{if $index}}<tr>{{end}}
             <td>{{ $version.Version }}</td>
             <td>
-              <ul>
-                {{range $version.Changes}}
-                <li>{{ . }}</li>
-                {{end}}
-              </ul>
+              {{ $version.Changes }}
             </td>
             {{if $index}}</tr>{{end}}
             {{end}}

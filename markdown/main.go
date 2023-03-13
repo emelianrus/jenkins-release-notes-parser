@@ -17,7 +17,7 @@ type JenkinsServer struct {
 }
 
 func main() {
-	redisclient := InitDB()
+	redisclient := NewRedisClient()
 
 	// init jenkins server
 	js := JenkinsServer{
@@ -26,7 +26,7 @@ func main() {
 		Plugins: []ServerPlugin{
 			{
 				Name:    "plugin-installation-manager-tool",
-				Version: "2.12.9",
+				Version: "2.10.0",
 			},
 		},
 	}
@@ -37,12 +37,18 @@ func main() {
 		return
 	}
 	// write jenkins server json
-	err = redisclient.Set("servers:jenkins-one:plugins", jsonData, 0).Err()
+	err = redisclient.Set("servers:jenkins-one:plugins", jsonData)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	Parser(redisclient)
+	// getPlugins(redisclient)
+	// // GetPluginFromGitHub(redisclient)
 	StartWeb(redisclient)
+
+	// plugin, err := redisclient.GetPlugin("github:jenkinsci:plugin-installation-manager-tool:versions")
+
+	// fmt.Println(err)
+	// fmt.Println(plugin)
 }
