@@ -43,6 +43,7 @@ type Product struct {
 	Name             string
 	Versions         []Version
 	InstalledVersion string
+	LastUpdated      string // TODO
 }
 type PluginPage struct {
 	Title      string
@@ -182,6 +183,10 @@ func replaceGitHubLinks(s string) string {
 	return output2
 }
 
+// get jenkins server (hardcoded)
+// get plugins from jenikins server
+// check cache for plugin by versions file
+// construct pageData
 func getPlugins(redisclient *Redis) PluginPage {
 
 	// ownerName := "jenkinsci"
@@ -206,7 +211,6 @@ func getPlugins(redisclient *Redis) PluginPage {
 			fmt.Println(err)
 			// plugin = redisclient.Get()
 		}
-		// fmt.Println(string(pluginJson))
 
 		// Assume we hit redis cache
 		var versions Versions
@@ -216,19 +220,11 @@ func getPlugins(redisclient *Redis) PluginPage {
 			// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
 			return PluginPage{}
 		}
-		// fmt.Println(versions)
 
 		var convertedVersions []Version
-		// products = append(products, Product{
-		// 	Name:     plugin.Name,
-		// 	Versions: versionss,
-		// })
-		fmt.Println("VERSION1111")
-		fmt.Println(versions)
 		for _, version := range versions {
 
 			pluginJson, _ := redisclient.Get(fmt.Sprintf("github:jenkinsci:%s:%s", plugin.Name, version)).Bytes()
-			// fmt.Println(plugin)
 
 			var releaseNote Release
 			err = json.Unmarshal(pluginJson, &releaseNote)
@@ -243,7 +239,6 @@ func getPlugins(redisclient *Redis) PluginPage {
 				Version: version,
 				Changes: template.HTML(replaceGitHubLinks(convertMarkDownToHtml(releaseNote.Body))),
 			})
-			// fmt.Println(releaseNote.)
 		}
 
 		products = append(products,
@@ -251,10 +246,10 @@ func getPlugins(redisclient *Redis) PluginPage {
 				Name:             plugin.Name,
 				Versions:         convertedVersions,
 				InstalledVersion: plugin.Version,
+				LastUpdated:      "today",
 			},
 		)
 	}
-	fmt.Println(products)
 	// for _, v := range products {
 	// 	fmt.Println(v.Versions)
 	// }

@@ -51,6 +51,7 @@
             <th scope="row" rowspan="{{len $product.Versions}}">
                 <p>{{ $product.Name }}</p>
                 <p style="font-size:14px; font-weight: normal;">{{ $product.InstalledVersion }} installed.</p>
+                <p style="font-size:14px; font-weight: normal;">Last sync from github: <b>{{ $product.LastUpdated }}</b></p>
 
             </th>
             {{range $index, $version := $product.Versions}}
