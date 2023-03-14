@@ -29,6 +29,8 @@ func (p *PluginHandler) pluginsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func serversHandler(w http.ResponseWriter, r *http.Request) {
+
+	// data:=
 	plPage := PluginPage{
 		Title:      "Plugin manager",
 		ServerName: "jenkins-one",
@@ -44,8 +46,10 @@ func serversHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func StartWeb(redisclient *Redis) {
+	jenkinsServers := redisclient.getJenkinsServers()
+
 	pluginHandler := PluginHandler{
-		Data: getPluginsForPageData(redisclient),
+		Data: getPluginsForPageData(redisclient, jenkinsServers[1]),
 	}
 
 	log.Println("Starting server")

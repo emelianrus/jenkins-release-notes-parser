@@ -220,7 +220,7 @@ func saveReleaseNotesToDB(redisclient *Redis, releases []GitHubReleaseNote, plug
 // get plugins from jenikins server
 // check cache for plugin by versions file
 // construct pageData
-func getPluginsForPageData(redisclient *Redis) PluginPage {
+func getPluginsForPageData(redisclient *Redis, jenkinsServer JenkinsServer) PluginPage {
 	// default page data
 	plPage := PluginPage{
 		Title:      "Plugin manager",
@@ -228,21 +228,21 @@ func getPluginsForPageData(redisclient *Redis) PluginPage {
 		Products:   nil,
 	}
 
-	serverJson, _ := redisclient.GetJenkinsServers()
-	var jenkinsServer JenkinsServer
-	err := json.Unmarshal(serverJson, &jenkinsServer)
-	if err != nil {
-		fmt.Println("can not unmarshal jenkins server")
-	}
+	// serverJson, _ := redisclient.GetJenkinsServers()
+	// var jenkinsServer JenkinsServer
+	// err := json.Unmarshal(serverJson, &jenkinsServer)
+	// if err != nil {
+	// 	fmt.Println("can not unmarshal jenkins server")
+	// }
 
 	// fmt.Println(jenkinsServer.Name)
 	// fmt.Println(jenkinsServer.Plugins)
 	products := []Product{}
 	// fmt.Println(jenkinsServer.Plugins)
 
-	jenkinsPlugins, _ := redisclient.getJenkinsPlugins("jenkins-one")
+	// jenkinsPlugins, _ := redisclient.getJenkinsPlugins("jenkins-one")
 
-	for _, plugin := range jenkinsPlugins {
+	for _, plugin := range jenkinsServer.Plugins {
 		// fmt.Println("checking jenkins plugin " + plugin.Name)
 
 		// pluginVersionsJson, err := redisclient.GetPlugin(fmt.Sprintf("github:jenkinsci:%s:versions", plugin.Name))

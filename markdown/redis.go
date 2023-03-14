@@ -40,11 +40,39 @@ type JenkinsPlugin struct {
 }
 
 type JenkinsServer struct {
-	Name string
-	Core string
+	Name    string
+	Core    string
+	Plugins []JenkinsPlugin
 }
 
-func (r *Redis) addJenkinsServer(server JenkinsServer) {
+func (r *Redis) getJenkinsServers() []JenkinsServer {
+	var servers []JenkinsServer
+
+	keys, _ := r.client.Keys("servers:*").Result()
+	for _, path := range keys {
+		re := strings.Split(path, ":")
+		if len(re) == 2 {
+
+			serverJson, _ := r.client.Get(path).Bytes()
+			var jenkinsServer JenkinsServer
+			err := json.Unmarshal(serverJson, &jenkinsServer)
+			if err != nil {
+				fmt.Println("can not unmarshal jenkins server")
+			}
+
+			plugins, _ := r.getJenkinsPlugins(jenkinsServer.Name)
+			servers = append(servers, JenkinsServer{
+				Name:    jenkinsServer.Name,
+				Core:    jenkinsServer.Core,
+				Plugins: plugins,
+			})
+		}
+	}
+
+	return servers
+}
+
+func (r *Redis) addJenkinsServer(serverName string, coreVersion string) {
 	// TODO: check if exist/replace
 	// js := JenkinsServer{
 	// 	Name: "jenkins-one",
@@ -61,13 +89,17 @@ func (r *Redis) addJenkinsServer(server JenkinsServer) {
 	// 	},
 	// }
 
-	jsonData, err := json.Marshal(server)
+	jsonData, err := json.Marshal(JenkinsServer{
+		Name: serverName,
+		Core: coreVersion,
+	})
+
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	// write jenkins server json
-	err = r.Set(fmt.Sprintf("servers:%s", server.Name), jsonData)
+	err = r.Set(fmt.Sprintf("servers:%s", serverName), jsonData)
 	if err != nil {
 		log.Println(err)
 		return

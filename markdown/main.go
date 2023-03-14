@@ -4,13 +4,24 @@ func main() {
 	redisclient := NewRedisClient()
 
 	// init jenkins server
-	jenkinsServer := JenkinsServer{
-		Name: "jenkins-one",
-		Core: "2.3233.2",
-	}
-	redisclient.addJenkinsServer(jenkinsServer)
+	// jenkinsServer1 := JenkinsServer{
+	// 	Name: "jenkins-one",
+	// 	Core: "2.3233.2",
+	// }
+
+	// init jenkins server
+	// jenkinsServer2 := JenkinsServer{
+	// 	Name: "jenkins-two",
+	// 	Core: "2.3233.2",
+	// }
+	redisclient.addJenkinsServer("jenkins-two", "2.3233.1")
+	redisclient.addJenkinsServer("jenkins-one", "2.3233.2")
 
 	redisclient.addJenkinsServerPlugin("jenkins-one", JenkinsPlugin{
+		Name:    "plugin-installation-manager-tool",
+		Version: "2.10.0",
+	})
+	redisclient.addJenkinsServerPlugin("jenkins-two", JenkinsPlugin{
 		Name:    "plugin-installation-manager-tool",
 		Version: "2.10.0",
 	})
@@ -38,6 +49,7 @@ func main() {
 	// getPlugins(redisclient)
 	// // GetPluginFromGitHub(redisclient)
 
+	// redisclient.getJenkinsServers()
 	StartWeb(redisclient)
 
 	// plugin, err := redisclient.GetPlugin("github:jenkinsci:plugin-installation-manager-tool:versions")
