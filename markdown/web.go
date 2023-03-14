@@ -31,7 +31,7 @@ func (p *PluginHandler) pluginsHandler(w http.ResponseWriter, r *http.Request) {
 func StartWeb(redisclient *Redis) {
 
 	pluginHandler := PluginHandler{
-		Data: getPlugins(redisclient),
+		Data: getPluginsForPageData(redisclient),
 	}
 
 	log.Println("Starting server")

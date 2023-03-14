@@ -1,7 +1,22 @@
 package main
 
+/*
+
+we have from github
+  all versions release notes
+
+  1) check if we have plugin data in cache?
+  if (exist) {
+	use
+  } else {
+	get release from github
+	add to cache
+  }
+
+*/
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -14,7 +29,7 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 )
 
-type Release struct {
+type GitHubReleaseNote struct {
 	Name      string `json:"name"` // Version
 	Body      string `json:"body"` // this is markdown formated text of release note
 	CreatedAt string `json:"created_at"`
@@ -23,7 +38,7 @@ type Release struct {
 // represent plugin
 type Plugin struct {
 	Name         string
-	ReleaseNotes []Release
+	ReleaseNotes []GitHubReleaseNote
 }
 
 // represent jenkins server
@@ -34,6 +49,7 @@ type Server struct {
 // From redis
 type Versions []string
 
+// HTML start
 // part of html responce
 type Version struct {
 	Version string
@@ -52,10 +68,11 @@ type PluginPage struct {
 	ServerName string
 }
 
+// HTML end
 var ownerName = "jenkinsci"
 
-func GetGitHubReleases(pluginName string, redisclient *Redis) {
-
+func GetGitHubReleases(pluginName string, redisclient *Redis) ([]GitHubReleaseNote, error) {
+	fmt.Println("Downloading plugin from github " + pluginName)
 	// Define cron job to run every hour
 	// c := cron.New()
 	// c.AddFunc("@hourly", func() {
@@ -65,15 +82,15 @@ func GetGitHubReleases(pluginName string, redisclient *Redis) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://api.github.com/repos/jenkinsci/"+pluginName+"/releases", nil)
 	if err != nil {
-		log.Println(err)
-		return
+		// log.Printf("error in github request: %s\n", err)
+		return nil, errors.New(fmt.Sprintf("error in github request: %s\n", err))
 	}
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
-		return
+		// log.Println(err)
+		return nil, errors.New(fmt.Sprintf("error during making client.Do request: %s", err))
 	}
 	defer resp.Body.Close()
 
@@ -90,13 +107,15 @@ func GetGitHubReleases(pluginName string, redisclient *Redis) {
 	// 	return
 	// }
 
-	// Decode response body into []Release
-	var releases []Release
+	// Decode response body into []GitHubReleaseNote
+	var releases []GitHubReleaseNote
 	err = json.NewDecoder(resp.Body).Decode(&releases)
 	if err != nil {
-		log.Println(err)
-		return
+		// fmt.Println("error decoding github response")
+		// log.Println(err)
+		return nil, errors.New(fmt.Sprintf("error decoding github response: %s", err))
 	}
+	return releases, nil
 	// ownerName := "jenkinsci"
 	// repoName := "plugin-installation-manager-tool"
 	// // Cache releases in Redis for 1 hour
@@ -107,37 +126,12 @@ func GetGitHubReleases(pluginName string, redisclient *Redis) {
 	// 	return
 	// }
 
-	err = redisclient.Set(fmt.Sprintf("github:%s:%s:%s", ownerName, pluginName, "lastUpdated"),
-		time.Now().Unix())
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	versions := Versions{}
-
-	for _, release := range releases {
-		versions = append(versions, release.Name)
-		key := fmt.Sprintf("github:%s:%s:%s", ownerName, pluginName, release.Name)
-		// 0 time.Hour
-		jsonData, err := json.Marshal(release)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		err = redisclient.Set(key, jsonData)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-	}
-	jsonVersions, _ := json.Marshal(versions)
-	err = redisclient.Set(fmt.Sprintf("github:%s:%s:%s", ownerName, pluginName, "versions"),
-		jsonVersions)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	// err = redisclient.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated"),
+	// 	time.Now())
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return
+	// }
 
 	// log.Println("Releases cached in Redis")
 
@@ -149,6 +143,7 @@ func GetGitHubReleases(pluginName string, redisclient *Redis) {
 	// Set up HTTP server
 	// StartWeb(redisclient)
 	// return releases
+	// return nil
 }
 
 func convertMarkDownToHtml(s string) string {
@@ -186,14 +181,53 @@ func replaceGitHubLinks(s string) string {
 	return output2
 }
 
+func saveReleaseNotesToDB(redisclient *Redis, releases []GitHubReleaseNote, pluginName string) error {
+
+	err := redisclient.SetLastUpdatedTime(pluginName, time.Now().UTC())
+	if err != nil {
+		// fmt.Println(err)
+		// fmt.Println("Can not set updated time")
+		return errors.New(fmt.Sprintf("error setting lastUpdate time in get github release: %s", err))
+	}
+	versions := Versions{}
+
+	for _, release := range releases {
+		versions = append(versions, release.Name)
+		key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, release.Name)
+		// 0 time.Hour
+		jsonData, err := json.Marshal(release)
+		if err != nil {
+			// log.Println(err)
+			return errors.New(fmt.Sprintf("error Marshal release: %s", err))
+		}
+		err = redisclient.Set(key, jsonData)
+		if err != nil {
+			log.Println(err)
+			return errors.New(fmt.Sprintf("error setting release: %s", err))
+		}
+	}
+
+	jsonVersions, _ := json.Marshal(versions)
+	err = redisclient.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "versions"),
+		jsonVersions)
+	if err != nil {
+		log.Println(err)
+		return errors.New(fmt.Sprintf("error setting version for release: %s", err))
+	}
+	return nil
+}
+
 // get jenkins server (hardcoded)
 // get plugins from jenikins server
 // check cache for plugin by versions file
 // construct pageData
-func getPlugins(redisclient *Redis) PluginPage {
-
-	// ownerName := "jenkinsci"
-	// repoName := "plugin-installation-manager-tool"
+func getPluginsForPageData(redisclient *Redis) PluginPage {
+	// default page data
+	plPage := PluginPage{
+		Title:      "Plugin manager",
+		ServerName: "jenkins-one",
+		Products:   nil,
+	}
 
 	serverJson, _ := redisclient.GetJenkinsServers()
 
@@ -203,18 +237,41 @@ func getPlugins(redisclient *Redis) PluginPage {
 		fmt.Println("can not unmarshal jenkins server")
 	}
 
-	fmt.Println(jenkinsServer.Name)
-	fmt.Println(jenkinsServer.Plugins)
+	// fmt.Println(jenkinsServer.Name)
+	// fmt.Println(jenkinsServer.Plugins)
 	products := []Product{}
 	for _, plugin := range jenkinsServer.Plugins {
 
-		pluginVersionsJson, err := redisclient.GetPlugin(fmt.Sprintf("github:jenkinsci:%s:versions", plugin.Name))
+		// pluginVersionsJson, err := redisclient.GetPlugin(fmt.Sprintf("github:jenkinsci:%s:versions", plugin.Name))
+		// if err != nil {
+		// 	// plugin doesnt exist
+		// 	fmt.Println("versions file is not exist")
+		// 	fmt.Println(err)
+		// 	GetGitHubReleases(plugin.Name, redisclient)
+		// 	// plugin = redisclient.Get()
+		// }
+
+		pluginVersionsJson, err := redisclient.GetPluginVersions(plugin.Name)
 		if err != nil {
-			// plugin doesnt exist
-			fmt.Println("versions file is not exist")
+			fmt.Println("versions file doesn't exist in redis cache for " + plugin.Name)
 			fmt.Println(err)
-			GetGitHubReleases(plugin.Name, redisclient)
-			// plugin = redisclient.Get()
+			releases, err := GetGitHubReleases(plugin.Name, redisclient)
+			if err != nil {
+				fmt.Println("Failed to get releases from github")
+			}
+			err = saveReleaseNotesToDB(redisclient, releases, plugin.Name)
+			if err != nil {
+				fmt.Println(err)
+				fmt.Println("Failed to save release notes to db")
+			}
+
+			pluginVersionsJson, err = redisclient.GetPluginVersions(plugin.Name)
+			if err != nil {
+				fmt.Println(err)
+				fmt.Println("2nd attempt to GetPluginVersions failed")
+				// return web page with default values
+				return plPage
+			}
 		}
 
 		// Assume we hit redis cache
@@ -223,21 +280,17 @@ func getPlugins(redisclient *Redis) PluginPage {
 		if err != nil {
 			log.Println(err)
 			// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
-			return PluginPage{}
+			return plPage
 		}
 
 		var convertedVersions []Version
 		for _, version := range versions {
 
-			pluginJson, _ := redisclient.Get(fmt.Sprintf("github:jenkinsci:%s:%s", plugin.Name, version)).Bytes()
-
-			var releaseNote Release
-			err = json.Unmarshal(pluginJson, &releaseNote)
-
+			releaseNote, err := redisclient.GetPluginWithVersion(plugin.Name, version)
 			if err != nil {
 				log.Println(err)
 				// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
-				return PluginPage{}
+				return plPage
 			}
 
 			convertedVersions = append(convertedVersions, Version{
@@ -257,10 +310,6 @@ func getPlugins(redisclient *Redis) PluginPage {
 			},
 		)
 	}
-
-	return PluginPage{
-		Title:      "Plugin manager",
-		ServerName: "jenkins-one",
-		Products:   products,
-	}
+	plPage.Products = products
+	return plPage
 }

@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/go-redis/redis"
 )
@@ -29,14 +31,86 @@ func (r *Redis) Set(key string, value interface{}) error {
 	return r.client.Set(key, value, 0).Err()
 }
 
+// DB part end ^
+
 func (r *Redis) GetJenkinsServers() ([]byte, error) {
 	return r.client.Get("servers:jenkins-one:plugins").Bytes()
 }
 
-func (r *Redis) GetPlugin(key string) ([]byte, error) {
-	jsonData, err := r.Get(key).Bytes()
+// func (r *Redis) GetPlugin(key string) ([]byte, error) {
+// 	jsonData, err := r.Get(key).Bytes()
+// 	if err != nil {
+// 		return []byte{}, errors.New("error in getPlugins " + key)
+// 	}
+// 	return jsonData, err
+// }
+
+func (r *Redis) SetLastUpdatedTime(pluginName string, value interface{}) error {
+
+	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated"),
+		value)
 	if err != nil {
-		return []byte{}, errors.New("error in getPlugins " + key)
+		log.Println("SetLastUpdatedTime error")
+		log.Println(err)
+		return nil
 	}
-	return jsonData, err
+	return nil
+}
+
+func (r *Redis) GetLastUpdatedTime(key string, value interface{}) error {
+	return r.client.Set(key, value, 0).Err()
+}
+
+func (r *Redis) GetVersions(key string, value interface{}) error {
+	return r.client.Set(key, value, 0).Err()
+}
+
+func (r *Redis) SetVersions(key string, value interface{}) error {
+	return r.client.Set(key, value, 0).Err()
+}
+
+func (r *Redis) SetPluginWithVersion(pluginName string, pluginVersion string, releaseNote GitHubReleaseNote) error {
+	key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, pluginVersion)
+	// 0 time.Hour
+	jsonData, err := json.Marshal(releaseNote)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	err = r.Set(key, jsonData)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	return nil
+}
+
+func (r *Redis) GetPluginWithVersion(pluginName string, pluginVersion string) (GitHubReleaseNote, error) {
+	pluginJson, _ := r.Get(fmt.Sprintf("github:jenkinsci:%s:%s", pluginName, pluginVersion)).Bytes()
+	var releaseNote GitHubReleaseNote
+	err := json.Unmarshal(pluginJson, &releaseNote)
+
+	if err != nil {
+		log.Println(err)
+		// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
+		return GitHubReleaseNote{}, errors.New("failed to unmarshal ReleaseNote")
+	}
+	return releaseNote, nil
+}
+
+func (r *Redis) GetPluginVersions(pluginName string) ([]byte, error) {
+
+	pluginVersionsJson, err := r.Get(fmt.Sprintf("github:jenkinsci:%s:versions", pluginName)).Bytes()
+	if err != nil {
+		return []byte{}, errors.New("error in getPlugins " + pluginName)
+	}
+	if err != nil {
+		// plugin doesnt exist
+		fmt.Println("versions file is not exist")
+		fmt.Println(err)
+		// GetGitHubReleases(plugin.Name, redisclient)
+		// plugin = redisclient.Get()
+		return nil, err
+	}
+	return pluginVersionsJson, nil
 }
