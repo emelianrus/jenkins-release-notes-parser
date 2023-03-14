@@ -62,7 +62,14 @@ type ServersHandler struct {
 }
 
 func (h *ServersHandler) serversHandler(w http.ResponseWriter, r *http.Request) {
-
+	sp := ServersPage{
+		Title:   "Servers",
+		Servers: h.Redis.getJenkinsServers(),
+	}
+	h.Data = sp
+	// serversHandler := ServersHandler{
+	// 	Data: sp,
+	// }
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	tmpl := template.Must(template.ParseFiles("templates/servers.html"))
 	err := tmpl.Execute(w, h.Data)
@@ -124,12 +131,12 @@ func StartWeb(redisclient *Redis) {
 		// Data: getPluginsForPageData(redisclient, jenkinsServers[1]),
 	}
 
-	sp := ServersPage{
-		Title:   "Servers",
-		Servers: redisclient.getJenkinsServers(),
-	}
+	// sp := ServersPage{
+	// 	Title:   "Servers",
+	// 	Servers: redisclient.getJenkinsServers(),
+	// }
 	serversHandler := ServersHandler{
-		Data: sp,
+		Redis: redisclient,
 	}
 
 	crudHandler := createDeleteHandler{
@@ -143,8 +150,8 @@ func StartWeb(redisclient *Redis) {
 
 	// TODO:
 	http.HandleFunc("/delete-plugin", crudHandler.deleteJenkinsPlugin)
-	// http.HandleFunc("/add-plugin", serversHandler.serversHandler)
-	// http.HandleFunc("/add-jenkins-server", serversHandler.serversHandler)
+	// http.HandleFunc("/add-plugin", ssss)
+	// http.HandleFunc("/add-jenkins-server", ssss)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
