@@ -11,7 +11,7 @@
     $(document).ready(function() {
 
     // add a click event listener to the plugins list (the parent element)
-    $('#plugins-list').on('click', '.delete-btn', function() {
+    $('.delete-btn').on('click', function() {
 
 
       // get the ID of the item to delete
@@ -25,15 +25,15 @@
         pluginName: res[1]
       };
       console.log(payload);
-
+      var liBlock = $(this).closest('li')
       // send an AJAX request to the server
       $.ajax({
-        url: '/delete', // replace this with the actual URL of the delete endpoint
+        url: '/delete-plugin', // replace this with the actual URL of the delete endpoint
         type: 'POST',
-        data: payload,
+        contentType: 'application/json',
+        data: JSON.stringify(payload),
         success: function(response) {
-          // handle the response from the server here
-          // console.log(response);
+          liBlock.remove()
         },
         error: function(jqXHR, textStatus, errorThrown) {
           // handle any errors that occur during the request here
@@ -81,16 +81,17 @@
             <th>Action</th>
           </tr>
         </thead>
-        <tbody id="plugins-list">
+        <tbody >
             {{range .Servers}}
             {{ $servers := . }}
             <tr>
               <td><a href="/release-notes?jenkins={{.Name}}">{{.Name}}</a> </td>
               <td>
-                <ul >
+                <ul>
                   {{range $index, $plugin := $servers.Plugins}}
-                  <li>{{.Name}}:{{  .Version}}
-                    <button type="button" class="btn btn-link change-version-btn" data-index="{{$servers.Name}}:{{.Name}}" data-toggle="modal" data-target="#changeVersionModal">Change Version</button>
+                  <li>
+                    {{.Name}}:{{.Version}}
+                    <button type="button"class="btn btn-link change-version-btn" data-index="{{$servers.Name}}:{{.Name}}" data-toggle="modal" data-target="#changeVersionModal">Change Version</button>
                     <button type="button" class="btn btn-link delete-btn" data-index="{{$servers.Name}}:{{.Name}}">Delete</button>
                   </li>
                   {{end}}
