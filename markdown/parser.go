@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
@@ -51,7 +52,9 @@ type PluginPage struct {
 	ServerName string
 }
 
-func GetGitHubReleases(pluginName string) []Release {
+var ownerName = "jenkinsci"
+
+func GetGitHubReleases(pluginName string, redisclient *Redis) {
 
 	// Define cron job to run every hour
 	// c := cron.New()
@@ -60,17 +63,17 @@ func GetGitHubReleases(pluginName string) []Release {
 
 	// Make request to GitHub API
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://api.github.com/repos/jenkinsci/plugin-installation-manager-tool/releases", nil)
+	req, err := http.NewRequest("GET", "https://api.github.com/repos/jenkinsci/"+pluginName+"/releases", nil)
 	if err != nil {
 		log.Println(err)
-		return []Release{}
+		return
 	}
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
-		return []Release{}
+		return
 	}
 	defer resp.Body.Close()
 
@@ -92,49 +95,49 @@ func GetGitHubReleases(pluginName string) []Release {
 	err = json.NewDecoder(resp.Body).Decode(&releases)
 	if err != nil {
 		log.Println(err)
-		return []Release{}
+		return
 	}
 	// ownerName := "jenkinsci"
 	// repoName := "plugin-installation-manager-tool"
 	// // Cache releases in Redis for 1 hour
 
-	// // jsonData, err := json.Marshal(releases)
-	// // if err != nil {
-	// // 	log.Println(err)
-	// // 	return
-	// // }
-
-	// err = redisclient.Set(fmt.Sprintf("github:%s:%s:%s", ownerName, repoName, "lastUpdated"),
-	// 	time.Now().Unix())
+	// jsonData, err := json.Marshal(releases)
 	// if err != nil {
 	// 	log.Println(err)
 	// 	return
 	// }
 
-	// versions := Versions{}
+	err = redisclient.Set(fmt.Sprintf("github:%s:%s:%s", ownerName, pluginName, "lastUpdated"),
+		time.Now().Unix())
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
-	// for _, release := range releases {
-	// 	versions = append(versions, release.Name)
-	// 	key := fmt.Sprintf("github:%s:%s:%s", ownerName, repoName, release.Name)
-	// 	// 0 time.Hour
-	// 	jsonData, err := json.Marshal(release)
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 		return
-	// 	}
-	// 	err = redisclient.Set(key, jsonData)
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 		return
-	// 	}
-	// }
-	// jsonVersions, _ := json.Marshal(versions)
-	// err = redisclient.Set(fmt.Sprintf("github:%s:%s:%s", ownerName, repoName, "versions"),
-	// 	jsonVersions)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return
-	// }
+	versions := Versions{}
+
+	for _, release := range releases {
+		versions = append(versions, release.Name)
+		key := fmt.Sprintf("github:%s:%s:%s", ownerName, pluginName, release.Name)
+		// 0 time.Hour
+		jsonData, err := json.Marshal(release)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		err = redisclient.Set(key, jsonData)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	}
+	jsonVersions, _ := json.Marshal(versions)
+	err = redisclient.Set(fmt.Sprintf("github:%s:%s:%s", ownerName, pluginName, "versions"),
+		jsonVersions)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
 	// log.Println("Releases cached in Redis")
 
@@ -145,7 +148,7 @@ func GetGitHubReleases(pluginName string) []Release {
 	// c.Run()
 	// Set up HTTP server
 	// StartWeb(redisclient)
-	return releases
+	// return releases
 }
 
 func convertMarkDownToHtml(s string) string {
@@ -208,7 +211,9 @@ func getPlugins(redisclient *Redis) PluginPage {
 		pluginVersionsJson, err := redisclient.GetPlugin(fmt.Sprintf("github:jenkinsci:%s:versions", plugin.Name))
 		if err != nil {
 			// plugin doesnt exist
+			fmt.Println("versions file is not exist")
 			fmt.Println(err)
+			GetGitHubReleases(plugin.Name, redisclient)
 			// plugin = redisclient.Get()
 		}
 
@@ -234,77 +239,24 @@ func getPlugins(redisclient *Redis) PluginPage {
 				// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
 				return PluginPage{}
 			}
-			//
+
 			convertedVersions = append(convertedVersions, Version{
 				Version: version,
 				Changes: template.HTML(replaceGitHubLinks(convertMarkDownToHtml(releaseNote.Body))),
 			})
 		}
 
+		lastUpdated, _ := redisclient.Get(fmt.Sprintf("github:%s:%s:%s", ownerName, plugin.Name, "lastUpdated")).Bytes()
+
 		products = append(products,
 			Product{
 				Name:             plugin.Name,
 				Versions:         convertedVersions,
 				InstalledVersion: plugin.Version,
-				LastUpdated:      "today",
+				LastUpdated:      string(lastUpdated),
 			},
 		)
 	}
-	// for _, v := range products {
-	// 	fmt.Println(v.Versions)
-	// }
-	// var release Release
-	// err = json.Unmarshal(jsonData, &release)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// html := convertMarkDownToHtml(release.Body)
-	// formatedHtml := replaceGitHubLinks(html)
-	// products := []Product{
-	// 	{
-	// 		Name: repoName,
-	// 		Versions: []Version{
-	// 			{
-	// 				Version: "2.10.0",
-	// 				Changes: []string{formatedHtml},
-	// 			},
-	// 			{
-	// 				Version: "Version 2",
-	// 				Changes: []string{"Improved performance of feature A", "Added new option for feature B"},
-	// 			},
-	// 			{
-	// 				Version: "Version 3",
-	// 				Changes: []string{"Fixed bug in feature C", "Added new feature D", "Updated documentation"},
-	// 			},
-	// 		},
-	// 	},
-	// 	{
-	// 		Name: "Product 2",
-	// 		Versions: []Version{
-	// 			{
-	// 				Version: "Version 1",
-	// 				Changes: []string{"Added new feature X", "Fixed issue Y"},
-	// 			},
-	// 			{
-	// 				Version: "Version 2",
-	// 				Changes: []string{"Improved performance of feature X", "Added new option for feature Y", "Fixed bug in feature Z"},
-	// 			},
-	// 		},
-	// 	},
-	// }
-
-	// data := struct {
-	// 	Title      string
-	// 	Products   []Product
-	// 	ServerName string
-	// }{
-	// 	ServerName: "jenkins-one",
-	// 	Title:      "Plugin manager",
-	// 	Products:   products,
-	// }
 
 	return PluginPage{
 		Title:      "Plugin manager",

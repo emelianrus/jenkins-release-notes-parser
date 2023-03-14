@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/go-redis/redis"
 )
@@ -11,6 +12,7 @@ type Redis struct {
 }
 
 func NewRedisClient() *Redis {
+	fmt.Println("Creating redis connection")
 	client := redis.NewClient(&redis.Options{
 		Addr: "127.0.0.1:6379",
 		// Password: "",
@@ -38,42 +40,3 @@ func (r *Redis) GetPlugin(key string) ([]byte, error) {
 	}
 	return jsonData, err
 }
-
-// func InitDB() *redis.Client {
-// 	log.Println("Redis client init")
-// 	client := redis.NewClient(&redis.Options{
-// 		Addr: "127.0.0.1:6379",
-// 		// Password: "",
-// 		DB: 0,
-// 	})
-// 	return client
-// }
-
-// func GetByName(){
-
-// }
-
-// func Set(){
-
-// 	err = redisclient.Set(fmt.Sprintf("github:%s:%s:%s", ownerName, repoName, "lastUpdated"),
-// 		time.Now().Unix(), 0).Err()
-// 	if err != nil {
-// 		log.Println(err)
-// 		return
-// 	}
-// }
-
-// func Get(){
-
-// }
-// jsonData, err := redisclient.Get(key).Bytes()
-// 		if err != nil {
-// 			log.Println(err)
-// 			http.Error(w, "Failed to retrieve releases from cache", http.StatusInternalServerError)
-// 			return
-// 		}
-
-// err = redisclient.Set(fmt.Sprintf("github:%s:%s:%s", ownerName, repoName, "lastUpdated"),
-// 		time.Now().Unix(), 0).Err()
-
-// 		\
