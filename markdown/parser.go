@@ -217,9 +217,9 @@ func saveReleaseNotesToDB(redisclient *Redis, releases []GitHubReleaseNote, plug
 // get plugins from jenikins server
 // check cache for plugin by versions file
 // construct pageData
-func getPluginsForPageData(redisclient *Redis, jenkinsServer JenkinsServer) PluginPage {
+func getPluginsForPageData(redisclient *Redis, jenkinsServer JenkinsServer) ReleaseNotesPage {
 	// default page data
-	plPage := PluginPage{
+	plPage := ReleaseNotesPage{
 		Title:      "Plugin manager",
 		ServerName: jenkinsServer.Name,
 		Products:   nil,
@@ -262,6 +262,7 @@ func getPluginsForPageData(redisclient *Redis, jenkinsServer JenkinsServer) Plug
 		}
 
 		var convertedVersions []Version
+		// TODO: check jenkins plugin version and show only diff from installed version to latest
 		for _, version := range versions {
 
 			releaseNote, err := redisclient.GetPluginWithVersion(plugin.Name, version)

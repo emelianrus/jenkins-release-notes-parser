@@ -13,19 +13,19 @@ import (
 // 	// createStructure
 // }
 
-type PluginPage struct {
+type ReleaseNotesPage struct {
 	Title      string
 	Products   []Product
 	ServerName string
 }
 
-type PluginHandler struct {
+type ReleaseNotesHandler struct {
 	Redis      *Redis
 	AllServers []JenkinsServer
-	Data       PluginPage
+	Data       ReleaseNotesPage
 }
 
-func (p *PluginHandler) pluginsHandler(w http.ResponseWriter, r *http.Request) {
+func (p *ReleaseNotesHandler) pluginsHandler(w http.ResponseWriter, r *http.Request) {
 	// Retrieve releases from Redis
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
@@ -69,7 +69,7 @@ func (h *ServersHandler) serversHandler(w http.ResponseWriter, r *http.Request) 
 func StartWeb(redisclient *Redis) {
 	// jenkinsServers := redisclient.getJenkinsServers()
 
-	pluginHandler := PluginHandler{
+	releaseNotesHandler := ReleaseNotesHandler{
 		Redis: redisclient,
 		// AllServers: jenkinsServers,
 		// Data: getPluginsForPageData(redisclient, jenkinsServers[1]),
@@ -85,7 +85,7 @@ func StartWeb(redisclient *Redis) {
 
 	log.Println("Starting server")
 	// data := getPlugins(redisclient)
-	http.HandleFunc("/release-notes", pluginHandler.pluginsHandler)
+	http.HandleFunc("/release-notes", releaseNotesHandler.pluginsHandler)
 	http.HandleFunc("/", serversHandler.serversHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
