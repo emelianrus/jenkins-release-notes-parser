@@ -46,14 +46,15 @@
         </thead>
         <tbody>
           {{range .Servers}}
+          {{ $servers := . }}
           <tr>
             <td>{{.Name}}</td>
             <td>
               <ul>
-                {{range .Plugins}}
-                <li>{{.Name}} {{.Version}}
-                  <button type="button" class="btn btn-link" data-toggle="modal" data-target="#changeVersionModal">Change Version</button>
-                  <button type="button" class="btn btn-link">Delete</button>
+                {{range $servers.Plugins}}
+                <li>{{.Name}}:{{  .Version}}
+                  <!-- <button type="button" class="btn btn-link" data-toggle="modal" data-target="#changeVersionModal">Change Version</button>
+                  <button type="button" class="btn btn-link">Delete</button> -->
                 </li>
                 {{end}}
               </ul>
@@ -68,11 +69,4 @@
       </table>
     </div>
   </div>
-
-  <!-- Add New Plugin Modal -->
-  <div class="modal fade" id="addPluginModal" tabindex="-1" role="dialog" aria-labelledby="addPluginModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addPluginModalLabel">Add New Plugin</h5>
-          <button type="button" class="close" data-dismiss="modal">s</button>
+</body>

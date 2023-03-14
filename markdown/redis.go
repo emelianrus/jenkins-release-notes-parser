@@ -129,11 +129,15 @@ func (r *Redis) getJenkinsPlugins(jenkinsServer string) ([]JenkinsPlugin, error)
 		pluginName := path[len(path)-1]
 		pluginVersionByte, _ := r.Get(pluginKey).Bytes()
 
-		pluginVersion := string(pluginVersionByte)
+		var version string
+		err := json.Unmarshal(pluginVersionByte, &version)
+		if err != nil {
+			fmt.Println("can not unmarshal version")
+		}
 
 		jenkinsPlugins = append(jenkinsPlugins, JenkinsPlugin{
 			Name:    pluginName,
-			Version: pluginVersion,
+			Version: version,
 		})
 	}
 

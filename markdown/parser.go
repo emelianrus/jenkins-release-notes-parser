@@ -61,11 +61,6 @@ type Product struct {
 	InstalledVersion string
 	LastUpdated      string // TODO
 }
-type PluginPage struct {
-	Title      string
-	Products   []Product
-	ServerName string
-}
 
 // HTML end
 var ownerName = "jenkinsci"
