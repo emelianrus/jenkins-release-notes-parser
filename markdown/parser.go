@@ -221,7 +221,7 @@ func getPluginsForPageData(redisclient *Redis, jenkinsServer JenkinsServer) Plug
 	// default page data
 	plPage := PluginPage{
 		Title:      "Plugin manager",
-		ServerName: "jenkins-one",
+		ServerName: jenkinsServer.Name,
 		Products:   nil,
 	}
 

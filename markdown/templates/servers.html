@@ -27,42 +27,42 @@
           <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/servers">Servers</a>
+          <a class="nav-link" href="">Servers</a>
         </li>
       </ul>
     </div>
   </nav>
-
   <div class="container-sm mt-5 ml-5 mr-5">
-    <h3>servers</h3>
+    <h3>{{.Title}}</h3>
     <hr>
     <div class="table-responsive">
       <table class="table">
         <thead class="thead-light">
           <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Version</th>
-            <th scope="col">Changes</th>
+            <th>Server Name</th>
+            <th>Plugins</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {{range .Products}}
-          {{ $product := . }}
+          {{range .Servers}}
+          {{ $servers := . }}
           <tr>
-            <th scope="row" rowspan="{{len $product.Versions}}">
-                <p>{{ $product.Name }}</p>
-                <p style="font-size:14px; font-weight: normal;">{{ $product.InstalledVersion }} installed.</p>
-                <p style="font-size:14px; font-weight: normal;">Last sync from github: <b>{{ $product.LastUpdated }}</b></p>
-
-            </th>
-            {{range $index, $version := $product.Versions}}
-            {{if $index}}<tr>{{end}}
-            <td>{{ $version.Version }}</td>
+            <td><a href="/release-notes?jenkins={{.Name}}">{{.Name}}</a> </td>
             <td>
-              {{ $version.Changes }}
+              <ul>
+                {{range $servers.Plugins}}
+                <li>{{.Name}}:{{  .Version}}
+                  <!-- <button type="button" class="btn btn-link" data-toggle="modal" data-target="#changeVersionModal">Change Version</button>
+                  <button type="button" class="btn btn-link">Delete</button> -->
+                </li>
+                {{end}}
+              </ul>
+              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addPluginModal">Add New Plugin</button>
             </td>
-            {{if $index}}</tr>{{end}}
-            {{end}}
+            <td>
+              <button type="button" class="btn btn-danger">Delete Server</button>
+            </td>
           </tr>
           {{end}}
         </tbody>
@@ -70,4 +70,3 @@
     </div>
   </div>
 </body>
-</html>

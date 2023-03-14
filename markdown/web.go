@@ -20,12 +20,25 @@ type PluginPage struct {
 }
 
 type PluginHandler struct {
-	Data PluginPage
+	Redis      *Redis
+	AllServers []JenkinsServer
+	Data       PluginPage
 }
 
 func (p *PluginHandler) pluginsHandler(w http.ResponseWriter, r *http.Request) {
 	// Retrieve releases from Redis
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	query := r.URL.Query()
+	pickedJenkinsName := query.Get("jenkins")
+
+	jenkinsServers := p.Redis.getJenkinsServers()
+	for _, v := range jenkinsServers {
+
+		if v.Name == pickedJenkinsName {
+			p.Data = getPluginsForPageData(p.Redis, v)
+		}
+	}
 
 	tmpl := template.Must(template.ParseFiles("templates/release-notes.html"))
 	err := tmpl.Execute(w, p.Data)
@@ -45,32 +58,8 @@ type ServersHandler struct {
 
 func (h *ServersHandler) serversHandler(w http.ResponseWriter, r *http.Request) {
 
-	// plPage := ServersPage{
-	// 	Title: "Plugin manager",
-	// 	// ServerName: "jenkins-one",
-	// 	// Products:   nil,
-	// 	Servers: []JenkinsServer{
-	// 		{
-	// 			Name: "ser1",
-	// 			Plugins: []JenkinsPlugin{
-	// 				{
-	// 					Name:    "pl1",
-	// 					Version: "v1",
-	// 				},
-	// 				{
-	// 					Name:    "pl2",
-	// 					Version: "v33",
-	// 				},
-	// 			},
-	// 		},
-	// 		{
-	// 			Name: "ser2",
-	// 		},
-	// 	},
-	// }
-
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	tmpl := template.Must(template.ParseFiles("templates/test.html"))
+	tmpl := template.Must(template.ParseFiles("templates/servers.html"))
 	err := tmpl.Execute(w, h.Data)
 	if err != nil {
 		log.Println(err)
@@ -78,10 +67,12 @@ func (h *ServersHandler) serversHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func StartWeb(redisclient *Redis) {
-	jenkinsServers := redisclient.getJenkinsServers()
+	// jenkinsServers := redisclient.getJenkinsServers()
 
 	pluginHandler := PluginHandler{
-		Data: getPluginsForPageData(redisclient, jenkinsServers[1]),
+		Redis: redisclient,
+		// AllServers: jenkinsServers,
+		// Data: getPluginsForPageData(redisclient, jenkinsServers[1]),
 	}
 
 	sp := ServersPage{
@@ -95,7 +86,7 @@ func StartWeb(redisclient *Redis) {
 	log.Println("Starting server")
 	// data := getPlugins(redisclient)
 	http.HandleFunc("/release-notes", pluginHandler.pluginsHandler)
-	http.HandleFunc("/servers", serversHandler.serversHandler)
+	http.HandleFunc("/", serversHandler.serversHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
