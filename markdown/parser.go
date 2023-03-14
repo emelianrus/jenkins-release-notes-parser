@@ -16,7 +16,6 @@ we have from github
 */
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -83,14 +82,14 @@ func GetGitHubReleases(pluginName string, redisclient *Redis) ([]GitHubReleaseNo
 	req, err := http.NewRequest("GET", "https://api.github.com/repos/jenkinsci/"+pluginName+"/releases", nil)
 	if err != nil {
 		// log.Printf("error in github request: %s\n", err)
-		return nil, errors.New(fmt.Sprintf("error in github request: %s\n", err))
+		return nil, fmt.Errorf("error in github request: %s", err)
 	}
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
 	resp, err := client.Do(req)
 	if err != nil {
 		// log.Println(err)
-		return nil, errors.New(fmt.Sprintf("error during making client.Do request: %s", err))
+		return nil, fmt.Errorf("error during making client.Do request: %s", err)
 	}
 	defer resp.Body.Close()
 
@@ -113,7 +112,7 @@ func GetGitHubReleases(pluginName string, redisclient *Redis) ([]GitHubReleaseNo
 	if err != nil {
 		// fmt.Println("error decoding github response")
 		// log.Println(err)
-		return nil, errors.New(fmt.Sprintf("error decoding github response: %s", err))
+		return nil, fmt.Errorf("error decoding github response: %s", err)
 	}
 	return releases, nil
 	// ownerName := "jenkinsci"
@@ -187,7 +186,7 @@ func saveReleaseNotesToDB(redisclient *Redis, releases []GitHubReleaseNote, plug
 	if err != nil {
 		// fmt.Println(err)
 		// fmt.Println("Can not set updated time")
-		return errors.New(fmt.Sprintf("error setting lastUpdate time in get github release: %s", err))
+		return fmt.Errorf("error setting lastUpdate time in get github release: %s", err)
 	}
 	versions := Versions{}
 
@@ -198,12 +197,12 @@ func saveReleaseNotesToDB(redisclient *Redis, releases []GitHubReleaseNote, plug
 		jsonData, err := json.Marshal(release)
 		if err != nil {
 			// log.Println(err)
-			return errors.New(fmt.Sprintf("error Marshal release: %s", err))
+			return fmt.Errorf("error Marshal release: %s", err)
 		}
 		err = redisclient.Set(key, jsonData)
 		if err != nil {
 			log.Println(err)
-			return errors.New(fmt.Sprintf("error setting release: %s", err))
+			return fmt.Errorf("error setting release: %s", err)
 		}
 	}
 
@@ -212,7 +211,7 @@ func saveReleaseNotesToDB(redisclient *Redis, releases []GitHubReleaseNote, plug
 		jsonVersions)
 	if err != nil {
 		log.Println(err)
-		return errors.New(fmt.Sprintf("error setting version for release: %s", err))
+		return fmt.Errorf("error setting version for release: %s", err)
 	}
 	return nil
 }
@@ -230,7 +229,6 @@ func getPluginsForPageData(redisclient *Redis) PluginPage {
 	}
 
 	serverJson, _ := redisclient.GetJenkinsServers()
-
 	var jenkinsServer JenkinsServer
 	err := json.Unmarshal(serverJson, &jenkinsServer)
 	if err != nil {
@@ -240,7 +238,12 @@ func getPluginsForPageData(redisclient *Redis) PluginPage {
 	// fmt.Println(jenkinsServer.Name)
 	// fmt.Println(jenkinsServer.Plugins)
 	products := []Product{}
-	for _, plugin := range jenkinsServer.Plugins {
+	// fmt.Println(jenkinsServer.Plugins)
+
+	jenkinsPlugins, _ := redisclient.getJenkinsPlugins("jenkins-one")
+
+	for _, plugin := range jenkinsPlugins {
+		// fmt.Println("checking jenkins plugin " + plugin.Name)
 
 		// pluginVersionsJson, err := redisclient.GetPlugin(fmt.Sprintf("github:jenkinsci:%s:versions", plugin.Name))
 		// if err != nil {

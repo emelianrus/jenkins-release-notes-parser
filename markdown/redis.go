@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/go-redis/redis"
 )
@@ -32,6 +33,102 @@ func (r *Redis) Set(key string, value interface{}) error {
 }
 
 // DB part end ^
+
+type JenkinsPlugin struct {
+	Name    string
+	Version string
+}
+
+type JenkinsServer struct {
+	Name string
+	Core string
+}
+
+func (r *Redis) addJenkinsServer(server JenkinsServer) {
+	// TODO: check if exist/replace
+	// js := JenkinsServer{
+	// 	Name: "jenkins-one",
+	// 	Core: "2.3233.2",
+	// 	Plugins: []ServerPlugin{
+	// 		{
+	// 			Name:    "plugin-installation-manager-tool",
+	// 			Version: "2.10.0",
+	// 		},
+	// 		{
+	// 			Name:    "okhttp-api-plugin",
+	// 			Version: "4.9.3-108.v0feda04578cf",
+	// 		},
+	// 	},
+	// }
+
+	jsonData, err := json.Marshal(server)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	// write jenkins server json
+	err = r.Set(fmt.Sprintf("servers:%s", server.Name), jsonData)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+}
+
+func (r *Redis) changeJenkinServerPluginVersion(serverName string, pluginName string, newVersion string) error {
+	jsonData, _ := json.Marshal(newVersion)
+
+	err := r.Set(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName), jsonData)
+	if err != nil {
+		fmt.Println("can not append to redis new plugin")
+	}
+	fmt.Println("appended plugin to redis")
+
+	return nil
+}
+
+func (r *Redis) getJenkinsPlugins(jenkinsServer string) ([]JenkinsPlugin, error) {
+	var jenkinsPlugins []JenkinsPlugin
+	pluginKeys, _ := r.client.Keys(fmt.Sprintf("servers:%s:plugins:*", jenkinsServer)).Result()
+
+	for _, pluginKey := range pluginKeys {
+
+		// get plugin name from path (is there is a better way? )
+		path := strings.Split(pluginKey, ":")
+		pluginName := path[len(path)-1]
+		pluginVersionByte, _ := r.Get(pluginKey).Bytes()
+
+		pluginVersion := string(pluginVersionByte)
+
+		jenkinsPlugins = append(jenkinsPlugins, JenkinsPlugin{
+			Name:    pluginName,
+			Version: pluginVersion,
+		})
+	}
+
+	return jenkinsPlugins, nil
+}
+
+func (r *Redis) addJenkinsServerPlugin(serverName string, plugin JenkinsPlugin) error {
+	_, err := r.Get(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name)).Bytes()
+	if err != nil {
+		fmt.Println(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name) + " not found all good")
+
+		jsonData, _ := json.Marshal(plugin.Version)
+
+		err := r.Set(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name), jsonData)
+		if err != nil {
+			fmt.Println("can not append to redis new plugin")
+		}
+		fmt.Println("appended plugin to redis")
+	}
+	return nil
+}
+
+func (r *Redis) removeJenkinsServerPlugin(serverName string, pluginName string) {
+	// _, err := r.Get(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName)).Bytes()
+	fmt.Printf("removing key from redis %s\n", pluginName)
+	r.client.Del(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName))
+}
 
 func (r *Redis) GetJenkinsServers() ([]byte, error) {
 	return r.client.Get("servers:jenkins-one:plugins").Bytes()

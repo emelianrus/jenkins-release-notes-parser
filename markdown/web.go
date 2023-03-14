@@ -28,8 +28,22 @@ func (p *PluginHandler) pluginsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func StartWeb(redisclient *Redis) {
+func serversHandler(w http.ResponseWriter, r *http.Request) {
+	plPage := PluginPage{
+		Title:      "Plugin manager",
+		ServerName: "jenkins-one",
+		Products:   nil,
+	}
 
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	tmpl := template.Must(template.ParseFiles("templates/servers.html"))
+	err := tmpl.Execute(w, plPage)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func StartWeb(redisclient *Redis) {
 	pluginHandler := PluginHandler{
 		Data: getPluginsForPageData(redisclient),
 	}
@@ -37,5 +51,7 @@ func StartWeb(redisclient *Redis) {
 	log.Println("Starting server")
 	// data := getPlugins(redisclient)
 	http.HandleFunc("/", pluginHandler.pluginsHandler)
+	http.HandleFunc("/servers", serversHandler)
+
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
