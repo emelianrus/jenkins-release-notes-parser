@@ -174,7 +174,7 @@ func (r *Redis) GetJenkinsServers() ([]byte, error) {
 // 	return jsonData, err
 // }
 
-func (r *Redis) SetLastUpdatedTime(pluginName string, value interface{}) error {
+func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
 
 	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated"),
 		value)

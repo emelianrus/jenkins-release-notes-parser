@@ -182,7 +182,9 @@ func replaceGitHubLinks(s string) string {
 
 func saveReleaseNotesToDB(redisclient *Redis, releases []GitHubReleaseNote, pluginName string) error {
 
-	err := redisclient.SetLastUpdatedTime(pluginName, time.Now().UTC())
+	currentTime := time.Now()
+	formattedTime := currentTime.Format("02 January 2006 15:04")
+	err := redisclient.SetLastUpdatedTime(pluginName, formattedTime)
 	if err != nil {
 		// fmt.Println(err)
 		// fmt.Println("Can not set updated time")
@@ -228,31 +230,9 @@ func getPluginsForPageData(redisclient *Redis, jenkinsServer JenkinsServer) Plug
 		Products:   nil,
 	}
 
-	// serverJson, _ := redisclient.GetJenkinsServers()
-	// var jenkinsServer JenkinsServer
-	// err := json.Unmarshal(serverJson, &jenkinsServer)
-	// if err != nil {
-	// 	fmt.Println("can not unmarshal jenkins server")
-	// }
-
-	// fmt.Println(jenkinsServer.Name)
-	// fmt.Println(jenkinsServer.Plugins)
 	products := []Product{}
-	// fmt.Println(jenkinsServer.Plugins)
-
-	// jenkinsPlugins, _ := redisclient.getJenkinsPlugins("jenkins-one")
 
 	for _, plugin := range jenkinsServer.Plugins {
-		// fmt.Println("checking jenkins plugin " + plugin.Name)
-
-		// pluginVersionsJson, err := redisclient.GetPlugin(fmt.Sprintf("github:jenkinsci:%s:versions", plugin.Name))
-		// if err != nil {
-		// 	// plugin doesnt exist
-		// 	fmt.Println("versions file is not exist")
-		// 	fmt.Println(err)
-		// 	GetGitHubReleases(plugin.Name, redisclient)
-		// 	// plugin = redisclient.Get()
-		// }
 
 		pluginVersionsJson, err := redisclient.GetPluginVersions(plugin.Name)
 		if err != nil {
