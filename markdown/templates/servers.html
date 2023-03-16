@@ -133,6 +133,11 @@
     });
   });
 
+  $(document).on('click', '.change-version-btn', function() {
+    var version = $(this).closest('li').find('span').text().split(":")[1];
+    $('#changeVersionModal').find('#plugin-version').val(version);
+  });
+
 
   </script>
   <style>
@@ -182,7 +187,7 @@
                 <ul>
                   {{range $index, $plugin := $servers.Plugins}}
                   <li>
-                    {{.Name}}:{{.Version}}
+                    <span id="plugin-name-ranged">{{.Name}}:{{.Version}}</span>
                     <button type="button"class="btn btn-link change-version-btn" data-index="{{$servers.Name}}:{{.Name}}" data-toggle="modal" data-target="#changeVersionModal">Change Version</button>
                     <button type="button" class="btn btn-link delete-btn" data-index="{{$servers.Name}}:{{.Name}}">Delete</button>
                   </li>
