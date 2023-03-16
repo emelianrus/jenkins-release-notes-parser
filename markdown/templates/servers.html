@@ -38,6 +38,102 @@
         });
       });
     });
+
+
+    // $(document).ready(function() {
+    //   $('#add-plugin-submit').on('click', function() {
+
+    //     console.log("test");
+
+    //     // serialize form data
+    //     var formData = $('#add-plugin-form').serializeArray();
+
+    //     // convert form data to JSON payload
+    //     var payload = formData.reduce(function(obj, item) {
+    //       obj[item.name] = item.value;
+    //       return obj;
+    //     }, {});
+
+    //     var jsonPayload = JSON.stringify(payload)
+
+    //     console.log(jsonPayload);
+    //     // send form data using AJAX
+    //     // $.ajax({
+    //     //   type: 'POST',
+    //     //   url: 'your-server-page.php',
+    //     //   data: formData,
+    //     //   success: function(response) {
+    //     //     // handle success response
+    //     //   },
+    //     //   error: function(xhr, status, error) {
+    //     //     // handle error response
+    //     //   }
+    //     // });
+    //   });
+    // });
+    $(document).ready(function() {
+  // add new field
+  $('#addPluginModal').on('click', '.add-field-btn', function() {
+    // var field = '<div class="form-group">' +
+    //               '<input type="text" class="form-control" name="pluginName[]" placeholder="Name">' +
+    //               '<input type="text" class="form-control" name="pluginVersion[]" placeholder="Version">' +
+    //               '<button type="button" class="btn btn-danger remove-field-btn">remove</button>' +
+    //             '</div>';
+
+    var field = `
+    <div id="plugin-fields">
+      <div class="form-row plugin-field">
+        <div class="form-group col">
+          <input type="text" class="form-control" name="pluginName" placeholder="Name">
+        </div>
+        <div class="form-group col">
+          <input type="text" class="form-control" name="pluginVersion" placeholder="Version">
+        </div>
+        <div class="form-group col-auto">
+          <button type="button" class="btn btn-danger remove-field-btn">Remove</button>
+        </div>
+      </div>
+    </div>
+    `;
+    $('#plugin-fields').append(field);
+  });
+
+    // remove field
+    $('#addPluginModal').on('click', '.remove-field-btn', function() {
+      $(this).closest('.form-row').remove();
+    });
+
+    // submit form
+    $('#add-plugin-submit').on('click', function() {
+
+      var formData = $('#add-plugin-form').serializeArray();
+      var plugins = [];
+      for (var i = 0; i < formData.length; i += 2) {
+        var plugin = {};
+        plugin.name = formData[i].value;
+        plugin.version = formData[i + 1].value;
+        plugins.push(plugin);
+      }
+
+      var pluginsJson = JSON.stringify(plugins);
+
+      console.log(pluginsJson);
+      $.ajax({
+        type: 'POST',
+        url: 'your-server-page1.php',
+        data: pluginsJson,
+        success: function(response) {
+          // handle success response
+        },
+        error: function(xhr, status, error) {
+          // handle error response
+        }
+      });
+      $('#addPluginModal').modal('hide');
+    });
+  });
+
+
   </script>
   <style>
     .table-responsive {
@@ -77,7 +173,7 @@
             <th>Action</th>
           </tr>
         </thead>
-        <tbody >
+        <tbody>
             {{range .Servers}}
             {{ $servers := . }}
             <tr>
@@ -151,8 +247,8 @@
     </div>
   </div>
   <!-- add new plugin modal -->
-  <div class="modal fade" id="addPluginModal" tabindex="-1" role="dialog" aria-labelledby="addPluginModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+  <div class="modal fade bd-example-modal-lg" id="addPluginModal" tabindex="-1" role="dialog" aria-labelledby="addPluginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="addPluginModalLabel">Add New Plugin</h5>
@@ -162,24 +258,31 @@
         </div>
         <div class="modal-body">
           <form id="add-plugin-form">
-            <div class="form-group">
-              <label for="plugin-name" class="col-form-label">Name:</label>
-              <input type="text" class="form-control" id="plugin-name" name="pluginName">
+            <div id="plugin-fields">
+              <div class="form-row plugin-field">
+                <div class="form-group col">
+                  <input type="text" class="form-control" name="pluginName" placeholder="Name">
+                </div>
+                <div class="form-group col">
+                  <input type="text" class="form-control" name="pluginVersion" placeholder="Version">
+                </div>
+                <div class="form-group col-auto">
+                  <button type="button" class="btn btn-danger remove-field-btn">Remove</button>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="plugin-version" class="col-form-label">Version:</label>
-              <input type="text" class="form-control" id="plugin-version" name="pluginVersion">
+            <div class="mt-3">
+              <button type="button" class="btn btn-primary add-field-btn">Add Plugin</button>
             </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" id="add-plugin-submit">Save changes</button>
+          <button type="button" class="btn btn-primary" id="add-plugin-submit">Save Changes</button>
         </div>
       </div>
     </div>
   </div>
-
 </body>
 
 
