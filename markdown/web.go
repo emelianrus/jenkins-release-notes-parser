@@ -9,13 +9,6 @@ import (
 	"net/http"
 )
 
-// func constractPageData() {
-// 	// getJenkinsInstance
-// 	// getListOfPlugins
-// 	// checkIsPluginInCache
-// 	// createStructure
-// }
-
 type ReleaseNotesPage struct {
 	Title      string
 	Products   []Product
