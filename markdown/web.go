@@ -115,6 +115,11 @@ func (h *createDeleteHandler) addJenkinsServer(w http.ResponseWriter, r *http.Re
 func (h *createDeleteHandler) deleteJenkinsServer(w http.ResponseWriter, r *http.Request) {}
 func (h *createDeleteHandler) changePluginVersion(w http.ResponseWriter, r *http.Request) {}
 
+func handleJS(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/javascript")
+	http.ServeFile(w, r, "js/servers.js")
+}
+
 func StartWeb(redisclient *Redis) {
 	// jenkinsServers := redisclient.getJenkinsServers()
 
@@ -140,6 +145,7 @@ func StartWeb(redisclient *Redis) {
 	// data := getPlugins(redisclient)
 	http.HandleFunc("/release-notes", releaseNotesHandler.releaseNotesHandler)
 	http.HandleFunc("/", serversHandler.serversHandler)
+	http.HandleFunc("/js/", handleJS)
 
 	// TODO:
 	http.HandleFunc("/delete-plugin", crudHandler.deleteJenkinsPlugin)
