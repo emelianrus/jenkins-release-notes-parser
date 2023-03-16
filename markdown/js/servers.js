@@ -1,5 +1,38 @@
 console.log("loaded servers.js");
 
+
+
+
+
+$(document).ready(function () {
+  // add a click event listener to the plugins list (the parent element)
+  $(".delete-server-btn").on("click", function () {
+    // get the ID of the item to delete
+    var index = $(this).data("server-name");
+    // create a payload object with the ID of the item
+    var payload = {
+      jenkinsName: index,
+    };
+    console.log(payload);
+    var liBlock = $(this).closest("li");
+    // send an AJAX request to the server
+    $.ajax({
+      url: "/delete-jenkins-server", // replace this with the actual URL of the delete endpoint
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify(payload),
+      success: function (response) {
+        liBlock.remove();
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        // handle any errors that occur during the request here
+        // console.error(textStatus, errorThrown);
+      },
+    });
+  });
+});
+
+
 $(document).ready(function () {
   // add a click event listener to the plugins list (the parent element)
   $(".delete-btn").on("click", function () {
