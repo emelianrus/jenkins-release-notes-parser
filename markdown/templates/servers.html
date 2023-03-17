@@ -49,12 +49,12 @@
         <tbody>
             {{range .Servers}}
             {{ $servers := . }}
-            <tr>
+            <tr id="server-plugins">
               <td><a href="/release-notes?jenkins={{.Name}}"><span id="server-name">{{.Name}}</span></a></td>
               <td>
                 <ul>
                   {{range $index, $plugin := $servers.Plugins}}
-                  <li>
+                  <li id="server-items">
                     <span id="plugin-name-ranged">{{.Name}}:{{.Version}}</span>
                     <button type="button"class="btn btn-link change-version-btn" data-index="{{$servers.Name}}:{{.Name}}" data-toggle="modal" data-server-name="{{$servers.Name}}" data-plugin-name="{{.Name}}" data-target="#changeVersionModal">Change Version</button>
                     <button type="button" class="btn btn-link delete-btn" data-index="{{$servers.Name}}:{{.Name}}">Delete</button>
@@ -86,6 +86,8 @@
             <div class="form-group">
               <label for="serverName">Server name:</label>
               <input type="text" class="form-control" id="server-name" name="serverName">
+              <label for="coreVersion">Core Version:</label>
+              <input type="text" class="form-control" id="core-version" name="coreVersion">
             </div>
           </form>
         </div>

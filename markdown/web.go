@@ -121,11 +121,65 @@ func (h *RedisHandler) deleteJenkinsPlugin(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// func (h *createDeleteHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) {}
+// POST add new jenkins plugin to jenkins server
+func (h *RedisHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) {
+	// if r.Method == "POST" {
+	// 	// Read the request body
+	// 	// TODO: replace ioutil with io.Copy
+	// 	body, err := ioutil.ReadAll(r.Body)
+	// 	if err != nil {
+	// 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+	// 		return
+	// 	}
 
-// func (h *createDeleteHandler) addJenkinsServer(w http.ResponseWriter, r *http.Request) {}
+	// 	// Do something with the request body, such as decoding it into a struct
+	// 	var data DeleteJenkinsPluginPage
+	// 	err = json.Unmarshal(body, &data)
+	// 	if err != nil {
+	// 		http.Error(w, "Error decoding request body", http.StatusBadRequest)
+	// 		return
+	// 	}
 
-// func (h *createDeleteHandler) deleteJenkinsServer(w http.ResponseWriter, r *http.Request) {}
+	// 	h.Redis.removeJenkinsServerPlugin(data.JenkinsName, data.PluginName)
+
+	// 	// Do something with the data, such as processing it or saving it to a database
+
+	// 	// Send a response back to the client
+	// 	w.WriteHeader(http.StatusOK)
+	// 	w.Write([]byte("Request processed successfully"))
+	// } else {
+	// 	http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	// }
+
+}
+
+type addJenkinsServer struct {
+	JenkinsName string
+	CoreVersion string
+}
+
+func (h *RedisHandler) addJenkinsServer(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	var server addJenkinsServer
+	err := decoder.Decode(&server)
+	if err != nil {
+		panic(err)
+	}
+
+	h.Redis.addJenkinsServer(server.JenkinsName, server.CoreVersion)
+}
+
+func (h *RedisHandler) deleteJenkinsServer(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	var serverName string
+	err := decoder.Decode(&serverName)
+	if err != nil {
+		panic(err)
+	}
+	// w.WriteHeader(http.StatusBadRequest)
+	h.Redis.deleteJenkinsServer(serverName)
+}
+
 // func (h *createDeleteHandler) changePluginVersion(w http.ResponseWriter, r *http.Request) {}
 
 // Load js from separate file
@@ -150,13 +204,13 @@ func StartWeb(redisclient *Redis) {
 
 	// TODO: should be list
 	// [{"name":"jenkinsServerName","value":"jenkins-two"},{"name":"pluginName","value":"1"},{"name":"pluginVersion","value":"2"},{"name":"pluginName","value":"3"},{"name":"pluginVersion","value":"4"}]
-	// http.HandleFunc("/add-new-plugin", crudHandler.deleteJenkinsPlugin)
+	// http.HandleFunc("/add-new-plugin", redisHandler.addJenkinsPlugin)
 	// TODO:
 	// http.HandleFunc("/change-plugin-version", crudHandler.deleteJenkinsPlugin)
 	// TODO:
-	// http.HandleFunc("/delete-server", crudHandler.deleteJenkinsPlugin)
+	http.HandleFunc("/delete-server", redisHandler.deleteJenkinsServer)
 	// TODO:
-	// http.HandleFunc("/add-server", crudHandler.deleteJenkinsPlugin)
+	http.HandleFunc("/add-server", redisHandler.addJenkinsServer)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

@@ -23,22 +23,19 @@ $(document).on("click", ".change-version-btn", function () {
 $(document).ready(function () {
   // add a click event listener to the plugins list (the parent element)
   $(".delete-server-btn").on("click", function () {
-    // get the ID of the item to delete
-    var index = $(this).data("server-name");
-    // create a payload object with the ID of the item
-    var payload = {
-      jenkinsName: index,
-    };
-    console.log(payload);
-    var liBlock = $(this).closest("li");
+    var serverName = $(this).data("server-name");
+
+    console.log(serverName);
+    var block = $(this).closest("tr");
+
     // send an AJAX request to the server
     $.ajax({
       url: "/delete-server", // replace this with the actual URL of the delete endpoint
       type: "POST",
       contentType: "application/json",
-      data: JSON.stringify(payload),
-      success: function (response) {
-        liBlock.remove();
+      data: JSON.stringify(serverName),
+      success: function () {
+        block.remove();
       },
       error: function (jqXHR, textStatus, errorThrown) {
         // handle any errors that occur during the request here
@@ -103,13 +100,26 @@ $(document).ready(function () {
   $("#add-server-modal-submit").on("click", function () {
     var formData = $("#add-new-server-form").serializeArray();
 
+    var jsonObject = {};
+    // Loop through the JSON array and add each key-value pair to the JSON object
+    for (let i = 0; i < formData.length; i++) {
+        const item = formData[i];
+        jsonObject[item.name] = item.value;
+    }
+
+    var payload = {
+      jenkinsName: jsonObject["serverName"],
+      coreVersion: jsonObject["coreVersion"]
+    }
+
     $.ajax({
       type: "POST",
       url: "/add-server",
-      data: JSON.stringify(formData[0].value),
-      success: function (response) {
+      data: JSON.stringify(payload),
+      success: function () {
         // handle success response
         // TODO: add server live
+        window.location.reload();
       },
       error: function (xhr, status, error) {
         // handle error response
@@ -178,7 +188,7 @@ $(document).ready(function () {
         console.log(error);
       },
     });
-    // $("#changeVersionModal").modal("hide");
+    $("#changeVersionModal").modal("hide");
   });
 
 });

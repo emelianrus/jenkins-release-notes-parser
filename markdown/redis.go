@@ -104,6 +104,13 @@ func (r *Redis) addJenkinsServer(serverName string, coreVersion string) {
 		log.Println(err)
 		return
 	}
+	fmt.Printf("Added %s:%s\n", serverName, coreVersion)
+}
+
+func (r *Redis) deleteJenkinsServer(serverName string) {
+	path := fmt.Sprintf("servers:%s", serverName)
+	fmt.Printf("Removing jenkins server %s\n", path)
+	r.client.Del(path)
 }
 
 func (r *Redis) changeJenkinServerPluginVersion(serverName string, pluginName string, newVersion string) error {
