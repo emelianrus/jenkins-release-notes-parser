@@ -1,9 +1,6 @@
 console.log("loaded servers.js");
 
 
-
-
-
 $(document).ready(function () {
   // add a click event listener to the plugins list (the parent element)
   $(".delete-server-btn").on("click", function () {
@@ -30,10 +27,6 @@ $(document).ready(function () {
       },
     });
   });
-});
-
-
-$(document).ready(function () {
   // add a click event listener to the plugins list (the parent element)
   $(".delete-btn").on("click", function () {
     // get the ID of the item to delete
@@ -64,14 +57,6 @@ $(document).ready(function () {
   });
 });
 
-// $(document).ready(function () {
-//   // add new field
-//   $("#addPluginModal").on("click", ".addPluginModalLabel", function () {
-//     var serverName = $('#server-name-input').val();
-//     console.log(serverName);
-
-//   });
-// });
 
 $(document).on("click", ".add-new-plugin-btn", function () {
   var serverName = $(this).data("server-name");
@@ -82,7 +67,6 @@ $(document).on("click", ".add-new-plugin-btn", function () {
 $(document).ready(function () {
   // add new field
   $("#addPluginModal").on("click", ".add-field-btn", function () {
-
     var field = `
       <div id="plugin-fields">
         <div class="form-row plugin-field">
@@ -106,8 +90,26 @@ $(document).ready(function () {
     $(this).closest(".form-row").remove();
   });
 
+  $("#add-server-modal-submit").on("click", function () {
+    var formData = $("#add-new-server-form").serializeArray();
+    var pluginsJson = JSON.stringify(formData);
+    console.log(pluginsJson)
+    $.ajax({
+      type: "POST",
+      url: "your-server-page1.php",
+      data: pluginsJson,
+      success: function (response) {
+        // handle success response
+      },
+      error: function (xhr, status, error) {
+        // handle error response
+      },
+    });
+    $("#addServerModal").modal("hide");
+  });
 
-  // submit form
+
+
   $("#add-plugin-submit").on("click", function (event) {
     var formData = $("#add-plugin-form").serializeArray();
     var pluginsJson = JSON.stringify(formData);
@@ -125,10 +127,37 @@ $(document).ready(function () {
     });
     $("#addPluginModal").modal("hide");
   });
+
+  $("#change-version-submit").on("click", function () {
+    var formData = $("#change-version-form").serializeArray();
+    var pluginsJson = JSON.stringify(formData);
+    console.log(pluginsJson)
+    $.ajax({
+      type: "POST",
+      url: "your-server-page1.php",
+      data: pluginsJson,
+      success: function (response) {
+        // handle success response
+      },
+      error: function (xhr, status, error) {
+        // handle error response
+      },
+    });
+    $("#changeVersionModal").modal("hide");
+  });
+
 });
 
 $(document).on("click", ".change-version-btn", function () {
   var version = $(this).closest("li").find("span").text().split(":")[1];
   $("#changeVersionModal").find("#plugin-version").val(version);
 });
+
+
+
+
+// submit form
+
+
+
 
