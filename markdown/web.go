@@ -54,7 +54,19 @@ type ServersHandler struct {
 	Data  ServersPage
 }
 
+func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
+	w.WriteHeader(status)
+	if status == http.StatusNotFound {
+		fmt.Fprint(w, "404 page not found")
+	}
+}
+
 func (h *ServersHandler) serversHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		errorHandler(w, r, http.StatusNotFound)
+		return
+	}
+
 	sp := ServersPage{
 		Title:   "Servers",
 		Servers: h.Redis.getJenkinsServers(),

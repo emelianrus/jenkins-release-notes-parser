@@ -20,7 +20,6 @@ $(document).on("click", ".change-version-btn", function () {
 });
 
 
-
 $(document).ready(function () {
   // add a click event listener to the plugins list (the parent element)
   $(".delete-server-btn").on("click", function () {
@@ -34,7 +33,7 @@ $(document).ready(function () {
     var liBlock = $(this).closest("li");
     // send an AJAX request to the server
     $.ajax({
-      url: "/delete-jenkins-server", // replace this with the actual URL of the delete endpoint
+      url: "/delete-server", // replace this with the actual URL of the delete endpoint
       type: "POST",
       contentType: "application/json",
       data: JSON.stringify(payload),
@@ -103,14 +102,14 @@ $(document).ready(function () {
 
   $("#add-server-modal-submit").on("click", function () {
     var formData = $("#add-new-server-form").serializeArray();
-    var pluginsJson = JSON.stringify(formData);
-    console.log(pluginsJson)
+
     $.ajax({
       type: "POST",
-      url: "your-server-page1.php",
-      data: pluginsJson,
+      url: "/add-server",
+      data: JSON.stringify(formData[0].value),
       success: function (response) {
         // handle success response
+        // TODO: add server live
       },
       error: function (xhr, status, error) {
         // handle error response
@@ -119,14 +118,29 @@ $(document).ready(function () {
     $("#addServerModal").modal("hide");
   });
 
-  $("#add-plugin-submit").on("click", function (event) {
+  $("#add-plugin-submit").on("click", function () {
     var formData = $("#add-plugin-form").serializeArray();
-    var pluginsJson = JSON.stringify(formData);
-    console.log(pluginsJson)
+    const formDataConverted = formData.reduce((obj, { name, value }) => {
+      if (name === "jenkinsServerName") {
+        obj.jenkinsName = value;
+      } else if (name === "pluginName" || name === "pluginVersion") {
+        if (!obj.plugins) {
+          obj.plugins = [];
+        }
+        obj.plugins.push({ name, value });
+      }
+      return obj;
+    }, {});
+
+    var payload = {
+      jenkinsName: formDataConverted["jenkinsName"],
+      plugins: formDataConverted["plugins"]
+    };
+
     $.ajax({
       type: "POST",
-      url: "11122",
-      data: pluginsJson,
+      url: "/add-new-plugin",
+      data: JSON.stringify(payload),
       success: function (response) {
         // handle success response
       },
@@ -139,20 +153,32 @@ $(document).ready(function () {
 
   $("#change-version-submit").on("click", function () {
     var formData = $("#change-version-form").serializeArray();
-    var pluginsJson = JSON.stringify(formData);
-    console.log(pluginsJson)
+
+    const formDataConverted = formData.reduce((obj, { name, value }) => {
+      obj[name] = value;
+      return obj;
+    }, {});
+
+    var payload = {
+      jenkinsName: formDataConverted["jenkinsServerName"],
+      pluginName: formDataConverted["jenkinsPluginName"],
+      newPluginVersion: formDataConverted["pluginVersion"]
+    };
+
     $.ajax({
       type: "POST",
-      url: "your-asd",
-      data: pluginsJson,
+      url: "/change-plugin-version",
+      data: JSON.stringify(payload),
       success: function (response) {
         // handle success response
+        // TODO: change table version live
       },
       error: function (xhr, status, error) {
         // handle error response
+        console.log(error);
       },
     });
-    $("#changeVersionModal").modal("hide");
+    // $("#changeVersionModal").modal("hide");
   });
 
 });
