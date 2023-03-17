@@ -182,6 +182,7 @@ $(document).ready(function () {
       success: function (response) {
         // handle success response
         // TODO: change table version live
+        window.location.reload();
       },
       error: function (xhr, status, error) {
         // handle error response

@@ -114,6 +114,7 @@ func (r *Redis) deleteJenkinsServer(serverName string) {
 }
 
 func (r *Redis) changeJenkinServerPluginVersion(serverName string, pluginName string, newVersion string) error {
+	fmt.Printf("Change plugin version to server name: %s plugin name %s new verion %s\n", serverName, pluginName, newVersion)
 	jsonData, _ := json.Marshal(newVersion)
 
 	err := r.Set(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName), jsonData)

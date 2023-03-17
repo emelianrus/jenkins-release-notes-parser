@@ -86,7 +86,7 @@ func (h *RedisHandler) serversHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type DeleteJenkinsPluginPage struct {
+type deleteJenkinsPluginPayload struct {
 	JenkinsName string
 	PluginName  string
 }
@@ -103,7 +103,7 @@ func (h *RedisHandler) deleteJenkinsPlugin(w http.ResponseWriter, r *http.Reques
 		}
 
 		// Do something with the request body, such as decoding it into a struct
-		var data DeleteJenkinsPluginPage
+		var data deleteJenkinsPluginPayload
 		err = json.Unmarshal(body, &data)
 		if err != nil {
 			http.Error(w, "Error decoding request body", http.StatusBadRequest)
@@ -153,14 +153,15 @@ func (h *RedisHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) 
 
 }
 
-type addJenkinsServer struct {
+type addJenkinsServerPayload struct {
 	JenkinsName string
 	CoreVersion string
 }
 
+// POST add jenkins server to DB
 func (h *RedisHandler) addJenkinsServer(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
-	var server addJenkinsServer
+	var server addJenkinsServerPayload
 	err := decoder.Decode(&server)
 	if err != nil {
 		panic(err)
@@ -169,6 +170,7 @@ func (h *RedisHandler) addJenkinsServer(w http.ResponseWriter, r *http.Request) 
 	h.Redis.addJenkinsServer(server.JenkinsName, server.CoreVersion)
 }
 
+// POST delete jenkins server from DB
 func (h *RedisHandler) deleteJenkinsServer(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var serverName string
@@ -180,7 +182,22 @@ func (h *RedisHandler) deleteJenkinsServer(w http.ResponseWriter, r *http.Reques
 	h.Redis.deleteJenkinsServer(serverName)
 }
 
-// func (h *createDeleteHandler) changePluginVersion(w http.ResponseWriter, r *http.Request) {}
+type changePluginVersionPayload struct {
+	JenkinsName      string
+	PluginName       string
+	NewPluginVersion string
+}
+
+func (h *RedisHandler) changePluginVersion(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	var newPlugin changePluginVersionPayload
+	err := decoder.Decode(&newPlugin)
+	if err != nil {
+		panic(err)
+	}
+	h.Redis.changeJenkinServerPluginVersion(newPlugin.JenkinsName, newPlugin.PluginName, newPlugin.NewPluginVersion)
+	// w.WriteHeader(http.StatusBadRequest)
+}
 
 // Load js from separate file
 // TODO: Is there another way? i've found a lot of issues in http lib related to it
@@ -206,10 +223,8 @@ func StartWeb(redisclient *Redis) {
 	// [{"name":"jenkinsServerName","value":"jenkins-two"},{"name":"pluginName","value":"1"},{"name":"pluginVersion","value":"2"},{"name":"pluginName","value":"3"},{"name":"pluginVersion","value":"4"}]
 	// http.HandleFunc("/add-new-plugin", redisHandler.addJenkinsPlugin)
 	// TODO:
-	// http.HandleFunc("/change-plugin-version", crudHandler.deleteJenkinsPlugin)
-	// TODO:
+	http.HandleFunc("/change-plugin-version", redisHandler.changePluginVersion)
 	http.HandleFunc("/delete-server", redisHandler.deleteJenkinsServer)
-	// TODO:
 	http.HandleFunc("/add-server", redisHandler.addJenkinsServer)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
