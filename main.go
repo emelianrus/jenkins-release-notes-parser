@@ -1,6 +1,9 @@
 package main
 
-import "github.com/emelianrus/jenkins-release-notes-parser/db"
+import (
+	"github.com/emelianrus/jenkins-release-notes-parser/db"
+	"github.com/emelianrus/jenkins-release-notes-parser/web"
+)
 
 func main() {
 	redisclient := db.NewRedisClient()
@@ -8,5 +11,5 @@ func main() {
 	// TODO: remove used during development
 	redisclient.AddDebugData()
 
-	StartWeb(redisclient)
+	web.StartWeb(redisclient)
 }

@@ -16,3 +16,6 @@ type JenkinsServer struct {
 	Core    string
 	Plugins []JenkinsPlugin
 }
+
+// From redis
+type AllVersions []string

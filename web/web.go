@@ -1,4 +1,4 @@
-package main
+package web
 
 import (
 	"encoding/json"
@@ -56,7 +56,7 @@ func (h *RedisHandler) releaseNotesHandler(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
-	tmpl := template.Must(template.ParseFiles("templates/release-notes.html"))
+	tmpl := template.Must(template.ParseFiles("web/templates/release-notes.html"))
 	err := tmpl.Execute(w, h.Data)
 	if err != nil {
 		log.Println(err)
@@ -82,7 +82,7 @@ func (h *RedisHandler) serversHandler(w http.ResponseWriter, r *http.Request) {
 	h.Data = sp
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	tmpl := template.Must(template.ParseFiles("templates/servers.html"))
+	tmpl := template.Must(template.ParseFiles("web/templates/servers.html"))
 	err := tmpl.Execute(w, h.Data)
 	if err != nil {
 		log.Println(err)
@@ -202,7 +202,7 @@ func (h *RedisHandler) changePluginVersion(w http.ResponseWriter, r *http.Reques
 // TODO: Is there another way? i've found a lot of issues in http lib related to it
 func handleJS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/javascript")
-	http.ServeFile(w, r, "js/servers.js")
+	http.ServeFile(w, r, "web/js/servers.js")
 }
 
 func StartWeb(redisclient *db.Redis) {

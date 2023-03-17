@@ -1,4 +1,4 @@
-package main
+package web
 
 /*
 
@@ -20,16 +20,12 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"time"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/db"
 	"github.com/emelianrus/jenkins-release-notes-parser/github"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/emelianrus/jenkins-release-notes-parser/utils"
 )
-
-// From redis
-type AllVersions []string
 
 // HTML start
 // part of html responce
@@ -48,44 +44,6 @@ type Product struct {
 
 // HTML end
 var ownerName = "jenkinsci"
-
-func saveReleaseNotesToDB(redisclient *db.Redis, releases []types.GitHubReleaseNote, pluginName string) error {
-
-	currentTime := time.Now()
-	formattedTime := currentTime.Format("02 January 2006 15:04")
-	err := redisclient.SetLastUpdatedTime(pluginName, formattedTime)
-	if err != nil {
-		// fmt.Println(err)
-		// fmt.Println("Can not set updated time")
-		return fmt.Errorf("error setting lastUpdate time in get github release: %s", err)
-	}
-	versions := AllVersions{}
-
-	for _, release := range releases {
-		versions = append(versions, release.Name)
-		key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, release.Name)
-		// 0 time.Hour
-		jsonData, err := json.Marshal(release)
-		if err != nil {
-			// log.Println(err)
-			return fmt.Errorf("error Marshal release: %s", err)
-		}
-		err = redisclient.Set(key, jsonData)
-		if err != nil {
-			log.Println(err)
-			return fmt.Errorf("error setting release: %s", err)
-		}
-	}
-
-	jsonVersions, _ := json.Marshal(versions)
-	err = redisclient.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "versions"),
-		jsonVersions)
-	if err != nil {
-		log.Println(err)
-		return fmt.Errorf("error setting version for release: %s", err)
-	}
-	return nil
-}
 
 // get jenkins server (hardcoded)
 // get plugins from jenikins server
@@ -107,7 +65,7 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 				fmt.Println("Failed to get releases from github")
 				continue
 			}
-			err = saveReleaseNotesToDB(redisclient, releases, plugin.Name)
+			err = redisclient.SaveReleaseNotesToDB(releases, plugin.Name)
 			if err != nil {
 				fmt.Println(err)
 				fmt.Println("Failed to save release notes to db")
@@ -123,7 +81,7 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 		}
 
 		// Assume we hit redis cache
-		var versions AllVersions
+		var versions types.AllVersions
 		err = json.Unmarshal(pluginVersionsJson, &versions)
 		if err != nil {
 			log.Println(err)
