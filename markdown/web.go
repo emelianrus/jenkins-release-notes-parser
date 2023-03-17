@@ -170,13 +170,15 @@ func (h *RedisHandler) addJenkinsServer(w http.ResponseWriter, r *http.Request) 
 // POST delete jenkins server from DB
 func (h *RedisHandler) deleteJenkinsServer(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
-	var serverName string
+	// could be only number, need to do validation
+	var serverName interface{}
 	err := decoder.Decode(&serverName)
 	if err != nil {
 		panic(err)
 	}
+
 	// w.WriteHeader(http.StatusBadRequest)
-	h.Redis.deleteJenkinsServer(serverName)
+	h.Redis.deleteJenkinsServer(fmt.Sprintf("%v", serverName))
 }
 
 type changePluginVersionPayload struct {
