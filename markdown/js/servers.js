@@ -1,5 +1,25 @@
 console.log("loaded servers.js");
 
+$(document).on("click", ".add-new-plugin-btn", function () {
+  var serverName = $(this).data("server-name");
+  console.log(serverName);
+  $("#addPluginModal").find("#jenkins-server-name").val(serverName);
+});
+
+$(document).on("click", ".change-version-btn", function () {
+  var version = $(this).closest("li").find("span").text().split(":")[1];
+  $("#changeVersionModal").find("#plugin-version").val(version);
+});
+
+
+$(document).on("click", ".change-version-btn", function () {
+  var serverName = $(this).data("server-name");
+  $("#changeVersionModal").find("#jenkins-server-name").val(serverName);
+  var pluginName =  $(this).data("plugin-name");
+  $("#changeVersionModal").find("#jenkins-plugin-name").val(pluginName);
+});
+
+
 
 $(document).ready(function () {
   // add a click event listener to the plugins list (the parent element)
@@ -55,15 +75,7 @@ $(document).ready(function () {
       },
     });
   });
-});
 
-$(document).on("click", ".add-new-plugin-btn", function () {
-  var serverName = $(this).data("server-name");
-  console.log(serverName);
-  $("#addPluginModal").find("#jenkins-server-name").val(serverName);
-});
-
-$(document).ready(function () {
   // add new field
   $("#addPluginModal").on("click", ".add-field-btn", function () {
     var field = `
@@ -107,8 +119,6 @@ $(document).ready(function () {
     $("#addServerModal").modal("hide");
   });
 
-
-
   $("#add-plugin-submit").on("click", function (event) {
     var formData = $("#add-plugin-form").serializeArray();
     var pluginsJson = JSON.stringify(formData);
@@ -146,17 +156,4 @@ $(document).ready(function () {
   });
 
 });
-
-$(document).on("click", ".change-version-btn", function () {
-  var version = $(this).closest("li").find("span").text().split(":")[1];
-  $("#changeVersionModal").find("#plugin-version").val(version);
-});
-
-
-
-
-// submit form
-
-
-
 

@@ -56,7 +56,7 @@
                   {{range $index, $plugin := $servers.Plugins}}
                   <li>
                     <span id="plugin-name-ranged">{{.Name}}:{{.Version}}</span>
-                    <button type="button"class="btn btn-link change-version-btn" data-index="{{$servers.Name}}:{{.Name}}" data-toggle="modal" data-target="#changeVersionModal">Change Version</button>
+                    <button type="button"class="btn btn-link change-version-btn" data-index="{{$servers.Name}}:{{.Name}}" data-toggle="modal" data-server-name="{{$servers.Name}}" data-plugin-name="{{.Name}}" data-target="#changeVersionModal">Change Version</button>
                     <button type="button" class="btn btn-link delete-btn" data-index="{{$servers.Name}}:{{.Name}}">Delete</button>
                   </li>
                   {{end}}
@@ -85,7 +85,7 @@
           <form id="add-new-server-form">
             <div class="form-group">
               <label for="serverName">Server name:</label>
-              <input type="text" class="form-control" id="plugin-version" name="serverName">
+              <input type="text" class="form-control" id="server-name" name="serverName">
             </div>
           </form>
         </div>
@@ -106,6 +106,9 @@
         </div>
         <div class="modal-body">
           <form id="change-version-form">
+            <input type="text" class="form-control" name="jenkinsServerName" id="jenkins-server-name" placeholder="ServerName" value="">
+            <input type="text" class="form-control" name="jenkinsPluginName" id="jenkins-plugin-name" placeholder="PluginName" value="">
+
             <div class="form-group">
               <label for="newVersion">New Version:</label>
               <input type="text" class="form-control" id="plugin-version" name="pluginVersion">
@@ -131,7 +134,7 @@
         </div>
         <div class="modal-body">
           <form id="add-plugin-form">
-            <input type="hidden" class="form-control" name="jenkinsServerName" id="jenkins-server-name" placeholder="ServerName" value="as">
+            <input type="hidden" class="form-control" name="jenkinsServerName" id="jenkins-server-name" placeholder="ServerName" value="">
 
             <div id="plugin-fields">
               <div class="form-row plugin-field">
