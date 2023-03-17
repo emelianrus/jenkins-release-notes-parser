@@ -232,6 +232,7 @@ func getReleaseNotesPageData(redisclient *Redis, jenkinsServer JenkinsServer) ([
 			releases, err := GetGitHubReleases(plugin.Name, redisclient)
 			if err != nil {
 				fmt.Println("Failed to get releases from github")
+				continue
 			}
 			err = saveReleaseNotesToDB(redisclient, releases, plugin.Name)
 			if err != nil {

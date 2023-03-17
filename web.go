@@ -111,8 +111,6 @@ func (h *RedisHandler) deleteJenkinsPlugin(w http.ResponseWriter, r *http.Reques
 		}
 		h.Redis.removeJenkinsServerPlugin(data.JenkinsName, data.PluginName)
 
-		// Do something with the data, such as processing it or saving it to a database
-
 		// Send a response back to the client
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Request processed successfully"))
@@ -143,7 +141,6 @@ func (h *RedisHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) 
 				Name:    fmt.Sprintf("%v", name),
 				Version: fmt.Sprintf("%v", version),
 			}
-			fmt.Println(plugin)
 			h.Redis.addJenkinsServerPlugin(server.JenkinsName, plugin)
 		}
 	}
@@ -212,16 +209,19 @@ func StartWeb(redisclient *Redis) {
 
 	log.Println("Starting server")
 
+	// Pages
 	http.HandleFunc("/", redisHandler.serversHandler)
 	http.HandleFunc("/release-notes", redisHandler.releaseNotesHandler)
 	http.HandleFunc("/js/", handleJS)
 
+	// POST handlers
+	http.HandleFunc("/add-new-plugin", redisHandler.addJenkinsPlugin)
 	http.HandleFunc("/delete-plugin", redisHandler.deleteJenkinsPlugin)
 
-	http.HandleFunc("/add-new-plugin", redisHandler.addJenkinsPlugin)
 	http.HandleFunc("/change-plugin-version", redisHandler.changePluginVersion)
-	http.HandleFunc("/delete-server", redisHandler.deleteJenkinsServer)
+
 	http.HandleFunc("/add-server", redisHandler.addJenkinsServer)
+	http.HandleFunc("/delete-server", redisHandler.deleteJenkinsServer)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
