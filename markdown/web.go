@@ -136,25 +136,17 @@ func handleJS(w http.ResponseWriter, r *http.Request) {
 }
 
 func StartWeb(redisclient *Redis) {
-	releaseNotesHandler := RedisHandler{
-		Redis: redisclient,
-	}
-
-	serversHandler := RedisHandler{
-		Redis: redisclient,
-	}
-
-	crudHandler := RedisHandler{
+	redisHandler := RedisHandler{
 		Redis: redisclient,
 	}
 
 	log.Println("Starting server")
 
-	http.HandleFunc("/release-notes", releaseNotesHandler.releaseNotesHandler)
-	http.HandleFunc("/", serversHandler.serversHandler)
+	http.HandleFunc("/", redisHandler.serversHandler)
+	http.HandleFunc("/release-notes", redisHandler.releaseNotesHandler)
 	http.HandleFunc("/js/", handleJS)
 
-	http.HandleFunc("/delete-plugin", crudHandler.deleteJenkinsPlugin)
+	http.HandleFunc("/delete-plugin", redisHandler.deleteJenkinsPlugin)
 
 	// TODO: should be list
 	// [{"name":"jenkinsServerName","value":"jenkins-two"},{"name":"pluginName","value":"1"},{"name":"pluginVersion","value":"2"},{"name":"pluginName","value":"3"},{"name":"pluginVersion","value":"4"}]
