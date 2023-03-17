@@ -57,7 +57,6 @@ $(document).ready(function () {
   });
 });
 
-
 $(document).on("click", ".add-new-plugin-btn", function () {
   var serverName = $(this).data("server-name");
   console.log(serverName);
@@ -116,7 +115,7 @@ $(document).ready(function () {
     console.log(pluginsJson)
     $.ajax({
       type: "POST",
-      url: "your-server-page1.php",
+      url: "11122",
       data: pluginsJson,
       success: function (response) {
         // handle success response
@@ -134,7 +133,7 @@ $(document).ready(function () {
     console.log(pluginsJson)
     $.ajax({
       type: "POST",
-      url: "your-server-page1.php",
+      url: "your-asd",
       data: pluginsJson,
       success: function (response) {
         // handle success response

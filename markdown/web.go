@@ -142,15 +142,22 @@ func StartWeb(redisclient *Redis) {
 	}
 
 	log.Println("Starting server")
-	// data := getPlugins(redisclient)
+
 	http.HandleFunc("/release-notes", releaseNotesHandler.releaseNotesHandler)
 	http.HandleFunc("/", serversHandler.serversHandler)
 	http.HandleFunc("/js/", handleJS)
 
-	// TODO:
 	http.HandleFunc("/delete-plugin", crudHandler.deleteJenkinsPlugin)
-	// http.HandleFunc("/add-plugin", ssss)
-	// http.HandleFunc("/add-jenkins-server", ssss)
+
+	// TODO: should be list
+	// [{"name":"jenkinsServerName","value":"jenkins-two"},{"name":"pluginName","value":"1"},{"name":"pluginVersion","value":"2"},{"name":"pluginName","value":"3"},{"name":"pluginVersion","value":"4"}]
+	// http.HandleFunc("/add-new-plugin", crudHandler.deleteJenkinsPlugin)
+	// TODO:
+	// http.HandleFunc("/change-plugin-version", crudHandler.deleteJenkinsPlugin)
+	// TODO:
+	// http.HandleFunc("/delete-server", crudHandler.deleteJenkinsPlugin)
+	// TODO:
+	// http.HandleFunc("/add-server", crudHandler.deleteJenkinsPlugin)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
