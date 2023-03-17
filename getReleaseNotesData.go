@@ -20,30 +20,15 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"net/http"
-	"regexp"
 	"time"
 
-	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/html"
-	"github.com/gomarkdown/markdown/parser"
+	"github.com/emelianrus/jenkins-release-notes-parser/utils"
 )
 
 type GitHubReleaseNote struct {
 	Name      string `json:"name"` // Version
 	Body      string `json:"body"` // this is markdown formated text of release note
 	CreatedAt string `json:"created_at"`
-}
-
-// represent plugin
-type Plugin struct {
-	Name         string
-	ReleaseNotes []GitHubReleaseNote
-}
-
-// represent jenkins server
-type Server struct {
-	Plugins []Plugin
 }
 
 // From redis
@@ -56,6 +41,7 @@ type Version struct {
 	Changes template.HTML
 }
 
+// represent repo in github
 type Product struct {
 	Name             string
 	Versions         []Version
@@ -65,116 +51,6 @@ type Product struct {
 
 // HTML end
 var ownerName = "jenkinsci"
-
-func GetGitHubReleases(pluginName string, redisclient *Redis) ([]GitHubReleaseNote, error) {
-	fmt.Println("Downloading plugin from github " + pluginName)
-	// Define cron job to run every hour
-	// c := cron.New()
-	// c.AddFunc("@hourly", func() {
-	// log.Println("Fetching release notes from GitHub API...")
-
-	// Make request to GitHub API
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://api.github.com/repos/jenkinsci/"+pluginName+"/releases", nil)
-	if err != nil {
-		// log.Printf("error in github request: %s\n", err)
-		return nil, fmt.Errorf("error in github request: %s", err)
-	}
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		// log.Println(err)
-		return nil, fmt.Errorf("error during making client.Do request: %s", err)
-	}
-	defer resp.Body.Close()
-
-	// Check rate limit remaining
-	// rateLimitRemaining, err := strconv.Atoi(resp.Header.Get("X-Ratelimit-Remaining"))
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return
-	// }
-
-	// If rate limit is reached, wait for 1 hour
-	// if rateLimitRemaining <= 0 {
-	// 	log.Println("Rate limit reached. Waiting 1 hour...")
-	// 	return
-	// }
-
-	// Decode response body into []GitHubReleaseNote
-	var releases []GitHubReleaseNote
-	err = json.NewDecoder(resp.Body).Decode(&releases)
-	if err != nil {
-		// fmt.Println("error decoding github response")
-		// log.Println(err)
-		return nil, fmt.Errorf("error decoding github response: %s", err)
-	}
-	return releases, nil
-	// ownerName := "jenkinsci"
-	// repoName := "plugin-installation-manager-tool"
-	// // Cache releases in Redis for 1 hour
-
-	// jsonData, err := json.Marshal(releases)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return
-	// }
-
-	// err = redisclient.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated"),
-	// 	time.Now())
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return
-	// }
-
-	// log.Println("Releases cached in Redis")
-
-	// tmpl := template.Must(template.ParseFiles("templates/release-notes.html"))
-
-	// Start cron job
-	// c.Start()
-	// c.Run()
-	// Set up HTTP server
-	// StartWeb(redisclient)
-	// return releases
-	// return nil
-}
-
-func convertMarkDownToHtml(s string) string {
-	md := []byte(s)
-	// always normalize newlines, this library only supports Unix LF newlines
-	md = markdown.NormalizeNewlines(md)
-	// create markdown parser
-	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
-	p := parser.NewWithExtensions(extensions)
-
-	// parse markdown into AST tree
-	doc := p.Parse(md)
-	// create HTML renderer
-	htmlFlags := html.CommonFlags | html.HrefTargetBlank
-	opts := html.RendererOptions{Flags: htmlFlags}
-	renderer := html.NewRenderer(opts)
-
-	html := string(markdown.Render(doc, renderer))
-	return html
-}
-
-func replaceGitHubLinks(s string) string {
-	// (#526)
-	// https://github.com/jenkinsci/plugin-installation-manager-tool/pull/526
-
-	// @timja
-	// https://github.com/timja
-
-	re := regexp.MustCompile(`#(\d+)`)
-	output1 := re.ReplaceAllString(s, `<a href="https://github.com/jenkinsci/plugin-installation-manager-tool/pull/$1">#$1</a>`)
-
-	// Replace dynamic strings with links
-	re2 := regexp.MustCompile(`@([-\w\d]+)`)
-	output2 := re2.ReplaceAllString(output1, `<a href="https://github.com/$1">@$1</a>`)
-	return output2
-}
 
 func saveReleaseNotesToDB(redisclient *Redis, releases []GitHubReleaseNote, pluginName string) error {
 
@@ -229,7 +105,7 @@ func getReleaseNotesPageData(redisclient *Redis, jenkinsServer JenkinsServer) ([
 		if err != nil {
 			fmt.Println("versions file doesn't exist in redis cache for " + plugin.Name)
 			fmt.Println(err)
-			releases, err := GetGitHubReleases(plugin.Name, redisclient)
+			releases, err := GetGitHubReleases(plugin.Name)
 			if err != nil {
 				fmt.Println("Failed to get releases from github")
 				continue
@@ -271,7 +147,7 @@ func getReleaseNotesPageData(redisclient *Redis, jenkinsServer JenkinsServer) ([
 
 			convertedVersions = append(convertedVersions, Version{
 				Version: version,
-				Changes: template.HTML(replaceGitHubLinks(convertMarkDownToHtml(releaseNote.Body))),
+				Changes: template.HTML(utils.ReplaceGitHubLinks(utils.ConvertMarkDownToHtml(releaseNote.Body))),
 			})
 		}
 
