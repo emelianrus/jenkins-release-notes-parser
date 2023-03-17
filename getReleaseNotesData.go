@@ -22,17 +22,14 @@ import (
 	"log"
 	"time"
 
+	"github.com/emelianrus/jenkins-release-notes-parser/db"
+	"github.com/emelianrus/jenkins-release-notes-parser/github"
+	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/emelianrus/jenkins-release-notes-parser/utils"
 )
 
-type GitHubReleaseNote struct {
-	Name      string `json:"name"` // Version
-	Body      string `json:"body"` // this is markdown formated text of release note
-	CreatedAt string `json:"created_at"`
-}
-
 // From redis
-type Versions []string
+type AllVersions []string
 
 // HTML start
 // part of html responce
@@ -52,7 +49,7 @@ type Product struct {
 // HTML end
 var ownerName = "jenkinsci"
 
-func saveReleaseNotesToDB(redisclient *Redis, releases []GitHubReleaseNote, pluginName string) error {
+func saveReleaseNotesToDB(redisclient *db.Redis, releases []types.GitHubReleaseNote, pluginName string) error {
 
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("02 January 2006 15:04")
@@ -62,7 +59,7 @@ func saveReleaseNotesToDB(redisclient *Redis, releases []GitHubReleaseNote, plug
 		// fmt.Println("Can not set updated time")
 		return fmt.Errorf("error setting lastUpdate time in get github release: %s", err)
 	}
-	versions := Versions{}
+	versions := AllVersions{}
 
 	for _, release := range releases {
 		versions = append(versions, release.Name)
@@ -94,7 +91,7 @@ func saveReleaseNotesToDB(redisclient *Redis, releases []GitHubReleaseNote, plug
 // get plugins from jenikins server
 // check cache for plugin by versions file
 // construct pageData
-func getReleaseNotesPageData(redisclient *Redis, jenkinsServer JenkinsServer) ([]Product, error) {
+func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsServer) ([]Product, error) {
 	// default page data
 
 	products := []Product{}
@@ -105,7 +102,7 @@ func getReleaseNotesPageData(redisclient *Redis, jenkinsServer JenkinsServer) ([
 		if err != nil {
 			fmt.Println("versions file doesn't exist in redis cache for " + plugin.Name)
 			fmt.Println(err)
-			releases, err := GetGitHubReleases(plugin.Name)
+			releases, err := github.GetGitHubReleases(plugin.Name)
 			if err != nil {
 				fmt.Println("Failed to get releases from github")
 				continue
@@ -126,7 +123,7 @@ func getReleaseNotesPageData(redisclient *Redis, jenkinsServer JenkinsServer) ([
 		}
 
 		// Assume we hit redis cache
-		var versions Versions
+		var versions AllVersions
 		err = json.Unmarshal(pluginVersionsJson, &versions)
 		if err != nil {
 			log.Println(err)

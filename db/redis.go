@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/go-redis/redis"
 )
 
@@ -24,6 +25,24 @@ func NewRedisClient() *Redis {
 	return &Redis{client: client}
 }
 
+func (r *Redis) AddDebugData() {
+	r.AddJenkinsServer("jenkins-two", "2.3233.1")
+	r.AddJenkinsServer("jenkins-one", "2.3233.2")
+
+	r.AddJenkinsServerPlugin("jenkins-one", types.JenkinsPlugin{
+		Name:    "plugin-installation-manager-tool",
+		Version: "2.10.0",
+	})
+	r.AddJenkinsServerPlugin("jenkins-two", types.JenkinsPlugin{
+		Name:    "plugin-installation-manager-tool",
+		Version: "2.10.0",
+	})
+	r.AddJenkinsServerPlugin("jenkins-one", types.JenkinsPlugin{
+		Name:    "okhttp-api-plugin",
+		Version: "4.9.3-108.v0feda04578cf",
+	})
+}
+
 func (r *Redis) Get(key string) *redis.StringCmd {
 	return r.client.Get(key)
 }
@@ -34,19 +53,8 @@ func (r *Redis) Set(key string, value interface{}) error {
 
 // DB part end ^
 
-type JenkinsPlugin struct {
-	Name    string
-	Version string
-}
-
-type JenkinsServer struct {
-	Name    string
-	Core    string
-	Plugins []JenkinsPlugin
-}
-
-func (r *Redis) getJenkinsServers() []JenkinsServer {
-	var servers []JenkinsServer
+func (r *Redis) GetJenkinsServers() []types.JenkinsServer {
+	var servers []types.JenkinsServer
 
 	keys, _ := r.client.Keys("servers:*").Result()
 	for _, path := range keys {
@@ -54,14 +62,14 @@ func (r *Redis) getJenkinsServers() []JenkinsServer {
 		if len(re) == 2 {
 
 			serverJson, _ := r.client.Get(path).Bytes()
-			var jenkinsServer JenkinsServer
+			var jenkinsServer types.JenkinsServer
 			err := json.Unmarshal(serverJson, &jenkinsServer)
 			if err != nil {
 				fmt.Println("can not unmarshal jenkins server")
 			}
 
-			plugins, _ := r.getJenkinsPlugins(jenkinsServer.Name)
-			servers = append(servers, JenkinsServer{
+			plugins, _ := r.GetJenkinsPlugins(jenkinsServer.Name)
+			servers = append(servers, types.JenkinsServer{
 				Name:    jenkinsServer.Name,
 				Core:    jenkinsServer.Core,
 				Plugins: plugins,
@@ -72,7 +80,7 @@ func (r *Redis) getJenkinsServers() []JenkinsServer {
 	return servers
 }
 
-func (r *Redis) addJenkinsServer(serverName string, coreVersion string) {
+func (r *Redis) AddJenkinsServer(serverName string, coreVersion string) {
 	// TODO: check if exist/replace
 	// js := JenkinsServer{
 	// 	Name: "jenkins-one",
@@ -89,7 +97,7 @@ func (r *Redis) addJenkinsServer(serverName string, coreVersion string) {
 	// 	},
 	// }
 
-	jsonData, err := json.Marshal(JenkinsServer{
+	jsonData, err := json.Marshal(types.JenkinsServer{
 		Name: serverName,
 		Core: coreVersion,
 	})
@@ -107,13 +115,13 @@ func (r *Redis) addJenkinsServer(serverName string, coreVersion string) {
 	fmt.Printf("Added %s:%s\n", serverName, coreVersion)
 }
 
-func (r *Redis) deleteJenkinsServer(serverName string) {
+func (r *Redis) DeleteJenkinsServer(serverName string) {
 	path := fmt.Sprintf("servers:%s", serverName)
 	fmt.Printf("Removing jenkins server %s\n", path)
 	r.client.Del(path)
 }
 
-func (r *Redis) changeJenkinServerPluginVersion(serverName string, pluginName string, newVersion string) error {
+func (r *Redis) ChangeJenkinServerPluginVersion(serverName string, pluginName string, newVersion string) error {
 	fmt.Printf("Change plugin version to server name: %s plugin name %s new verion %s\n", serverName, pluginName, newVersion)
 	jsonData, _ := json.Marshal(newVersion)
 
@@ -126,8 +134,8 @@ func (r *Redis) changeJenkinServerPluginVersion(serverName string, pluginName st
 	return nil
 }
 
-func (r *Redis) getJenkinsPlugins(jenkinsServer string) ([]JenkinsPlugin, error) {
-	var jenkinsPlugins []JenkinsPlugin
+func (r *Redis) GetJenkinsPlugins(jenkinsServer string) ([]types.JenkinsPlugin, error) {
+	var jenkinsPlugins []types.JenkinsPlugin
 	pluginKeys, _ := r.client.Keys(fmt.Sprintf("servers:%s:plugins:*", jenkinsServer)).Result()
 
 	for _, pluginKey := range pluginKeys {
@@ -143,7 +151,7 @@ func (r *Redis) getJenkinsPlugins(jenkinsServer string) ([]JenkinsPlugin, error)
 			fmt.Println("can not unmarshal version")
 		}
 
-		jenkinsPlugins = append(jenkinsPlugins, JenkinsPlugin{
+		jenkinsPlugins = append(jenkinsPlugins, types.JenkinsPlugin{
 			Name:    pluginName,
 			Version: version,
 		})
@@ -152,7 +160,7 @@ func (r *Redis) getJenkinsPlugins(jenkinsServer string) ([]JenkinsPlugin, error)
 	return jenkinsPlugins, nil
 }
 
-func (r *Redis) addJenkinsServerPlugin(serverName string, plugin JenkinsPlugin) error {
+func (r *Redis) AddJenkinsServerPlugin(serverName string, plugin types.JenkinsPlugin) error {
 	_, err := r.Get(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name)).Bytes()
 	if err != nil {
 		fmt.Println(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name) + " not found all good")
@@ -168,14 +176,10 @@ func (r *Redis) addJenkinsServerPlugin(serverName string, plugin JenkinsPlugin) 
 	return nil
 }
 
-func (r *Redis) removeJenkinsServerPlugin(serverName string, pluginName string) {
+func (r *Redis) RemoveJenkinsServerPlugin(serverName string, pluginName string) {
 	// _, err := r.Get(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName)).Bytes()
 	fmt.Printf("removing key from redis %s\n", pluginName)
 	r.client.Del(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName))
-}
-
-func (r *Redis) GetJenkinsServers() ([]byte, error) {
-	return r.client.Get("servers:jenkins-one:plugins").Bytes()
 }
 
 // func (r *Redis) GetPlugin(key string) ([]byte, error) {
@@ -210,7 +214,7 @@ func (r *Redis) SetVersions(key string, value interface{}) error {
 	return r.client.Set(key, value, 0).Err()
 }
 
-func (r *Redis) SetPluginWithVersion(pluginName string, pluginVersion string, releaseNote GitHubReleaseNote) error {
+func (r *Redis) SetPluginWithVersion(pluginName string, pluginVersion string, releaseNote types.GitHubReleaseNote) error {
 	key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, pluginVersion)
 	// 0 time.Hour
 	jsonData, err := json.Marshal(releaseNote)
@@ -226,15 +230,15 @@ func (r *Redis) SetPluginWithVersion(pluginName string, pluginVersion string, re
 	return nil
 }
 
-func (r *Redis) GetPluginWithVersion(pluginName string, pluginVersion string) (GitHubReleaseNote, error) {
+func (r *Redis) GetPluginWithVersion(pluginName string, pluginVersion string) (types.GitHubReleaseNote, error) {
 	pluginJson, _ := r.Get(fmt.Sprintf("github:jenkinsci:%s:%s", pluginName, pluginVersion)).Bytes()
-	var releaseNote GitHubReleaseNote
+	var releaseNote types.GitHubReleaseNote
 	err := json.Unmarshal(pluginJson, &releaseNote)
 
 	if err != nil {
 		log.Println(err)
 		// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
-		return GitHubReleaseNote{}, errors.New("failed to unmarshal ReleaseNote")
+		return types.GitHubReleaseNote{}, errors.New("failed to unmarshal ReleaseNote")
 	}
 	return releaseNote, nil
 }

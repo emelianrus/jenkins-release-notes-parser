@@ -1,12 +1,14 @@
-package main
+package github
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/emelianrus/jenkins-release-notes-parser/types"
 )
 
-func GetGitHubReleases(pluginName string) ([]GitHubReleaseNote, error) {
+func GetGitHubReleases(pluginName string) ([]types.GitHubReleaseNote, error) {
 	fmt.Println("Downloading plugin from github " + pluginName)
 	// Define cron job to run every hour
 	// c := cron.New()
@@ -43,7 +45,7 @@ func GetGitHubReleases(pluginName string) ([]GitHubReleaseNote, error) {
 	// }
 
 	// Decode response body into []GitHubReleaseNote
-	var releases []GitHubReleaseNote
+	var releases []types.GitHubReleaseNote
 	err = json.NewDecoder(resp.Body).Decode(&releases)
 	if err != nil {
 		// fmt.Println("error decoding github response")

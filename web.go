@@ -7,10 +7,13 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/emelianrus/jenkins-release-notes-parser/db"
+	"github.com/emelianrus/jenkins-release-notes-parser/types"
 )
 
 type RedisHandler struct {
-	Redis *Redis
+	Redis *db.Redis
 	Data  interface{}
 }
 
@@ -36,7 +39,7 @@ func (h *RedisHandler) releaseNotesHandler(w http.ResponseWriter, r *http.Reques
 	query := r.URL.Query()
 	pickedJenkinsName := query.Get("jenkins")
 
-	jenkinsServers := h.Redis.getJenkinsServers()
+	jenkinsServers := h.Redis.GetJenkinsServers()
 
 	// iterate to get correct jenkins and plugins
 	for _, jenkinsServer := range jenkinsServers {
@@ -62,7 +65,7 @@ func (h *RedisHandler) releaseNotesHandler(w http.ResponseWriter, r *http.Reques
 
 type ServersPage struct {
 	Title   string
-	Servers []JenkinsServer
+	Servers []types.JenkinsServer
 }
 
 func (h *RedisHandler) serversHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +77,7 @@ func (h *RedisHandler) serversHandler(w http.ResponseWriter, r *http.Request) {
 
 	sp := ServersPage{
 		Title:   "Servers",
-		Servers: h.Redis.getJenkinsServers(),
+		Servers: h.Redis.GetJenkinsServers(),
 	}
 	h.Data = sp
 
@@ -109,7 +112,7 @@ func (h *RedisHandler) deleteJenkinsPlugin(w http.ResponseWriter, r *http.Reques
 			http.Error(w, "Error decoding request body", http.StatusBadRequest)
 			return
 		}
-		h.Redis.removeJenkinsServerPlugin(data.JenkinsName, data.PluginName)
+		h.Redis.RemoveJenkinsServerPlugin(data.JenkinsName, data.PluginName)
 
 		// Send a response back to the client
 		w.WriteHeader(http.StatusOK)
@@ -137,11 +140,11 @@ func (h *RedisHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) 
 	for _, plugin := range server.Plugins {
 
 		for name, version := range plugin {
-			plugin := JenkinsPlugin{
+			plugin := types.JenkinsPlugin{
 				Name:    fmt.Sprintf("%v", name),
 				Version: fmt.Sprintf("%v", version),
 			}
-			h.Redis.addJenkinsServerPlugin(server.JenkinsName, plugin)
+			h.Redis.AddJenkinsServerPlugin(server.JenkinsName, plugin)
 		}
 	}
 
@@ -161,7 +164,7 @@ func (h *RedisHandler) addJenkinsServer(w http.ResponseWriter, r *http.Request) 
 		panic(err)
 	}
 
-	h.Redis.addJenkinsServer(server.JenkinsName, server.CoreVersion)
+	h.Redis.AddJenkinsServer(server.JenkinsName, server.CoreVersion)
 }
 
 // POST delete jenkins server from DB
@@ -175,7 +178,7 @@ func (h *RedisHandler) deleteJenkinsServer(w http.ResponseWriter, r *http.Reques
 	}
 
 	// w.WriteHeader(http.StatusBadRequest)
-	h.Redis.deleteJenkinsServer(fmt.Sprintf("%v", serverName))
+	h.Redis.DeleteJenkinsServer(fmt.Sprintf("%v", serverName))
 }
 
 type changePluginVersionPayload struct {
@@ -191,7 +194,7 @@ func (h *RedisHandler) changePluginVersion(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		panic(err)
 	}
-	h.Redis.changeJenkinServerPluginVersion(newPlugin.JenkinsName, newPlugin.PluginName, newPlugin.NewPluginVersion)
+	h.Redis.ChangeJenkinServerPluginVersion(newPlugin.JenkinsName, newPlugin.PluginName, newPlugin.NewPluginVersion)
 	// w.WriteHeader(http.StatusBadRequest)
 }
 
@@ -202,7 +205,7 @@ func handleJS(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "js/servers.js")
 }
 
-func StartWeb(redisclient *Redis) {
+func StartWeb(redisclient *db.Redis) {
 	redisHandler := RedisHandler{
 		Redis: redisclient,
 	}
