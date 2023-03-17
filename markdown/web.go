@@ -121,35 +121,32 @@ func (h *RedisHandler) deleteJenkinsPlugin(w http.ResponseWriter, r *http.Reques
 	}
 }
 
+type addJenkinsPluginPayload struct {
+	JenkinsName string              `json:"jenkinsName"`
+	Plugins     []map[string]string `json:"plugins"`
+}
+
 // POST add new jenkins plugin to jenkins server
 func (h *RedisHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) {
-	// if r.Method == "POST" {
-	// 	// Read the request body
-	// 	// TODO: replace ioutil with io.Copy
-	// 	body, err := ioutil.ReadAll(r.Body)
-	// 	if err != nil {
-	// 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
-	// 		return
-	// 	}
+	decoder := json.NewDecoder(r.Body)
+	var server addJenkinsPluginPayload
+	err := decoder.Decode(&server)
+	if err != nil {
+		panic(err)
+	}
+	// TODO: Add check null field
 
-	// 	// Do something with the request body, such as decoding it into a struct
-	// 	var data DeleteJenkinsPluginPage
-	// 	err = json.Unmarshal(body, &data)
-	// 	if err != nil {
-	// 		http.Error(w, "Error decoding request body", http.StatusBadRequest)
-	// 		return
-	// 	}
+	for _, plugin := range server.Plugins {
 
-	// 	h.Redis.removeJenkinsServerPlugin(data.JenkinsName, data.PluginName)
-
-	// 	// Do something with the data, such as processing it or saving it to a database
-
-	// 	// Send a response back to the client
-	// 	w.WriteHeader(http.StatusOK)
-	// 	w.Write([]byte("Request processed successfully"))
-	// } else {
-	// 	http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-	// }
+		for name, version := range plugin {
+			plugin := JenkinsPlugin{
+				Name:    fmt.Sprintf("%v", name),
+				Version: fmt.Sprintf("%v", version),
+			}
+			fmt.Println(plugin)
+			h.Redis.addJenkinsServerPlugin(server.JenkinsName, plugin)
+		}
+	}
 
 }
 
@@ -219,10 +216,7 @@ func StartWeb(redisclient *Redis) {
 
 	http.HandleFunc("/delete-plugin", redisHandler.deleteJenkinsPlugin)
 
-	// TODO: should be list
-	// [{"name":"jenkinsServerName","value":"jenkins-two"},{"name":"pluginName","value":"1"},{"name":"pluginVersion","value":"2"},{"name":"pluginName","value":"3"},{"name":"pluginVersion","value":"4"}]
-	// http.HandleFunc("/add-new-plugin", redisHandler.addJenkinsPlugin)
-	// TODO:
+	http.HandleFunc("/add-new-plugin", redisHandler.addJenkinsPlugin)
 	http.HandleFunc("/change-plugin-version", redisHandler.changePluginVersion)
 	http.HandleFunc("/delete-server", redisHandler.deleteJenkinsServer)
 	http.HandleFunc("/add-server", redisHandler.addJenkinsServer)

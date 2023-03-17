@@ -163,7 +163,7 @@ func (r *Redis) addJenkinsServerPlugin(serverName string, plugin JenkinsPlugin) 
 		if err != nil {
 			fmt.Println("can not append to redis new plugin")
 		}
-		fmt.Println("appended plugin to redis")
+		fmt.Printf("appended plugin %s to redis\n", plugin.Name)
 	}
 	return nil
 }

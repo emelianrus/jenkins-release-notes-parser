@@ -25,7 +25,7 @@ $(document).ready(function () {
   $(".delete-server-btn").on("click", function () {
     var serverName = $(this).data("server-name");
 
-    console.log(serverName);
+    // console.log(serverName);
     var block = $(this).closest("tr");
 
     // send an AJAX request to the server
@@ -54,7 +54,7 @@ $(document).ready(function () {
       jenkinsName: res[0],
       pluginName: res[1],
     };
-    console.log(payload);
+    // console.log(payload);
     var liBlock = $(this).closest("li");
     // send an AJAX request to the server
     $.ajax({
@@ -130,22 +130,26 @@ $(document).ready(function () {
 
   $("#add-plugin-submit").on("click", function () {
     var formData = $("#add-plugin-form").serializeArray();
-    const formDataConverted = formData.reduce((obj, { name, value }) => {
-      if (name === "jenkinsServerName") {
-        obj.jenkinsName = value;
-      } else if (name === "pluginName" || name === "pluginVersion") {
-        if (!obj.plugins) {
-          obj.plugins = [];
-        }
-        obj.plugins.push({ name, value });
-      }
-      return obj;
-    }, {});
 
-    var payload = {
-      jenkinsName: formDataConverted["jenkinsName"],
-      plugins: formDataConverted["plugins"]
+    const payload = {
+      jenkinsName: "",
+      plugins: []
     };
+
+    let currentPlugin = null;
+
+    formData.forEach(item => {
+        if (item.name === "jenkinsServerName") {
+            payload.jenkinsName = item.value;
+        } else if (item.name === "pluginName") {
+            currentPlugin = {};
+            currentPlugin[item.value] = "";
+            payload.plugins.push(currentPlugin);
+        } else if (item.name === "pluginVersion" && currentPlugin !== null) {
+            currentPlugin[Object.keys(currentPlugin)[0]] = item.value;
+            currentPlugin = null;
+        }
+    });
 
     $.ajax({
       type: "POST",
@@ -153,6 +157,8 @@ $(document).ready(function () {
       data: JSON.stringify(payload),
       success: function (response) {
         // handle success response
+        // TODO: live update
+        window.location.reload();
       },
       error: function (xhr, status, error) {
         // handle error response
