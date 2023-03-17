@@ -16,6 +16,7 @@ we have from github
 */
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -217,13 +218,8 @@ func saveReleaseNotesToDB(redisclient *Redis, releases []GitHubReleaseNote, plug
 // get plugins from jenikins server
 // check cache for plugin by versions file
 // construct pageData
-func getPluginsForPageData(redisclient *Redis, jenkinsServer JenkinsServer) ReleaseNotesPage {
+func getReleaseNotesPageData(redisclient *Redis, jenkinsServer JenkinsServer) ([]Product, error) {
 	// default page data
-	plPage := ReleaseNotesPage{
-		Title:      "Plugin manager",
-		ServerName: jenkinsServer.Name,
-		Products:   nil,
-	}
 
 	products := []Product{}
 
@@ -248,7 +244,7 @@ func getPluginsForPageData(redisclient *Redis, jenkinsServer JenkinsServer) Rele
 				fmt.Println(err)
 				fmt.Println("2nd attempt to GetPluginVersions failed")
 				// return web page with default values
-				return plPage
+				return []Product{}, errors.New("2nd attempt to GetPluginVersions failed")
 			}
 		}
 
@@ -258,7 +254,7 @@ func getPluginsForPageData(redisclient *Redis, jenkinsServer JenkinsServer) Rele
 		if err != nil {
 			log.Println(err)
 			// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
-			return plPage
+			return []Product{}, errors.New("Failed to unmarshal releases from cache")
 		}
 
 		var convertedVersions []Version
@@ -269,7 +265,7 @@ func getPluginsForPageData(redisclient *Redis, jenkinsServer JenkinsServer) Rele
 			if err != nil {
 				log.Println(err)
 				// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
-				return plPage
+				return []Product{}, errors.New("Failed to unmarshal releases notes from cache")
 			}
 
 			convertedVersions = append(convertedVersions, Version{
@@ -289,6 +285,5 @@ func getPluginsForPageData(redisclient *Redis, jenkinsServer JenkinsServer) Rele
 			},
 		)
 	}
-	plPage.Products = products
-	return plPage
+	return products, nil
 }
