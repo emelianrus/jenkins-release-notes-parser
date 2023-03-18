@@ -58,7 +58,7 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 
 		pluginVersionsJson, err := redisclient.GetPluginVersions(plugin.Name)
 		if err != nil {
-			fmt.Println("versions file doesn't exist in redis cache for " + plugin.Name)
+			fmt.Println("(cache miss) versions file doesn't exist in redis cache for " + plugin.Name)
 			fmt.Println(err)
 			releases, err := github.Download(plugin.Name)
 			if err != nil {

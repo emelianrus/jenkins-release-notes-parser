@@ -138,8 +138,15 @@ func (h *RedisHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) 
 	// TODO: Add check null field
 
 	for _, plugin := range server.Plugins {
-
 		for name, version := range plugin {
+
+			// validation
+			if name == "" {
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Println(w, "name is empty its not possible to handle")
+				continue
+			}
+
 			plugin := types.JenkinsPlugin{
 				Name:    fmt.Sprintf("%v", name),
 				Version: fmt.Sprintf("%v", version),

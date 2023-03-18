@@ -101,7 +101,7 @@ func (r *Redis) ChangeJenkinServerPluginVersion(serverName string, pluginName st
 	if err != nil {
 		fmt.Println("can not append to redis new plugin")
 	}
-	fmt.Println("appended plugin to redis")
+	fmt.Printf("version for plugin %s was changed and saved to redis\n", pluginName)
 
 	return nil
 }
@@ -135,7 +135,7 @@ func (r *Redis) GetJenkinsPlugins(jenkinsServer string) ([]types.JenkinsPlugin, 
 func (r *Redis) AddJenkinsServerPlugin(serverName string, plugin types.JenkinsPlugin) error {
 	_, err := r.Get(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name)).Bytes()
 	if err != nil {
-		fmt.Println(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name) + " not found all good")
+		fmt.Println(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name) + " not found in redis, adding...")
 
 		jsonData, _ := json.Marshal(plugin.Version)
 
@@ -153,14 +153,6 @@ func (r *Redis) RemoveJenkinsServerPlugin(serverName string, pluginName string) 
 	fmt.Printf("removing key from redis %s\n", pluginName)
 	r.client.Del(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName))
 }
-
-// func (r *Redis) GetPlugin(key string) ([]byte, error) {
-// 	jsonData, err := r.Get(key).Bytes()
-// 	if err != nil {
-// 		return []byte{}, errors.New("error in getPlugins " + key)
-// 	}
-// 	return jsonData, err
-// }
 
 func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
 
