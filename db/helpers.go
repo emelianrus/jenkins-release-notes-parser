@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
+	"github.com/emelianrus/jenkins-release-notes-parser/utils"
 )
 
 // DB part end ^
@@ -79,6 +80,18 @@ func (r *Redis) DeleteJenkinsServer(serverName string) {
 	path := fmt.Sprintf("servers:%s", serverName)
 	fmt.Printf("Removing jenkins server %s\n", path)
 	r.client.Del(path)
+}
+
+func (r *Redis) GetAllPluginsFromServers() []string {
+	var result []string
+	pluginKeys, _ := r.client.Keys("servers:*:plugins:*").Result()
+
+	for _, path := range pluginKeys {
+		splitted := strings.Split(path, ":")
+		result = append(result, splitted[len(splitted)-1])
+	}
+	result = utils.RemoveDuplicates(result)
+	return result
 }
 
 func (r *Redis) ChangeJenkinServerPluginVersion(serverName string, pluginName string, newVersion string) error {
@@ -230,7 +243,7 @@ func (r *Redis) SaveReleaseNotesToDB(releases []types.GitHubReleaseNote, pluginN
 		// fmt.Println("Can not set updated time")
 		return fmt.Errorf("error setting lastUpdate time in get github release: %s", err)
 	}
-	versions := types.AllVersions{}
+	var versions []string
 
 	for _, release := range releases {
 		versions = append(versions, release.Name)

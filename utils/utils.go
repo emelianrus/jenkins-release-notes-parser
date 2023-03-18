@@ -8,6 +8,21 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 )
 
+// from slice of strings
+func RemoveDuplicates(slice []string) []string {
+	unique := make(map[string]bool)
+	result := []string{}
+
+	for _, val := range slice {
+		if !unique[val] {
+			unique[val] = true
+			result = append(result, val)
+		}
+	}
+
+	return result
+}
+
 func ConvertMarkDownToHtml(s string) string {
 	md := []byte(s)
 	// always normalize newlines, this library only supports Unix LF newlines

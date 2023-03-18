@@ -28,7 +28,7 @@ import (
 )
 
 // HTML start
-// part of html responce
+// part of html response
 type Version struct {
 	Version string
 	Changes template.HTML
@@ -81,7 +81,7 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 		}
 
 		// Assume we hit redis cache
-		var versions types.AllVersions
+		var versions []string
 		err = json.Unmarshal(pluginVersionsJson, &versions)
 		if err != nil {
 			log.Println(err)
@@ -102,7 +102,9 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 
 			convertedVersions = append(convertedVersions, Version{
 				Version: version,
-				Changes: template.HTML(utils.ReplaceGitHubLinks(utils.ConvertMarkDownToHtml(releaseNote.Body))),
+				Changes: template.HTML(
+					utils.ReplaceGitHubLinks(
+						utils.ConvertMarkDownToHtml(releaseNote.Body))),
 			})
 		}
 
