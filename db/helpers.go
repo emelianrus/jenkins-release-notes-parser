@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/emelianrus/jenkins-release-notes-parser/utils"
@@ -175,17 +174,17 @@ func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
 	return nil
 }
 
-func (r *Redis) GetLastUpdatedTime(key string, value interface{}) error {
-	return r.client.Set(key, value, 0).Err()
-}
+// func (r *Redis) GetLastUpdatedTime(key string, value interface{}) error {
+// 	return r.client.Set(key, value, 0).Err()
+// }
 
-func (r *Redis) GetVersions(key string, value interface{}) error {
-	return r.client.Set(key, value, 0).Err()
-}
+// func (r *Redis) GetVersions(key string, value interface{}) error {
+// 	return r.client.Set(key, value, 0).Err()
+// }
 
-func (r *Redis) SetVersions(key string, value interface{}) error {
-	return r.client.Set(key, value, 0).Err()
-}
+// func (r *Redis) SetVersions(key string, value interface{}) error {
+// 	return r.client.Set(key, value, 0).Err()
+// }
 
 func (r *Redis) SetPluginWithVersion(pluginName string, pluginVersion string, releaseNote types.GitHubReleaseNote) error {
 	key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, pluginVersion)
@@ -231,42 +230,4 @@ func (r *Redis) GetPluginVersions(pluginName string) ([]byte, error) {
 		return nil, err
 	}
 	return pluginVersionsJson, nil
-}
-
-func (r *Redis) SaveReleaseNotesToDB(releases []types.GitHubReleaseNote, pluginName string) error {
-
-	currentTime := time.Now()
-	formattedTime := currentTime.Format("02 January 2006 15:04")
-	err := r.SetLastUpdatedTime(pluginName, formattedTime)
-	if err != nil {
-		// fmt.Println(err)
-		// fmt.Println("Can not set updated time")
-		return fmt.Errorf("error setting lastUpdate time in get github release: %s", err)
-	}
-	var versions []string
-
-	for _, release := range releases {
-		versions = append(versions, release.Name)
-		key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, release.Name)
-		// 0 time.Hour
-		jsonData, err := json.Marshal(release)
-		if err != nil {
-			// log.Println(err)
-			return fmt.Errorf("error Marshal release: %s", err)
-		}
-		err = r.Set(key, jsonData)
-		if err != nil {
-			log.Println(err)
-			return fmt.Errorf("error setting release: %s", err)
-		}
-	}
-
-	jsonVersions, _ := json.Marshal(versions)
-	err = r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "versions"),
-		jsonVersions)
-	if err != nil {
-		log.Println(err)
-		return fmt.Errorf("error setting version for release: %s", err)
-	}
-	return nil
 }
