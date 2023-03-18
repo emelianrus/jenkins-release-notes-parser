@@ -42,7 +42,7 @@ func (r *Redis) SaveReleaseNotesToDB(releases []types.GitHubReleaseNote, pluginN
 		}
 	}
 
-	// save versions file
+	// save "versions" file
 	jsonVersions, _ := json.Marshal(versions)
 	err = r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "versions"),
 		jsonVersions)
@@ -51,7 +51,7 @@ func (r *Redis) SaveReleaseNotesToDB(releases []types.GitHubReleaseNote, pluginN
 		return fmt.Errorf("error setting version for release: %s", err)
 	}
 
-	// save latestVersion file
+	// save "latestVersion" file
 	jsonLatestVersion, _ := json.Marshal(versions[0])
 	err = r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "latestVersion"),
 		jsonLatestVersion)
