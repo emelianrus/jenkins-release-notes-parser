@@ -156,14 +156,38 @@ func (r *Redis) RemoveJenkinsServerPlugin(serverName string, pluginName string) 
 
 func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
 
+	jsonData, _ := json.Marshal(value)
 	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated"),
-		value)
+		jsonData)
 	if err != nil {
 		log.Println("SetLastUpdatedTime error")
 		log.Println(err)
 		return nil
 	}
 	return nil
+}
+
+func (r *Redis) SetProjectError(pluginName string, value string) error {
+
+	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "error"),
+		value)
+	if err != nil {
+		log.Println("SetProjectError error:")
+		log.Println(err)
+		return nil
+	}
+	return nil
+}
+
+func (r *Redis) GetProjectError(pluginName string) string {
+
+	serverJson, err := r.client.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "error")).Bytes()
+	if err != nil {
+		log.Println("GetProjectError error:")
+		log.Println(err)
+		return ""
+	}
+	return string(serverJson)
 }
 
 // func (r *Redis) GetLastUpdatedTime(key string, value interface{}) error {
