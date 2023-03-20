@@ -7,9 +7,9 @@ import (
 )
 
 type ReleaseNotesPage struct {
-	Title      string
-	Products   []Product
-	ServerName string
+	Title         string
+	GitHubProject []GitHubProject
+	ServerName    string
 }
 
 func (h *RedisHandler) releaseNotesHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,9 +28,9 @@ func (h *RedisHandler) releaseNotesHandler(w http.ResponseWriter, r *http.Reques
 		if jenkinsServer.Name == pickedJenkinsName {
 			data, _ := getReleaseNotesPageData(h.Redis, jenkinsServer)
 			releaseNotesData := ReleaseNotesPage{
-				Title:      "Plugin manager",
-				ServerName: jenkinsServer.Name,
-				Products:   data,
+				Title:         "Plugin manager",
+				ServerName:    jenkinsServer.Name,
+				GitHubProject: data,
 			}
 			h.Data = releaseNotesData
 			break

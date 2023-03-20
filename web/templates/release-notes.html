@@ -48,16 +48,16 @@
           </tr>
         </thead>
         <tbody>
-          {{range .Products}}
-          {{ $product := . }}
+          {{range .GitHubProject}}
+          {{ $project := . }}
           <tr>
-            <th scope="row" rowspan="{{len $product.Versions}}">
-                <p>{{ $product.Name }}</p>
-                <p style="font-size:14px; font-weight: normal;">{{ $product.InstalledVersion }} installed.</p>
-                <p style="font-size:14px; font-weight: normal;">Last sync from github: <b>{{ $product.LastUpdated }}</b></p>
+            <th scope="row" rowspan="{{len $project.Versions}}">
+                <p>{{ $project.Name }}</p>
+                <p style="font-size:14px; font-weight: normal;">{{ $project.InstalledVersion }} installed.</p>
+                <p style="font-size:14px; font-weight: normal;">Last sync from github: <b>{{ $project.LastUpdated }}</b></p>
 
             </th>
-            {{range $index, $version := $product.Versions}}
+            {{range $index, $version := $project.Versions}}
             {{if $index}}<tr>{{end}}
             <td>{{ $version.Version }}</td>
             <td>

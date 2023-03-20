@@ -35,26 +35,24 @@ type Version struct {
 }
 
 // represent repo in github
-type Product struct {
+type GitHubProject struct {
 	Name             string
 	Versions         []Version
 	InstalledVersion string
-	LastUpdated      string // TODO
+	LastUpdated      string
 }
 
-// HTML end
 var ownerName = "jenkinsci"
 
-// get jenkins server (hardcoded)
-// get plugins from jenikins server
-// check cache for plugin by versions file
-// construct pageData
-func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsServer) ([]Product, error) {
+func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsServer) ([]GitHubProject, error) {
 	// default page data
 
-	products := []Product{}
+	project := []GitHubProject{}
 
 	for _, plugin := range jenkinsServer.Plugins {
+		if plugin.Error != "" {
+			continue
+		}
 
 		pluginVersionsJson, err := redisclient.GetPluginVersions(plugin.Name)
 		if err != nil {
@@ -76,7 +74,7 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 				fmt.Println(err)
 				fmt.Println("2nd attempt to GetPluginVersions failed")
 				// return web page with default values
-				return []Product{}, errors.New("2nd attempt to GetPluginVersions failed")
+				return []GitHubProject{}, errors.New("2nd attempt to GetPluginVersions failed")
 			}
 		}
 
@@ -86,7 +84,7 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 		if err != nil {
 			log.Println(err)
 			// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
-			return []Product{}, errors.New("failed to unmarshal releases from cache")
+			return []GitHubProject{}, errors.New("failed to unmarshal releases from cache")
 		}
 
 		var convertedVersions []Version
@@ -97,7 +95,7 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 			if err != nil {
 				log.Println(err)
 				// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
-				return []Product{}, errors.New("failed to unmarshal releases notes from cache")
+				return []GitHubProject{}, errors.New("failed to unmarshal releases notes from cache")
 			}
 
 			if plugin.Version != version || plugin.Version == "" {
@@ -115,8 +113,8 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 
 		lastUpdated, _ := redisclient.Get(fmt.Sprintf("github:%s:%s:%s", ownerName, plugin.Name, "lastUpdated")).Bytes()
 
-		products = append(products,
-			Product{
+		project = append(project,
+			GitHubProject{
 				Name:             plugin.Name,
 				Versions:         convertedVersions,
 				InstalledVersion: plugin.Version,
@@ -124,5 +122,5 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 			},
 		)
 	}
-	return products, nil
+	return project, nil
 }
