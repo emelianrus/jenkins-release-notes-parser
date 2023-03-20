@@ -50,7 +50,10 @@ func (r *Redis) SaveReleaseNotesToDB(releases []types.GitHubReleaseNote, pluginN
 		log.Println(err)
 		return fmt.Errorf("error setting version for release: %s", err)
 	}
-
+	if len(versions) == 0 {
+		fmt.Println("Project doesn't have releases: " + pluginName)
+		return nil
+	}
 	// save "latestVersion" file
 	jsonLatestVersion, _ := json.Marshal(versions[0])
 	err = r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "latestVersion"),

@@ -2,6 +2,7 @@ package github
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -29,7 +30,7 @@ func Download(pluginName string) ([]types.GitHubReleaseNote, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		fmt.Println("Error creating request:", err)
-		return nil, nil
+		return nil, errors.New("error making request")
 	}
 
 	// Loop until we get a successful response or hit the rate limit
@@ -46,8 +47,6 @@ func Download(pluginName string) ([]types.GitHubReleaseNote, error) {
 		rateLimit, _ := strconv.Atoi(resp.Header.Get("X-RateLimit-Limit"))
 		github.RateLimit = rateLimit
 
-		fmt.Println(github)
-
 		if resp.StatusCode == http.StatusForbidden {
 			// We hit the rate limit, so wait for the X-RateLimit-Reset header and try again
 			fmt.Println("Hit rate limit, waiting...")
@@ -58,7 +57,7 @@ func Download(pluginName string) ([]types.GitHubReleaseNote, error) {
 
 			resetTime := time.Unix(resetTimestampInt, 0).UTC()
 			if err != nil {
-				panic(err)
+				return nil, errors.New("converting date")
 			}
 			nowEpoch := time.Now().Unix()
 			timeToWait := resetTimestampInt - nowEpoch
@@ -72,15 +71,15 @@ func Download(pluginName string) ([]types.GitHubReleaseNote, error) {
 
 		if resp.StatusCode != http.StatusOK {
 			// The API returned an error, so print the status code and message and exit
-			fmt.Printf("API error: %s - %s", resp.Status, resp.Body)
-			return nil, nil
+			fmt.Printf("API error: %s\n", resp.Status)
+			return nil, errors.New("API error")
 		}
 		var releases []types.GitHubReleaseNote
 		err = json.NewDecoder(resp.Body).Decode(&releases)
 		if err != nil {
 			// fmt.Println("error decoding github response")
 			// log.Println(err)
-			return nil, nil
+			return nil, errors.New("error decoding github response")
 		}
 
 		fmt.Println("finished download goroutine " + pluginName)

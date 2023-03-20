@@ -25,44 +25,6 @@ func errorHandler(w http.ResponseWriter, r *http.Request, status int) {
 	}
 }
 
-type ReleaseNotesPage struct {
-	Title      string
-	Products   []Product
-	ServerName string
-}
-
-func (h *RedisHandler) releaseNotesHandler(w http.ResponseWriter, r *http.Request) {
-	// Retrieve releases from Redis
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// GET methods
-	query := r.URL.Query()
-	pickedJenkinsName := query.Get("jenkins")
-
-	jenkinsServers := h.Redis.GetJenkinsServers()
-
-	// iterate to get correct jenkins and plugins
-	for _, jenkinsServer := range jenkinsServers {
-
-		if jenkinsServer.Name == pickedJenkinsName {
-			data, _ := getReleaseNotesPageData(h.Redis, jenkinsServer)
-			releaseNotesData := ReleaseNotesPage{
-				Title:      "Plugin manager",
-				ServerName: jenkinsServer.Name,
-				Products:   data,
-			}
-			h.Data = releaseNotesData
-			break
-		}
-	}
-
-	tmpl := template.Must(template.ParseFiles("web/templates/release-notes.html"))
-	err := tmpl.Execute(w, h.Data)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
 type ServersPage struct {
 	Title   string
 	Servers []types.JenkinsServer
@@ -151,6 +113,22 @@ func (h *RedisHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) 
 				Name:    fmt.Sprintf("%v", name),
 				Version: fmt.Sprintf("%v", version),
 			}
+
+			// // pluginVersionsJson, err = r.GetPluginVersions(plugin.Name)
+			// // if err != nil {
+			// // 	fmt.Println(err)
+			// // 	fmt.Println("2nd attempt to GetPluginVersions failed")
+			// // 	// return web page with default values
+			// // 	return []Product{}, errors.New("2nd attempt to GetPluginVersions failed")
+			// // }
+
+			// releases, err := github.Download(plugin.Name)
+			// if err == nil {
+			// 	h.Redis.SaveReleaseNotesToDB(releases, plugin.Name)
+			// } else {
+			// 	h.Redis.SaveReleaseNotesToDB([]types.GitHubReleaseNote{}, plugin.Name)
+			// }
+
 			h.Redis.AddJenkinsServerPlugin(server.JenkinsName, plugin)
 		}
 	}
@@ -221,8 +199,9 @@ func StartWeb(redisclient *db.Redis) {
 
 	// Pages
 	http.HandleFunc("/", redisHandler.serversHandler)
-	http.HandleFunc("/release-notes", redisHandler.releaseNotesHandler)
 	http.HandleFunc("/js/", handleJS)
+
+	ReleaseNotesHandler(redisHandler)
 
 	// POST handlers
 	http.HandleFunc("/add-new-plugin", redisHandler.addJenkinsPlugin)
