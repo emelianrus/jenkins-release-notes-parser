@@ -86,7 +86,7 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 		if err != nil {
 			log.Println(err)
 			// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
-			return []Product{}, errors.New("Failed to unmarshal releases from cache")
+			return []Product{}, errors.New("failed to unmarshal releases from cache")
 		}
 
 		var convertedVersions []Version
@@ -97,15 +97,20 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 			if err != nil {
 				log.Println(err)
 				// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
-				return []Product{}, errors.New("Failed to unmarshal releases notes from cache")
+				return []Product{}, errors.New("failed to unmarshal releases notes from cache")
 			}
 
-			convertedVersions = append(convertedVersions, Version{
-				Version: version,
-				Changes: template.HTML(
-					utils.ReplaceGitHubLinks(
-						utils.ConvertMarkDownToHtml(releaseNote.Body))),
-			})
+			if plugin.Version != version {
+				convertedVersions = append(convertedVersions, Version{
+					Version: version,
+					Changes: template.HTML(
+						utils.ReplaceGitHubLinks(
+							utils.ConvertMarkDownToHtml(releaseNote.Body))),
+				})
+			} else {
+				break
+			}
+
 		}
 
 		lastUpdated, _ := redisclient.Get(fmt.Sprintf("github:%s:%s:%s", ownerName, plugin.Name, "lastUpdated")).Bytes()

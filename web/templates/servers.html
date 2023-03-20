@@ -58,7 +58,8 @@
                 <ul>
                   {{range $index, $plugin := $servers.Plugins}}
                   <li id="server-items">
-                    <span id="plugin-name-ranged">{{.Name}}</span>
+                    <span id="plugin-name-ranged">{{.Name}}:{{.Version}}</span>
+                    <button type="button"class="btn btn-link change-version-btn" data-index="{{$servers.Name}}:{{.Name}}" data-toggle="modal" data-server-name="{{$servers.Name}}" data-plugin-name="{{.Name}}" data-target="#changeVersionModal">Change Version</button>
                     <button type="button" class="btn btn-link delete-btn" data-index="{{$servers.Name}}:{{.Name}}">Delete</button>
                   </li>
                   {{end}}
@@ -100,6 +101,32 @@
       </div>
     </div>
   </div>
+  <!-- Change Version Modal -->
+  <div class="modal fade" id="changeVersionModal" tabindex="-1" aria-labelledby="changeVersionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="changeVersionModalLabel">Change Plugin Version</h5>
+          <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="change-version-form">
+            <input type="hidden" class="form-control" name="jenkinsServerName" id="jenkins-server-name" placeholder="ServerName" value="">
+            <input type="hidden" class="form-control" name="jenkinsPluginName" id="jenkins-plugin-name" placeholder="PluginName" value="">
+
+            <div class="form-group">
+              <label for="newVersion">New Version:</label>
+              <input type="text" class="form-control" id="plugin-version" name="pluginVersion">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" type="submit" id="change-version-submit">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- add new plugin modal -->
   <div class="modal fade bd-example-modal-lg" id="addPluginModal" tabindex="-1" role="dialog" aria-labelledby="addPluginModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -118,6 +145,9 @@
               <div class="form-row plugin-field">
                 <div class="form-group col">
                   <input type="text" class="form-control" name="pluginName" placeholder="Name">
+                </div>
+                <div class="form-group col">
+                  <input type="text" class="form-control" name="pluginVersion" placeholder="Version">
                 </div>
                 <div class="form-group col-auto">
                   <button type="button" class="btn btn-danger remove-field-btn">Remove</button>
