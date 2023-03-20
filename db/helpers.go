@@ -122,10 +122,12 @@ func (r *Redis) GetJenkinsPlugins(jenkinsServer string) ([]types.JenkinsPlugin, 
 		if err != nil {
 			fmt.Println("can not unmarshal version")
 		}
+		projectError := r.GetProjectError(pluginName)
 
 		jenkinsPlugins = append(jenkinsPlugins, types.JenkinsPlugin{
 			Name:    pluginName,
 			Version: version,
+			Error:   projectError,
 		})
 	}
 
@@ -168,9 +170,9 @@ func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
 }
 
 func (r *Redis) SetProjectError(pluginName string, value string) error {
-
+	jsonData, _ := json.Marshal(value)
 	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "error"),
-		value)
+		jsonData)
 	if err != nil {
 		log.Println("SetProjectError error:")
 		log.Println(err)
@@ -181,12 +183,7 @@ func (r *Redis) SetProjectError(pluginName string, value string) error {
 
 func (r *Redis) GetProjectError(pluginName string) string {
 
-	serverJson, err := r.client.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "error")).Bytes()
-	if err != nil {
-		log.Println("GetProjectError error:")
-		log.Println(err)
-		return ""
-	}
+	serverJson, _ := r.client.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "error")).Bytes()
 	return string(serverJson)
 }
 

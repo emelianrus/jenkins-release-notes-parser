@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/db"
+	"github.com/emelianrus/jenkins-release-notes-parser/github"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 )
 
@@ -113,21 +114,26 @@ func (h *RedisHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) 
 				Name:    fmt.Sprintf("%v", name),
 				Version: fmt.Sprintf("%v", version),
 			}
+			var cacheHit bool
 
-			// // pluginVersionsJson, err = r.GetPluginVersions(plugin.Name)
-			// // if err != nil {
-			// // 	fmt.Println(err)
-			// // 	fmt.Println("2nd attempt to GetPluginVersions failed")
-			// // 	// return web page with default values
-			// // 	return []Product{}, errors.New("2nd attempt to GetPluginVersions failed")
-			// // }
+			_, err = h.Redis.GetPluginVersions(plugin.Name)
+			if err != nil {
+				fmt.Println("cache miss for: " + plugin.Name)
+			} else {
+				cacheHit = true
+			}
 
-			// releases, err := github.Download(plugin.Name)
-			// if err == nil {
-			// 	h.Redis.SaveReleaseNotesToDB(releases, plugin.Name)
-			// } else {
-			// 	h.Redis.SaveReleaseNotesToDB([]types.GitHubReleaseNote{}, plugin.Name)
-			// }
+			if !cacheHit {
+				releases, err := github.Download(plugin.Name)
+				if err == nil {
+					h.Redis.SaveReleaseNotesToDB(releases, plugin.Name)
+				} else {
+					fmt.Println("Downloading repo error:")
+					fmt.Println(err)
+					h.Redis.SaveReleaseNotesToDB([]types.GitHubReleaseNote{}, plugin.Name)
+					h.Redis.SetProjectError(plugin.Name, err.Error())
+				}
+			}
 
 			h.Redis.AddJenkinsServerPlugin(server.JenkinsName, plugin)
 		}

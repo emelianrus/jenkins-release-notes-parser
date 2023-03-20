@@ -61,6 +61,13 @@
                     <span id="plugin-name-ranged">{{.Name}}:{{.Version}}</span>
                     <button type="button"class="btn btn-link change-version-btn" data-index="{{$servers.Name}}:{{.Name}}" data-toggle="modal" data-server-name="{{$servers.Name}}" data-plugin-name="{{.Name}}" data-target="#changeVersionModal">Change Version</button>
                     <button type="button" class="btn btn-link delete-btn" data-index="{{$servers.Name}}:{{.Name}}">Delete</button>
+
+                    {{if .Error}}
+                    <div class="alert alert-danger" role="alert">
+                      {{.Error}}
+                    </div>
+                    {{end}}
+
                   </li>
                   {{end}}
                 </ul>

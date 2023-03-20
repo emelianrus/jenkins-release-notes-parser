@@ -10,6 +10,7 @@ type GitHubReleaseNote struct {
 type JenkinsPlugin struct {
 	Name    string
 	Version string
+	Error   string
 }
 
 // watch point like group with watched project

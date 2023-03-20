@@ -72,7 +72,7 @@ func Download(pluginName string) ([]types.GitHubReleaseNote, error) {
 		if resp.StatusCode != http.StatusOK {
 			// The API returned an error, so print the status code and message and exit
 			fmt.Printf("API error: %s\n", resp.Status)
-			return nil, errors.New("API error")
+			return nil, fmt.Errorf("API error %s", resp.Status)
 		}
 		var releases []types.GitHubReleaseNote
 		err = json.NewDecoder(resp.Body).Decode(&releases)
