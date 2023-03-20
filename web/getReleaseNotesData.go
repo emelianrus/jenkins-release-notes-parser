@@ -100,7 +100,7 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 				return []Product{}, errors.New("failed to unmarshal releases notes from cache")
 			}
 
-			if plugin.Version != version {
+			if plugin.Version != version || plugin.Version == "" {
 				convertedVersions = append(convertedVersions, Version{
 					Version: version,
 					Changes: template.HTML(
