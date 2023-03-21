@@ -50,25 +50,6 @@ func (h *RedisHandler) serversHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *RedisHandler) projectsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/projects" {
-		errorHandler(w, r, http.StatusNotFound)
-		return
-	}
-	// sp := ServersPage{
-	// 	Title:   "Servers",
-	// 	Servers: h.Redis.GetJenkinsServers(),
-	// }
-	// h.Data = sp
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	tmpl := template.Must(template.ParseFiles("web/templates/projects.html"))
-	err := tmpl.Execute(w, h.Data)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
 type deleteJenkinsPluginPayload struct {
 	JenkinsName string
 	PluginName  string
@@ -240,8 +221,7 @@ func StartWeb(redisclient *db.Redis) {
 	http.HandleFunc("/js/", handleJS)
 
 	ReleaseNotesHandler(redisHandler)
-
-	http.HandleFunc("/projects", redisHandler.projectsHandler)
+	ProjectsHandler(redisHandler)
 
 	// POST handlers
 	http.HandleFunc("/add-new-plugin", redisHandler.addJenkinsPlugin)

@@ -52,15 +52,22 @@
           </tr>
         </thead>
         <tbody>
-            {{range .Servers}}
-            {{ $servers := . }}
+            {{range .Projects}}
+            {{ $projects := . }}
 
             <tr id="server-plugins">
                 <td>
-                    <span id="plugin-name-ranged">name</span>
+                    <span id="plugin-name-ranged">{{.Name}}</span>
                 </td>
                 <td>
-                    <span id="plugin-name-ranged">status</span>
+                    <ul>
+                        <li>
+                            <span>is Downloaded:</span> <span>{{.IsDownloaded}}</span>
+                        </li>
+                        <li>
+                            <span>Has error:</span> <span>{{.Error}}</span>
+                        </li>
+                    </ul>
                 </td>
             </tr>
 
