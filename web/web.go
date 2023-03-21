@@ -32,12 +32,10 @@ type ServersPage struct {
 }
 
 func (h *RedisHandler) serversHandler(w http.ResponseWriter, r *http.Request) {
-
-	if r.URL.Path != "/" {
+	if r.URL.Path != "/servers" {
 		errorHandler(w, r, http.StatusNotFound)
 		return
 	}
-
 	sp := ServersPage{
 		Title:   "Servers",
 		Servers: h.Redis.GetJenkinsServers(),
@@ -46,6 +44,25 @@ func (h *RedisHandler) serversHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	tmpl := template.Must(template.ParseFiles("web/templates/servers.html"))
+	err := tmpl.Execute(w, h.Data)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func (h *RedisHandler) projectsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/projects" {
+		errorHandler(w, r, http.StatusNotFound)
+		return
+	}
+	// sp := ServersPage{
+	// 	Title:   "Servers",
+	// 	Servers: h.Redis.GetJenkinsServers(),
+	// }
+	// h.Data = sp
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	tmpl := template.Must(template.ParseFiles("web/templates/projects.html"))
 	err := tmpl.Execute(w, h.Data)
 	if err != nil {
 		log.Println(err)
@@ -99,8 +116,9 @@ func (h *RedisHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) 
 		panic(err)
 	}
 	// TODO: Add check null field
-
+	var pluginsToDownload []string
 	for _, plugin := range server.Plugins {
+
 		for name, version := range plugin {
 
 			// validation
@@ -114,29 +132,34 @@ func (h *RedisHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) 
 				Name:    fmt.Sprintf("%v", name),
 				Version: fmt.Sprintf("%v", version),
 			}
-			var cacheHit bool
+
+			// h.Redis.SaveReleaseNotesToDB([]types.GitHubReleaseNote{}, plugin.Name)
+
+			// var cacheHit bool
 
 			_, err = h.Redis.GetPluginVersions(plugin.Name)
 			if err != nil {
 				fmt.Println("cache miss for: " + plugin.Name)
 			} else {
-				cacheHit = true
+				pluginsToDownload = append(pluginsToDownload, name)
 			}
 
-			if !cacheHit {
-				releases, err := github.Download(plugin.Name)
-				if err == nil {
-					h.Redis.SaveReleaseNotesToDB(releases, plugin.Name)
-				} else {
-					fmt.Println("Downloading repo error:")
-					fmt.Println(err)
-					h.Redis.SaveReleaseNotesToDB([]types.GitHubReleaseNote{}, plugin.Name)
-					h.Redis.SetProjectError(plugin.Name, err.Error())
-				}
-			}
+			// if !cacheHit {
+			// 	releases, err := github.Download(plugin.Name)
+			// 	if err == nil {
+			// 		h.Redis.SaveReleaseNotesToDB(releases, plugin.Name)
+			// 	} else {
+			// 		fmt.Println("Downloading repo error:")
+			// 		fmt.Println(err)
+			// 		h.Redis.SaveReleaseNotesToDB([]types.GitHubReleaseNote{}, plugin.Name)
+			// 		h.Redis.SetProjectError(plugin.Name, err.Error())
+			// 	}
+			// }
 
 			h.Redis.AddJenkinsServerPlugin(server.JenkinsName, plugin)
 		}
+
+		go github.StartQueue(h.Redis, pluginsToDownload, false)
 	}
 
 }
@@ -203,11 +226,22 @@ func StartWeb(redisclient *db.Redis) {
 
 	log.Println("Starting server")
 
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			errorHandler(w, r, http.StatusNotFound)
+			return
+		}
+		http.RedirectHandler("/servers", http.StatusSeeOther)
+	})
+
 	// Pages
-	http.HandleFunc("/", redisHandler.serversHandler)
+	http.HandleFunc("/servers", redisHandler.serversHandler)
+
 	http.HandleFunc("/js/", handleJS)
 
 	ReleaseNotesHandler(redisHandler)
+
+	http.HandleFunc("/projects", redisHandler.projectsHandler)
 
 	// POST handlers
 	http.HandleFunc("/add-new-plugin", redisHandler.addJenkinsPlugin)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
@@ -21,6 +22,12 @@ type GitHub struct {
 }
 
 func Download(pluginName string) ([]types.GitHubReleaseNote, error) {
+
+	// we need to add suffix to plugins it differs plugin name and github project
+	if !strings.HasSuffix(pluginName, "-plugin") {
+		pluginName = pluginName + "-plugin"
+	}
+
 	github := GitHub{}
 	fmt.Println("executed download goroutine " + pluginName)
 

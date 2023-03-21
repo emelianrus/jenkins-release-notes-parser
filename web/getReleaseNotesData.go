@@ -22,7 +22,6 @@ import (
 	"log"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/db"
-	"github.com/emelianrus/jenkins-release-notes-parser/github"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/emelianrus/jenkins-release-notes-parser/utils"
 )
@@ -56,27 +55,30 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 
 		pluginVersionsJson, err := redisclient.GetPluginVersions(plugin.Name)
 		if err != nil {
-			fmt.Println("(cache miss) versions file doesn't exist in redis cache for " + plugin.Name)
-			fmt.Println(err)
-			releases, err := github.Download(plugin.Name)
-			if err != nil {
-				fmt.Println("Failed to get releases from github")
-				continue
-			}
-			err = redisclient.SaveReleaseNotesToDB(releases, plugin.Name)
-			if err != nil {
-				fmt.Println(err)
-				fmt.Println("Failed to save release notes to db")
-			}
-
-			pluginVersionsJson, err = redisclient.GetPluginVersions(plugin.Name)
-			if err != nil {
-				fmt.Println(err)
-				fmt.Println("2nd attempt to GetPluginVersions failed")
-				// return web page with default values
-				return []GitHubProject{}, errors.New("2nd attempt to GetPluginVersions failed")
-			}
+			continue
 		}
+		// if err != nil {
+		// 	fmt.Println("(cache miss) versions file doesn't exist in redis cache for " + plugin.Name)
+		// 	fmt.Println(err)
+		// 	releases, err := github.Download(plugin.Name)
+		// 	if err != nil {
+		// 		fmt.Println("Failed to get releases from github")
+		// 		continue
+		// 	}
+		// 	err = redisclient.SaveReleaseNotesToDB(releases, plugin.Name)
+		// 	if err != nil {
+		// 		fmt.Println(err)
+		// 		fmt.Println("Failed to save release notes to db")
+		// 	}
+
+		// 	pluginVersionsJson, err = redisclient.GetPluginVersions(plugin.Name)
+		// 	if err != nil {
+		// 		fmt.Println(err)
+		// 		fmt.Println("2nd attempt to GetPluginVersions failed")
+		// 		// return web page with default values
+		// 		return []GitHubProject{}, errors.New("2nd attempt to GetPluginVersions failed")
+		// 	}
+		// }
 
 		// Assume we hit redis cache
 		var versions []string

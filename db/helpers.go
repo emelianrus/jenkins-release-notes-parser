@@ -125,9 +125,10 @@ func (r *Redis) GetJenkinsPlugins(jenkinsServer string) ([]types.JenkinsPlugin, 
 		projectError := r.GetProjectError(pluginName)
 
 		jenkinsPlugins = append(jenkinsPlugins, types.JenkinsPlugin{
-			Name:    pluginName,
-			Version: version,
-			Error:   projectError,
+			Name:         pluginName,
+			Version:      version,
+			Error:        projectError,
+			IsDownloaded: r.IsProjectDownloaded(pluginName),
 		})
 	}
 
@@ -182,9 +183,17 @@ func (r *Redis) SetProjectError(pluginName string, value string) error {
 }
 
 func (r *Redis) GetProjectError(pluginName string) string {
-
 	serverJson, _ := r.client.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "error")).Bytes()
 	return string(serverJson)
+}
+
+func (r *Redis) IsProjectDownloaded(pluginName string) bool {
+	_, err := r.client.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "versions")).Bytes()
+	if err == nil {
+		return false
+	} else {
+		return true
+	}
 }
 
 // func (r *Redis) GetLastUpdatedTime(key string, value interface{}) error {
