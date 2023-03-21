@@ -2,8 +2,9 @@ package types
 
 // response from github getted from release path
 type GitHubReleaseNote struct {
-	Name      string `json:"name"` // Version
-	Body      string `json:"body"` // this is markdown formated text of release note
+	Name      string `json:"name"`     // Version
+	TagName   string `json:"tag_name"` // Version
+	Body      string `json:"body"`     // this is markdown formated text of release note
 	CreatedAt string `json:"created_at"`
 }
 
@@ -12,6 +13,7 @@ type JenkinsPlugin struct {
 	Version      string
 	Error        string
 	IsDownloaded bool
+	LastUpdated  string
 }
 
 // watch point like group with watched project

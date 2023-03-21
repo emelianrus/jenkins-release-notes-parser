@@ -27,6 +27,11 @@ func (r *Redis) SaveReleaseNotesToDB(releases []types.GitHubReleaseNote, pluginN
 
 	// save repo release notes per version
 	for _, release := range releases {
+
+		// TODO: some plugins doesnt have name, so replace with tag
+		if release.Name == "" {
+			release.Name = release.TagName
+		}
 		versions = append(versions, release.Name)
 		key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, release.Name)
 

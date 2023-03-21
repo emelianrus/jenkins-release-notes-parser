@@ -170,6 +170,12 @@ func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
 	return nil
 }
 
+func (r *Redis) GetLastUpdatedTime(pluginName string) string {
+
+	serverJson, _ := r.client.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated")).Bytes()
+	return string(serverJson)
+}
+
 func (r *Redis) SetProjectError(pluginName string, value string) error {
 	jsonData, _ := json.Marshal(value)
 	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "error"),
@@ -190,9 +196,9 @@ func (r *Redis) GetProjectError(pluginName string) string {
 func (r *Redis) IsProjectDownloaded(pluginName string) bool {
 	_, err := r.client.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "versions")).Bytes()
 	if err == nil {
-		return false
-	} else {
 		return true
+	} else {
+		return false
 	}
 }
 

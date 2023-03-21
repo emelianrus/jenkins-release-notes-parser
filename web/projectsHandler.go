@@ -29,6 +29,7 @@ func (h *RedisHandler) projectsHandler(w http.ResponseWriter, r *http.Request) {
 			Name:         projectName,
 			IsDownloaded: h.Redis.IsProjectDownloaded(projectName),
 			Error:        h.Redis.GetProjectError(projectName),
+			LastUpdated:  h.Redis.GetLastUpdatedTime(projectName),
 		})
 	}
 

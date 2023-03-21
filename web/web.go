@@ -222,7 +222,7 @@ func StartWeb(redisclient *db.Redis) {
 
 	ReleaseNotesHandler(redisHandler)
 	ProjectsHandler(redisHandler)
-
+	DownloadHandler(redisHandler)
 	// POST handlers
 	http.HandleFunc("/add-new-plugin", redisHandler.addJenkinsPlugin)
 	http.HandleFunc("/delete-plugin", redisHandler.deleteJenkinsPlugin)
