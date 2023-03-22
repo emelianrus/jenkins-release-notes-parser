@@ -4,6 +4,7 @@ import (
 	"github.com/emelianrus/jenkins-release-notes-parser/db"
 	"github.com/emelianrus/jenkins-release-notes-parser/github"
 	"github.com/emelianrus/jenkins-release-notes-parser/web"
+	"github.com/emelianrus/jenkins-release-notes-parser/worker"
 )
 
 func main() {
@@ -13,7 +14,7 @@ func main() {
 	redisclient.AddDebugData()
 
 	// TODO: should be update plugin function executed once per day
-	// go github.StartQueue(redisclient)
+	go worker.StartQueue(redisclient, githubClient)
 
 	web.StartWeb(redisclient, &githubClient)
 }

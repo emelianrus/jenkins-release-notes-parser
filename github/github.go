@@ -74,9 +74,19 @@ func (g *GitHub) updateWaitSlotSeconds() {
 
 }
 
+func (g *GitHub) waitUntilNextSlotAvailable() {
+	fmt.Printf("Rate limit reached, waiting until %d seconds\n", g.GitHubStats.WaitSlotSeconds)
+	time.Sleep(time.Second * time.Duration(g.GitHubStats.WaitSlotSeconds))
+}
+
 func (g *GitHub) Download(pluginName string) ([]types.GitHubReleaseNote, error) {
 	if g.Initialized {
 		g.updateWaitSlotSeconds()
+	}
+
+	// use only half of the slots
+	if g.GitHubStats.RateLimitUsed > 30 {
+		g.waitUntilNextSlotAvailable()
 	}
 
 	// we need to add suffix to plugins it differs plugin name and github project
@@ -106,9 +116,9 @@ func (g *GitHub) Download(pluginName string) ([]types.GitHubReleaseNote, error) 
 
 		if resp.StatusCode == http.StatusForbidden {
 			// We hit the rate limit, so wait for the X-RateLimit-Reset header and try again
-			fmt.Printf("Rate limit reached, waiting until %d seconds\n", g.GitHubStats.WaitSlotSeconds)
-			time.Sleep(time.Second * time.Duration(g.GitHubStats.WaitSlotSeconds))
-
+			// fmt.Printf("Rate limit reached, waiting until %d seconds\n", g.GitHubStats.WaitSlotSeconds)
+			// time.Sleep(time.Second * time.Duration(g.GitHubStats.WaitSlotSeconds))
+			g.waitUntilNextSlotAvailable()
 			continue // Try again
 		}
 
