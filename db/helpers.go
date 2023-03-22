@@ -16,12 +16,12 @@ import (
 func (r *Redis) GetJenkinsServers() []types.JenkinsServer {
 	var servers []types.JenkinsServer
 
-	keys, _ := r.client.Keys("servers:*").Result()
+	keys, _ := r.Keys("servers:*")
 	for _, path := range keys {
 		re := strings.Split(path, ":")
 		if len(re) == 2 {
 
-			serverJson, _ := r.client.Get(path).Bytes()
+			serverJson, _ := r.Get(path).Bytes()
 			var jenkinsServer types.JenkinsServer
 			err := json.Unmarshal(serverJson, &jenkinsServer)
 			if err != nil {
@@ -78,12 +78,12 @@ func (r *Redis) AddJenkinsServer(serverName string, coreVersion string) {
 func (r *Redis) DeleteJenkinsServer(serverName string) {
 	path := fmt.Sprintf("servers:%s", serverName)
 	fmt.Printf("Removing jenkins server %s\n", path)
-	r.client.Del(path)
+	r.Del(path)
 }
 
 func (r *Redis) GetAllPluginsFromServers() []string {
 	var result []string
-	pluginKeys, _ := r.client.Keys("servers:*:plugins:*").Result()
+	pluginKeys, _ := r.Keys("servers:*:plugins:*")
 
 	for _, path := range pluginKeys {
 		splitted := strings.Split(path, ":")
@@ -108,7 +108,7 @@ func (r *Redis) ChangeJenkinServerPluginVersion(serverName string, pluginName st
 
 func (r *Redis) GetJenkinsPlugins(jenkinsServer string) ([]types.JenkinsPlugin, error) {
 	var jenkinsPlugins []types.JenkinsPlugin
-	pluginKeys, _ := r.client.Keys(fmt.Sprintf("servers:%s:plugins:*", jenkinsServer)).Result()
+	pluginKeys, _ := r.Keys(fmt.Sprintf("servers:%s:plugins:*", jenkinsServer))
 
 	for _, pluginKey := range pluginKeys {
 
@@ -154,11 +154,10 @@ func (r *Redis) AddJenkinsServerPlugin(serverName string, plugin types.JenkinsPl
 func (r *Redis) RemoveJenkinsServerPlugin(serverName string, pluginName string) {
 	// _, err := r.Get(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName)).Bytes()
 	fmt.Printf("removing key from redis %s\n", pluginName)
-	r.client.Del(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName))
+	r.Del(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName))
 }
 
 func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
-
 	jsonData, _ := json.Marshal(value)
 	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated"),
 		jsonData)
@@ -171,8 +170,7 @@ func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
 }
 
 func (r *Redis) GetLastUpdatedTime(pluginName string) string {
-
-	serverJson, _ := r.client.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated")).Bytes()
+	serverJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated")).Bytes()
 	return string(serverJson)
 }
 
@@ -189,12 +187,12 @@ func (r *Redis) SetProjectError(pluginName string, value string) error {
 }
 
 func (r *Redis) GetProjectError(pluginName string) string {
-	serverJson, _ := r.client.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "error")).Bytes()
+	serverJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "error")).Bytes()
 	return string(serverJson)
 }
 
 func (r *Redis) IsProjectDownloaded(pluginName string) bool {
-	_, err := r.client.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "versions")).Bytes()
+	_, err := r.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "versions")).Bytes()
 	if err == nil {
 		return true
 	} else {
@@ -202,19 +200,10 @@ func (r *Redis) IsProjectDownloaded(pluginName string) bool {
 	}
 }
 
-// func (r *Redis) GetLastUpdatedTime(key string, value interface{}) error {
-// 	return r.client.Set(key, value, 0).Err()
-// }
-
-// func (r *Redis) GetVersions(key string, value interface{}) error {
-// 	return r.client.Set(key, value, 0).Err()
-// }
-
-// func (r *Redis) SetVersions(key string, value interface{}) error {
-// 	return r.client.Set(key, value, 0).Err()
-// }
-
 func (r *Redis) SetPluginWithVersion(pluginName string, pluginVersion string, releaseNote types.GitHubReleaseNote) error {
+	if pluginName == "" || pluginVersion == "" {
+		return fmt.Errorf("can not set to DB, name: %s or Version: %s is empty", pluginName, pluginVersion)
+	}
 	key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, pluginVersion)
 	// 0 time.Hour
 	jsonData, err := json.Marshal(releaseNote)
