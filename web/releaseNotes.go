@@ -12,7 +12,7 @@ type ReleaseNotesPage struct {
 	ServerName    string
 }
 
-func (h *RedisHandler) releaseNotesHandler(w http.ResponseWriter, r *http.Request) {
+func (h *CommonHandler) releaseNotesHandler(w http.ResponseWriter, r *http.Request) {
 	// Retrieve releases from Redis
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
@@ -44,6 +44,6 @@ func (h *RedisHandler) releaseNotesHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func ReleaseNotesHandler(redisHandler RedisHandler) {
+func ReleaseNotesHandler(redisHandler CommonHandler) {
 	http.HandleFunc("/release-notes", redisHandler.releaseNotesHandler)
 }

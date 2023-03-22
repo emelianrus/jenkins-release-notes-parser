@@ -14,7 +14,7 @@ type projectsPage struct {
 	ServerName string
 }
 
-func (h *RedisHandler) projectsHandler(w http.ResponseWriter, r *http.Request) {
+func (h *CommonHandler) projectsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/projects" {
 		errorHandler(w, r, http.StatusNotFound)
 		return
@@ -51,6 +51,6 @@ func (h *RedisHandler) projectsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func ProjectsHandler(redisHandler RedisHandler) {
+func ProjectsHandler(redisHandler CommonHandler) {
 	http.HandleFunc("/projects", redisHandler.projectsHandler)
 }

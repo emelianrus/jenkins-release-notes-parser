@@ -4,12 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/emelianrus/jenkins-release-notes-parser/github"
 )
 
 // POST add jenkins server to DB
-func (h *RedisHandler) downloadHeandler(w http.ResponseWriter, r *http.Request) {
+func (h *CommonHandler) downloadHeandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/download" {
 		errorHandler(w, r, http.StatusNotFound)
 		return
@@ -22,7 +20,7 @@ func (h *RedisHandler) downloadHeandler(w http.ResponseWriter, r *http.Request) 
 		panic(err)
 	}
 
-	releases, err := github.Download(projectName)
+	releases, err := h.GitHub.Download(projectName)
 	if err != nil {
 		fmt.Println("Failed to get releases from github")
 	}
@@ -34,6 +32,6 @@ func (h *RedisHandler) downloadHeandler(w http.ResponseWriter, r *http.Request) 
 
 }
 
-func DownloadHandler(redisHandler RedisHandler) {
+func DownloadHandler(redisHandler CommonHandler) {
 	http.HandleFunc("/download", redisHandler.downloadHeandler)
 }

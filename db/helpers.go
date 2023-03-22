@@ -158,6 +158,7 @@ func (r *Redis) RemoveJenkinsServerPlugin(serverName string, pluginName string) 
 }
 
 func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
+
 	jsonData, _ := json.Marshal(value)
 	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated"),
 		jsonData)
@@ -170,6 +171,7 @@ func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
 }
 
 func (r *Redis) GetLastUpdatedTime(pluginName string) string {
+
 	serverJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated")).Bytes()
 	return string(serverJson)
 }
@@ -199,6 +201,18 @@ func (r *Redis) IsProjectDownloaded(pluginName string) bool {
 		return false
 	}
 }
+
+// func (r *Redis) GetLastUpdatedTime(key string, value interface{}) error {
+// 	return r.Set(key, value, 0).Err()
+// }
+
+// func (r *Redis) GetVersions(key string, value interface{}) error {
+// 	return r.Set(key, value, 0).Err()
+// }
+
+// func (r *Redis) SetVersions(key string, value interface{}) error {
+// 	return r.Set(key, value, 0).Err()
+// }
 
 func (r *Redis) SetPluginWithVersion(pluginName string, pluginVersion string, releaseNote types.GitHubReleaseNote) error {
 	if pluginName == "" || pluginVersion == "" {

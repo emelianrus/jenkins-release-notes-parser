@@ -29,7 +29,7 @@ var (
 // 	}
 // }
 
-func StartQueue(redisclient *db.Redis, plugins []string, infinite bool) {
+func StartQueue(redisclient db.Redis, githubClient GitHub, plugins []string, infinite bool) {
 	serviceMutex.Lock()
 	defer serviceMutex.Unlock()
 
@@ -38,7 +38,7 @@ func StartQueue(redisclient *db.Redis, plugins []string, infinite bool) {
 	for {
 		for _, pluginName := range redisclient.GetAllPluginsFromServers() {
 			// TODO: error api 404
-			ghReleaseNotes, _ := Download(pluginName)
+			ghReleaseNotes, _ := githubClient.Download(pluginName)
 			redisclient.SaveReleaseNotesToDB(ghReleaseNotes, pluginName)
 		}
 

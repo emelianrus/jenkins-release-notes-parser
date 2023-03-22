@@ -13,22 +13,72 @@ import (
 )
 
 type GitHub struct {
-	Client http.Client
-
-	RateLimit         int   // X-RateLimit-Limit | 60
-	RateLimitRemaning int   // X-RateLimit-Remaining | 0
-	RateLimitReset    int64 // X-RateLimit-Reset | 1679179139
-	RateLimitUsed     int   // X-RateLimit-Used | 60
+	Initialized bool // first call to github will get all stats by quotes and rate limits
+	Client      http.Client
+	GitHubStats GitHubStats
 }
 
-func Download(pluginName string) ([]types.GitHubReleaseNote, error) {
+type GitHubStats struct {
+	RateLimit         int   // X-RateLimit-Limit | 60 | In units
+	RateLimitRemaning int   // X-RateLimit-Remaining | 0 | In units
+	RateLimitReset    int64 // X-RateLimit-Reset | 1679179139 | In seconds
+	RateLimitUsed     int   // X-RateLimit-Used | 60 | In units
+
+	WaitSlotSeconds int // Seconds to reset RateLinit slots, if negative free to go
+}
+
+func NewGitHubClient() GitHub {
+	return GitHub{}
+}
+
+func (g *GitHub) HasRequestSlot() bool {
+	var reservedSlots = 5
+	if g.GitHubStats.RateLimitRemaning == 0 && g.GitHubStats.RateLimit == 0 {
+		fmt.Println("Can not get rate limit, github just created")
+	}
+
+	if g.GitHubStats.RateLimitRemaning < g.GitHubStats.RateLimit-reservedSlots {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (g *GitHub) SyncStats(resp *http.Response) {
+	rateLimitRemaning, _ := strconv.Atoi(resp.Header.Get("X-RateLimit-Remaining"))
+	g.GitHubStats.RateLimitRemaning = rateLimitRemaning
+	rateLimitUsed, _ := strconv.Atoi(resp.Header.Get("X-RateLimit-Used"))
+	g.GitHubStats.RateLimitUsed = rateLimitUsed
+	rateLimit, _ := strconv.Atoi(resp.Header.Get("X-RateLimit-Limit"))
+	g.GitHubStats.RateLimit = rateLimit
+	resetTimestampStr := resp.Header.Get("X-RateLimit-Reset")
+	resetTimestampInt, _ := strconv.ParseInt(resetTimestampStr, 10, 64)
+	g.GitHubStats.RateLimitReset = resetTimestampInt
+
+	nowEpoch := time.Now().Unix()
+	timeToWait := g.GitHubStats.RateLimitReset - nowEpoch
+
+	waitInt := int(timeToWait)
+
+	g.GitHubStats.WaitSlotSeconds = waitInt
+}
+
+func (g *GitHub) updateWaitSlotSeconds() {
+	nowEpoch := time.Now().Unix()
+	timeToWait := g.GitHubStats.RateLimitReset - nowEpoch
+
+	g.GitHubStats.WaitSlotSeconds = int(timeToWait)
+	fmt.Printf("g.WaitSlotSeconds: %d", g.GitHubStats.WaitSlotSeconds)
+
+}
+func (g *GitHub) Download(pluginName string) ([]types.GitHubReleaseNote, error) {
+	g.updateWaitSlotSeconds()
 
 	// we need to add suffix to plugins it differs plugin name and github project
 	if !strings.HasSuffix(pluginName, "-plugin") {
 		pluginName = pluginName + "-plugin"
 	}
 
-	github := GitHub{}
 	fmt.Println("executed download goroutine " + pluginName)
 
 	// Make a request to the API to get the release notes
@@ -42,36 +92,17 @@ func Download(pluginName string) ([]types.GitHubReleaseNote, error) {
 
 	// Loop until we get a successful response or hit the rate limit
 	for {
-		resp, err := github.Client.Do(req)
+		resp, err := g.Client.Do(req)
+		g.SyncStats(resp)
 		if err != nil {
 			fmt.Println("Error making request:", err)
 			continue // Try again
 		}
-		rateLimitRemaning, _ := strconv.Atoi(resp.Header.Get("X-RateLimit-Remaining"))
-		github.RateLimitRemaning = rateLimitRemaning
-		rateLimitUsed, _ := strconv.Atoi(resp.Header.Get("X-RateLimit-Used"))
-		github.RateLimitUsed = rateLimitUsed
-		rateLimit, _ := strconv.Atoi(resp.Header.Get("X-RateLimit-Limit"))
-		github.RateLimit = rateLimit
 
 		if resp.StatusCode == http.StatusForbidden {
 			// We hit the rate limit, so wait for the X-RateLimit-Reset header and try again
-			fmt.Println("Hit rate limit, waiting...")
-
-			resetTimestampStr := resp.Header.Get("X-RateLimit-Reset")
-			resetTimestampInt, err := strconv.ParseInt(resetTimestampStr, 10, 64)
-			github.RateLimitReset = resetTimestampInt
-
-			resetTime := time.Unix(resetTimestampInt, 0).UTC()
-			if err != nil {
-				return nil, errors.New("converting date")
-			}
-			nowEpoch := time.Now().Unix()
-			timeToWait := resetTimestampInt - nowEpoch
-
-			waitInt := int(timeToWait)
-			fmt.Printf("Rate limit reached, waiting until %d seconds, until %s...\n", waitInt, resetTime)
-			time.Sleep(time.Second * time.Duration(waitInt))
+			fmt.Printf("Rate limit reached, waiting until %d seconds\n", g.GitHubStats.WaitSlotSeconds)
+			time.Sleep(time.Second * time.Duration(g.GitHubStats.WaitSlotSeconds))
 
 			continue // Try again
 		}

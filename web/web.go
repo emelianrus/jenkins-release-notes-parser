@@ -13,9 +13,10 @@ import (
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 )
 
-type RedisHandler struct {
-	Redis *db.Redis
-	Data  interface{}
+type CommonHandler struct {
+	Redis  *db.Redis
+	GitHub *github.GitHub
+	Data   interface{}
 }
 
 // Handler for 404 page
@@ -31,7 +32,7 @@ type ServersPage struct {
 	Servers []types.JenkinsServer
 }
 
-func (h *RedisHandler) serversHandler(w http.ResponseWriter, r *http.Request) {
+func (h *CommonHandler) serversHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/servers" {
 		errorHandler(w, r, http.StatusNotFound)
 		return
@@ -56,7 +57,7 @@ type deleteJenkinsPluginPayload struct {
 }
 
 // POST function to delete jenkins plugin from servers page
-func (h *RedisHandler) deleteJenkinsPlugin(w http.ResponseWriter, r *http.Request) {
+func (h *CommonHandler) deleteJenkinsPlugin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		// Read the request body
 		// TODO: replace ioutil with io.Copy
@@ -89,7 +90,7 @@ type addJenkinsPluginPayload struct {
 }
 
 // POST add new jenkins plugin to jenkins server
-func (h *RedisHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) {
+func (h *CommonHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var server addJenkinsPluginPayload
 	err := decoder.Decode(&server)
@@ -140,7 +141,7 @@ func (h *RedisHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request) 
 			h.Redis.AddJenkinsServerPlugin(server.JenkinsName, plugin)
 		}
 
-		go github.StartQueue(h.Redis, pluginsToDownload, false)
+		go github.StartQueue(*h.Redis, *h.GitHub, pluginsToDownload, false)
 	}
 
 }
@@ -151,7 +152,7 @@ type addJenkinsServerPayload struct {
 }
 
 // POST add jenkins server to DB
-func (h *RedisHandler) addJenkinsServer(w http.ResponseWriter, r *http.Request) {
+func (h *CommonHandler) addJenkinsServer(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var server addJenkinsServerPayload
 	err := decoder.Decode(&server)
@@ -163,7 +164,7 @@ func (h *RedisHandler) addJenkinsServer(w http.ResponseWriter, r *http.Request) 
 }
 
 // POST delete jenkins server from DB
-func (h *RedisHandler) deleteJenkinsServer(w http.ResponseWriter, r *http.Request) {
+func (h *CommonHandler) deleteJenkinsServer(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	// could be only number, need to do validation
 	var serverName interface{}
@@ -182,7 +183,7 @@ type changePluginVersionPayload struct {
 	NewPluginVersion string
 }
 
-func (h *RedisHandler) changePluginVersion(w http.ResponseWriter, r *http.Request) {
+func (h *CommonHandler) changePluginVersion(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var newPlugin changePluginVersionPayload
 	err := decoder.Decode(&newPlugin)
@@ -200,9 +201,10 @@ func handleJS(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "web/js/servers.js")
 }
 
-func StartWeb(redisclient *db.Redis) {
-	redisHandler := RedisHandler{
-		Redis: redisclient,
+func StartWeb(redisclient *db.Redis, githubClient *github.GitHub) {
+	redisHandler := CommonHandler{
+		Redis:  redisclient,
+		GitHub: githubClient,
 	}
 
 	log.Println("Starting server")
