@@ -21,6 +21,7 @@ func (h *CommonHandler) downloadHeandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	releases, err := h.GitHub.Download(projectName)
+	h.Redis.SaveGithubStats(h.GitHub.GitHubStats)
 	if err != nil {
 		fmt.Println("Failed to get releases from github")
 	}

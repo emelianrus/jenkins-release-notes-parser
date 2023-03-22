@@ -21,10 +21,10 @@ type GitHub struct {
 type GitHubStats struct {
 	RateLimit         int   // X-RateLimit-Limit | 60 | In units
 	RateLimitRemaning int   // X-RateLimit-Remaining | 0 | In units
-	RateLimitReset    int64 // X-RateLimit-Reset | 1679179139 | In seconds
+	RateLimitReset    int64 // X-RateLimit-Reset | 1679179139 | In seconds updated every ~hour
 	RateLimitUsed     int   // X-RateLimit-Used | 60 | In units
 
-	WaitSlotSeconds int // Seconds to reset RateLinit slots, if negative free to go
+	WaitSlotSeconds int // Seconds to reset RateLimit slots, if negative free to go
 }
 
 func NewGitHubClient() GitHub {
@@ -44,6 +44,7 @@ func (g *GitHub) HasRequestSlot() bool {
 	}
 }
 
+// rate limit reset updated every ~hour
 func (g *GitHub) SyncStats(resp *http.Response) {
 	rateLimitRemaning, _ := strconv.Atoi(resp.Header.Get("X-RateLimit-Remaining"))
 	g.GitHubStats.RateLimitRemaning = rateLimitRemaning
@@ -56,11 +57,12 @@ func (g *GitHub) SyncStats(resp *http.Response) {
 	g.GitHubStats.RateLimitReset = resetTimestampInt
 
 	nowEpoch := time.Now().Unix()
-	timeToWait := g.GitHubStats.RateLimitReset - nowEpoch
+	timeToWait := resetTimestampInt - nowEpoch
 
 	waitInt := int(timeToWait)
 
 	g.GitHubStats.WaitSlotSeconds = waitInt
+
 }
 
 func (g *GitHub) updateWaitSlotSeconds() {
@@ -68,11 +70,14 @@ func (g *GitHub) updateWaitSlotSeconds() {
 	timeToWait := g.GitHubStats.RateLimitReset - nowEpoch
 
 	g.GitHubStats.WaitSlotSeconds = int(timeToWait)
-	fmt.Printf("g.WaitSlotSeconds: %d", g.GitHubStats.WaitSlotSeconds)
+	fmt.Printf("g.WaitSlotSeconds: %d\n", g.GitHubStats.WaitSlotSeconds)
 
 }
+
 func (g *GitHub) Download(pluginName string) ([]types.GitHubReleaseNote, error) {
-	g.updateWaitSlotSeconds()
+	if g.Initialized {
+		g.updateWaitSlotSeconds()
+	}
 
 	// we need to add suffix to plugins it differs plugin name and github project
 	if !strings.HasSuffix(pluginName, "-plugin") {

@@ -140,8 +140,8 @@ func (h *CommonHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request)
 
 			h.Redis.AddJenkinsServerPlugin(server.JenkinsName, plugin)
 		}
-
-		go github.StartQueue(*h.Redis, *h.GitHub, pluginsToDownload, false)
+		// TODO: fix download
+		// go github.StartQueue(*h.Redis, *h.GitHub, pluginsToDownload, false)
 	}
 
 }

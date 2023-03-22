@@ -7,6 +7,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/emelianrus/jenkins-release-notes-parser/github"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/emelianrus/jenkins-release-notes-parser/utils"
 )
@@ -261,4 +262,21 @@ func (r *Redis) GetPluginVersions(pluginName string) ([]byte, error) {
 		return nil, err
 	}
 	return pluginVersionsJson, nil
+}
+
+func (r *Redis) SaveGithubStats(gh github.GitHubStats) error {
+	jsonData, err := json.Marshal(gh)
+	if err != nil {
+		log.Println(err)
+		fmt.Println("Failed to marshal GitHubStats")
+	}
+	// set lastUpdated file for repo
+	err = r.Set("github:stats",
+		jsonData)
+	if err != nil {
+		log.Println(err)
+		return errors.New("set github:stats failed")
+	}
+
+	return nil
 }
