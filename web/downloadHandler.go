@@ -2,8 +2,9 @@ package web
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+
+	"github.com/sirupsen/logrus"
 )
 
 // POST add jenkins server to DB
@@ -23,12 +24,12 @@ func (h *CommonHandler) downloadHeandler(w http.ResponseWriter, r *http.Request)
 	releases, err := h.GitHub.Download(projectName)
 	h.Redis.SaveGithubStats(h.GitHub.GitHubStats)
 	if err != nil {
-		fmt.Println("Failed to get releases from github")
+		logrus.Errorln("Failed to get releases from github")
 	}
 	err = h.Redis.SaveReleaseNotesToDB(releases, projectName)
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println("Failed to save release notes to db")
+		logrus.Errorln(err)
+		logrus.Errorln("Failed to save release notes to db")
 	}
 
 }

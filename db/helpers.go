@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/github"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/emelianrus/jenkins-release-notes-parser/utils"
+	"github.com/sirupsen/logrus"
 )
 
 func (r *Redis) GetJenkinsServers() []types.JenkinsServer {
@@ -24,7 +24,7 @@ func (r *Redis) GetJenkinsServers() []types.JenkinsServer {
 			var jenkinsServer types.JenkinsServer
 			err := json.Unmarshal(serverJson, &jenkinsServer)
 			if err != nil {
-				fmt.Println("can not unmarshal jenkins server")
+				logrus.Errorln("can not unmarshal jenkins server")
 			}
 
 			projects, _ := r.GetJenkinsProjects(jenkinsServer.Name)
@@ -62,13 +62,13 @@ func (r *Redis) AddJenkinsServer(serverName string, coreVersion string) {
 	})
 
 	if err != nil {
-		log.Println(err)
+		logrus.Errorln(err)
 		return
 	}
 	// write jenkins server json
 	err = r.Set(fmt.Sprintf("servers:%s", serverName), jsonData)
 	if err != nil {
-		log.Println(err)
+		logrus.Errorln(err)
 		return
 	}
 	fmt.Printf("Added %s:%s\n", serverName, coreVersion)
@@ -76,7 +76,7 @@ func (r *Redis) AddJenkinsServer(serverName string, coreVersion string) {
 
 func (r *Redis) DeleteJenkinsServer(serverName string) {
 	path := fmt.Sprintf("servers:%s", serverName)
-	fmt.Printf("Removing jenkins server %s\n", path)
+	logrus.Infof("Removing jenkins server %s\n", path)
 	r.Del(path)
 }
 
@@ -93,14 +93,14 @@ func (r *Redis) GetAllProjectsFromServers() []string {
 }
 
 func (r *Redis) ChangeJenkinServerPluginVersion(serverName string, pluginName string, newVersion string) error {
-	fmt.Printf("Change plugin version to server name: %s plugin name %s new verion %s\n", serverName, pluginName, newVersion)
+	logrus.Infof("Change plugin version to server name: %s plugin name %s new verion %s\n", serverName, pluginName, newVersion)
 	jsonData, _ := json.Marshal(newVersion)
 
 	err := r.Set(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName), jsonData)
 	if err != nil {
-		fmt.Println("can not append to redis new plugin")
+		logrus.Errorln("can not append to redis new plugin")
 	}
-	fmt.Printf("version for plugin %s was changed and saved to redis\n", pluginName)
+	logrus.Infof("version for plugin %s was changed and saved to redis\n", pluginName)
 
 	return nil
 }
@@ -119,7 +119,7 @@ func (r *Redis) GetJenkinsProjects(jenkinsServer string) ([]types.JenkinsPlugin,
 		var version string
 		err := json.Unmarshal(pluginVersionByte, &version)
 		if err != nil {
-			fmt.Println("can not unmarshal version")
+			logrus.Errorln("can not unmarshal version")
 		}
 		projectError := r.GetProjectError(projectName)
 
@@ -137,21 +137,21 @@ func (r *Redis) GetJenkinsProjects(jenkinsServer string) ([]types.JenkinsPlugin,
 func (r *Redis) AddJenkinsServerPlugin(serverName string, plugin types.JenkinsPlugin) error {
 	_, err := r.Get(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name)).Bytes()
 	if err != nil {
-		fmt.Println(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name) + " not found in redis, adding...")
+		logrus.Infoln(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name) + " not found in redis, adding...")
 
 		jsonData, _ := json.Marshal(plugin.Version)
 
 		err := r.Set(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name), jsonData)
 		if err != nil {
-			fmt.Println("can not append to redis new plugin")
+			logrus.Errorln("can not append to redis new plugin")
 		}
-		fmt.Printf("appended plugin %s to redis\n", plugin.Name)
+		logrus.Infof("appended plugin %s to redis\n", plugin.Name)
 	}
 	return nil
 }
 
 func (r *Redis) RemoveJenkinsServerPlugin(serverName string, pluginName string) {
-	fmt.Printf("removing key from redis %s\n", pluginName)
+	logrus.Infof("removing key from redis %s\n", pluginName)
 	r.Del(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName))
 }
 
@@ -161,8 +161,8 @@ func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
 	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated"),
 		jsonData)
 	if err != nil {
-		log.Println("SetLastUpdatedTime error")
-		log.Println(err)
+		logrus.Errorln("SetLastUpdatedTime error")
+		logrus.Errorln(err)
 		return nil
 	}
 	return nil
@@ -179,20 +179,20 @@ func (r *Redis) SetProjectError(projectName string, value string) error {
 	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "error"),
 		jsonData)
 	if err != nil {
-		log.Println("SetProjectError error:")
-		log.Println(err)
+		logrus.Errorln("SetProjectError error:")
+		logrus.Errorln(err)
 		return nil
 	}
 	return nil
 }
 
-func (r *Redis) GetProjectError(pluginName string) string {
-	serverJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "error")).Bytes()
+func (r *Redis) GetProjectError(projectName string) string {
+	serverJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "error")).Bytes()
 	return string(serverJson)
 }
 
-func (r *Redis) IsProjectDownloaded(pluginName string) bool {
-	_, err := r.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "versions")).Bytes()
+func (r *Redis) IsProjectDownloaded(projectName string) bool {
+	_, err := r.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "versions")).Bytes()
 	if err == nil {
 		return true
 	} else {
@@ -219,46 +219,44 @@ func (r *Redis) IsProjectDownloaded(pluginName string) bool {
 // 	return nil
 // }
 
-func (r *Redis) GetPluginWithVersion(pluginName string, pluginVersion string) (types.GitHubReleaseNote, error) {
-	pluginJson, _ := r.Get(fmt.Sprintf("github:jenkinsci:%s:%s", pluginName, pluginVersion)).Bytes()
+func (r *Redis) GetPluginWithVersion(projectName string, projectVersion string) (types.GitHubReleaseNote, error) {
+	pluginJson, _ := r.Get(fmt.Sprintf("github:jenkinsci:%s:%s", projectName, projectVersion)).Bytes()
 	var releaseNote types.GitHubReleaseNote
 	err := json.Unmarshal(pluginJson, &releaseNote)
 
 	if err != nil {
-		log.Println(err)
+		logrus.Errorln(err)
 		// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
 		return types.GitHubReleaseNote{}, errors.New("failed to unmarshal ReleaseNote")
 	}
 	return releaseNote, nil
 }
 
-func (r *Redis) GetPluginVersions(pluginName string) ([]byte, error) {
+func (r *Redis) GetPluginVersions(projectName string) ([]byte, error) {
 
-	pluginVersionsJson, err := r.Get(fmt.Sprintf("github:jenkinsci:%s:versions", pluginName)).Bytes()
+	projectVersionsJson, err := r.Get(fmt.Sprintf("github:jenkinsci:%s:versions", projectName)).Bytes()
 	if err != nil {
-		return []byte{}, errors.New("error in getPlugins " + pluginName)
+		return []byte{}, errors.New("error in getPlugins " + projectName)
 	}
 	if err != nil {
 		// plugin doesnt exist
-		fmt.Println("versions file is not exist")
-		fmt.Println(err)
-		// GetGitHubReleases(plugin.Name, redisclient)
-		// plugin = redisclient.Get()
+		logrus.Errorln("versions file is not exist")
+		logrus.Errorln(err)
 		return nil, err
 	}
-	return pluginVersionsJson, nil
+	return projectVersionsJson, nil
 }
 
 func (r *Redis) SaveGithubStats(gh github.GitHubStats) error {
 	jsonData, err := json.Marshal(gh)
 	if err != nil {
-		log.Println(err)
-		fmt.Println("Failed to marshal GitHubStats")
+		logrus.Errorln(err)
+		logrus.Errorln("Failed to marshal GitHubStats")
 	}
 	// set lastUpdated file for repo
 	err = r.Set("github:stats", jsonData)
 	if err != nil {
-		log.Println(err)
+		logrus.Errorln(err)
 		return errors.New("set github:stats failed")
 	}
 

@@ -10,13 +10,13 @@ import (
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 )
 
-func (r *Redis) SaveReleaseNotesToDB(releases []types.GitHubReleaseNote, pluginName string) error {
+func (r *Redis) SaveReleaseNotesToDB(releases []types.GitHubReleaseNote, projectName string) error {
 
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("02 January 2006 15:04")
 
 	// set lastUpdated file for repo
-	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated"),
+	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "lastUpdated"),
 		formattedTime)
 	if err != nil {
 		log.Println(err)
@@ -33,7 +33,7 @@ func (r *Redis) SaveReleaseNotesToDB(releases []types.GitHubReleaseNote, pluginN
 			release.Name = release.TagName
 		}
 		versions = append(versions, release.Name)
-		key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, release.Name)
+		key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, release.Name)
 
 		jsonData, err := json.Marshal(release)
 		if err != nil {
@@ -49,19 +49,19 @@ func (r *Redis) SaveReleaseNotesToDB(releases []types.GitHubReleaseNote, pluginN
 
 	// save "versions" file
 	jsonVersions, _ := json.Marshal(versions)
-	err = r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "versions"),
+	err = r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "versions"),
 		jsonVersions)
 	if err != nil {
 		log.Println(err)
 		return fmt.Errorf("error setting version for release: %s", err)
 	}
 	if len(versions) == 0 {
-		fmt.Println("Project doesn't have releases: " + pluginName)
+		fmt.Println("Project doesn't have releases: " + projectName)
 		return nil
 	}
 	// save "latestVersion" file
 	jsonLatestVersion, _ := json.Marshal(versions[0])
-	err = r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "latestVersion"),
+	err = r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "latestVersion"),
 		jsonLatestVersion)
 	if err != nil {
 		log.Println(err)

@@ -79,7 +79,7 @@ func (g *GitHub) waitUntilNextSlotAvailable() {
 	time.Sleep(time.Second * time.Duration(g.GitHubStats.WaitSlotSeconds))
 }
 
-func (g *GitHub) Download(pluginName string) ([]types.GitHubReleaseNote, error) {
+func (g *GitHub) Download(projectName string) ([]types.GitHubReleaseNote, error) {
 	if g.Initialized {
 		g.updateWaitSlotSeconds()
 	}
@@ -89,15 +89,16 @@ func (g *GitHub) Download(pluginName string) ([]types.GitHubReleaseNote, error) 
 		g.waitUntilNextSlotAvailable()
 	}
 
+	// TODO: how to handle this with no rely on jenkins specific projects
 	// we need to add suffix to plugins it differs plugin name and github project
-	if !strings.HasSuffix(pluginName, "-plugin") {
-		pluginName = pluginName + "-plugin"
+	if !strings.HasSuffix(projectName, "-plugin") {
+		projectName = projectName + "-plugin"
 	}
 
-	fmt.Println("executed download goroutine " + pluginName)
+	fmt.Println("executed download goroutine " + projectName)
 
 	// Make a request to the API to get the release notes
-	url := fmt.Sprintf("https://api.github.com/repos/jenkinsci/%s/releases", pluginName)
+	url := fmt.Sprintf("https://api.github.com/repos/jenkinsci/%s/releases", projectName)
 	fmt.Println(url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -136,7 +137,7 @@ func (g *GitHub) Download(pluginName string) ([]types.GitHubReleaseNote, error) 
 			return nil, errors.New("error decoding github response")
 		}
 
-		fmt.Println("finished download goroutine " + pluginName)
+		fmt.Println("finished download goroutine " + projectName)
 
 		return releases, nil
 	}

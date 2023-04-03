@@ -24,6 +24,7 @@ import (
 	"github.com/emelianrus/jenkins-release-notes-parser/db"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/emelianrus/jenkins-release-notes-parser/utils"
+	"github.com/sirupsen/logrus"
 )
 
 // HTML start
@@ -84,7 +85,7 @@ func getReleaseNotesPageData(redisclient *db.Redis, jenkinsServer types.JenkinsS
 		var versions []string
 		err = json.Unmarshal(pluginVersionsJson, &versions)
 		if err != nil {
-			log.Println(err)
+			logrus.Errorln(err)
 			// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
 			return []GitHubProject{}, errors.New("failed to unmarshal releases from cache")
 		}

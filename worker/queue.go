@@ -21,21 +21,21 @@ func StartQueue(redisclient *db.Redis, github github.GitHub) {
 	defer serviceMutex.Unlock()
 
 	for {
-		for _, pluginName := range redisclient.GetAllProjectsFromServers() {
+		for _, projectName := range redisclient.GetAllProjectsFromServers() {
 			// TODO: error api 404
-			ghReleaseNotes, err := github.Download(pluginName)
+			ghReleaseNotes, err := github.Download(projectName)
 
 			if err == nil {
-				redisclient.SaveReleaseNotesToDB(ghReleaseNotes, pluginName)
+				redisclient.SaveReleaseNotesToDB(ghReleaseNotes, projectName)
 			} else {
 				fmt.Println("Downloading repo error:")
 				fmt.Println(err)
-				redisclient.SaveReleaseNotesToDB([]types.GitHubReleaseNote{}, pluginName)
-				redisclient.SetProjectError(pluginName, err.Error())
+				redisclient.SaveReleaseNotesToDB([]types.GitHubReleaseNote{}, projectName)
+				redisclient.SetProjectError(projectName, err.Error())
 			}
 
 			redisclient.SaveGithubStats(github.GitHubStats)
-			redisclient.SaveReleaseNotesToDB(ghReleaseNotes, pluginName)
+			redisclient.SaveReleaseNotesToDB(ghReleaseNotes, projectName)
 		}
 		fmt.Println("sleep 3 hours")
 		time.Sleep(time.Hour * 3)

@@ -1,11 +1,11 @@
 package db
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/go-redis/redis"
+	"github.com/sirupsen/logrus"
 )
 
 type Redis struct {
@@ -13,7 +13,7 @@ type Redis struct {
 }
 
 func NewRedisClient() *Redis {
-	fmt.Println("Creating redis connection")
+	logrus.Infoln("Creating redis connection")
 	client := redis.NewClient(&redis.Options{
 		Addr: "127.0.0.1:6379",
 		// Password: "",
