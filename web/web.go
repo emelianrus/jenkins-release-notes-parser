@@ -11,12 +11,13 @@ import (
 	"github.com/emelianrus/jenkins-release-notes-parser/db"
 	"github.com/emelianrus/jenkins-release-notes-parser/github"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
+	"github.com/sirupsen/logrus"
 )
 
 type CommonHandler struct {
-	Redis  *db.Redis
-	GitHub *github.GitHub
-	Data   interface{}
+	Redis    *db.Redis
+	GHClient *github.GitHub
+	Data     interface{}
 }
 
 // Handler for 404 page
@@ -47,7 +48,7 @@ func (h *CommonHandler) serversHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("web/templates/servers.html"))
 	err := tmpl.Execute(w, h.Data)
 	if err != nil {
-		log.Println(err)
+		logrus.Errorln(err)
 	}
 }
 
@@ -95,7 +96,7 @@ func (h *CommonHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request)
 	var server addJenkinsPluginPayload
 	err := decoder.Decode(&server)
 	if err != nil {
-		panic(err)
+		logrus.Errorln(err)
 	}
 	// TODO: Add check null field
 	var pluginsToDownload []string
@@ -203,8 +204,8 @@ func handleJS(w http.ResponseWriter, r *http.Request) {
 
 func StartWeb(redisclient *db.Redis, githubClient *github.GitHub) {
 	redisHandler := CommonHandler{
-		Redis:  redisclient,
-		GitHub: githubClient,
+		Redis:    redisclient,
+		GHClient: githubClient,
 	}
 
 	log.Println("Starting server")

@@ -21,8 +21,8 @@ func (h *CommonHandler) downloadHeandler(w http.ResponseWriter, r *http.Request)
 		panic(err)
 	}
 
-	releases, err := h.GitHub.Download(projectName)
-	h.Redis.SaveGithubStats(h.GitHub.GitHubStats)
+	releases, err := h.GHClient.Download(projectName)
+	h.Redis.SaveGithubStats(h.GHClient.GitHubStats)
 	if err != nil {
 		logrus.Errorln("Failed to get releases from github")
 	}
