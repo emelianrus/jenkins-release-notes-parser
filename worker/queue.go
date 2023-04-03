@@ -7,6 +7,7 @@ import (
 
 	"github.com/emelianrus/jenkins-release-notes-parser/db"
 	"github.com/emelianrus/jenkins-release-notes-parser/github"
+	"github.com/emelianrus/jenkins-release-notes-parser/types"
 )
 
 var (
@@ -22,7 +23,17 @@ func StartQueue(redisclient *db.Redis, github github.GitHub) {
 	for {
 		for _, pluginName := range redisclient.GetAllPluginsFromServers() {
 			// TODO: error api 404
-			ghReleaseNotes, _ := github.Download(pluginName)
+			ghReleaseNotes, err := github.Download(pluginName)
+
+			if err == nil {
+				redisclient.SaveReleaseNotesToDB(ghReleaseNotes, pluginName)
+			} else {
+				fmt.Println("Downloading repo error:")
+				fmt.Println(err)
+				redisclient.SaveReleaseNotesToDB([]types.GitHubReleaseNote{}, pluginName)
+				redisclient.SetProjectError(pluginName, err.Error())
+			}
+
 			redisclient.SaveGithubStats(github.GitHubStats)
 			redisclient.SaveReleaseNotesToDB(ghReleaseNotes, pluginName)
 		}

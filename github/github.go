@@ -19,10 +19,10 @@ type GitHub struct {
 }
 
 type GitHubStats struct {
-	RateLimit         int   // X-RateLimit-Limit | 60 | In units
-	RateLimitRemaning int   // X-RateLimit-Remaining | 0 | In units
-	RateLimitReset    int64 // X-RateLimit-Reset | 1679179139 | In seconds updated every ~hour
-	RateLimitUsed     int   // X-RateLimit-Used | 60 | In units
+	RateLimit         int   // X-RateLimit-Limit 		| 60 			| In units
+	RateLimitRemaning int   // X-RateLimit-Remaining 	| 0 			| In units
+	RateLimitReset    int64 // X-RateLimit-Reset 		| 1679179139 	| In seconds updated every ~hour
+	RateLimitUsed     int   // X-RateLimit-Used 		| 60			| In units
 
 	WaitSlotSeconds int // Seconds to reset RateLimit slots, if negative free to go
 }
@@ -109,6 +109,7 @@ func (g *GitHub) Download(pluginName string) ([]types.GitHubReleaseNote, error) 
 	for {
 		resp, err := g.Client.Do(req)
 		g.SyncStats(resp)
+		fmt.Printf("RateLimitUsed: %d\n", g.GitHubStats.RateLimitUsed)
 		if err != nil {
 			fmt.Println("Error making request:", err)
 			continue // Try again

@@ -153,7 +153,6 @@ func (r *Redis) AddJenkinsServerPlugin(serverName string, plugin types.JenkinsPl
 }
 
 func (r *Redis) RemoveJenkinsServerPlugin(serverName string, pluginName string) {
-	// _, err := r.Get(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName)).Bytes()
 	fmt.Printf("removing key from redis %s\n", pluginName)
 	r.Del(fmt.Sprintf("servers:%s:plugins:%s", serverName, pluginName))
 }
@@ -203,36 +202,24 @@ func (r *Redis) IsProjectDownloaded(pluginName string) bool {
 	}
 }
 
-// func (r *Redis) GetLastUpdatedTime(key string, value interface{}) error {
-// 	return r.Set(key, value, 0).Err()
+// func (r *Redis) SetPluginWithVersion(pluginName string, pluginVersion string, releaseNote types.GitHubReleaseNote) error {
+// 	if pluginName == "" || pluginVersion == "" {
+// 		return fmt.Errorf("can not set to DB, name: %s or Version: %s is empty", pluginName, pluginVersion)
+// 	}
+// 	key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, pluginVersion)
+// 	// 0 time.Hour
+// 	jsonData, err := json.Marshal(releaseNote)
+// 	if err != nil {
+// 		log.Println(err)
+// 		return nil
+// 	}
+// 	err = r.Set(key, jsonData)
+// 	if err != nil {
+// 		log.Println(err)
+// 		return nil
+// 	}
+// 	return nil
 // }
-
-// func (r *Redis) GetVersions(key string, value interface{}) error {
-// 	return r.Set(key, value, 0).Err()
-// }
-
-// func (r *Redis) SetVersions(key string, value interface{}) error {
-// 	return r.Set(key, value, 0).Err()
-// }
-
-func (r *Redis) SetPluginWithVersion(pluginName string, pluginVersion string, releaseNote types.GitHubReleaseNote) error {
-	if pluginName == "" || pluginVersion == "" {
-		return fmt.Errorf("can not set to DB, name: %s or Version: %s is empty", pluginName, pluginVersion)
-	}
-	key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, pluginVersion)
-	// 0 time.Hour
-	jsonData, err := json.Marshal(releaseNote)
-	if err != nil {
-		log.Println(err)
-		return nil
-	}
-	err = r.Set(key, jsonData)
-	if err != nil {
-		log.Println(err)
-		return nil
-	}
-	return nil
-}
 
 func (r *Redis) GetPluginWithVersion(pluginName string, pluginVersion string) (types.GitHubReleaseNote, error) {
 	pluginJson, _ := r.Get(fmt.Sprintf("github:jenkinsci:%s:%s", pluginName, pluginVersion)).Bytes()
@@ -271,8 +258,7 @@ func (r *Redis) SaveGithubStats(gh github.GitHubStats) error {
 		fmt.Println("Failed to marshal GitHubStats")
 	}
 	// set lastUpdated file for repo
-	err = r.Set("github:stats",
-		jsonData)
+	err = r.Set("github:stats", jsonData)
 	if err != nil {
 		log.Println(err)
 		return errors.New("set github:stats failed")
