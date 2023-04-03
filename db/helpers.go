@@ -12,8 +12,6 @@ import (
 	"github.com/emelianrus/jenkins-release-notes-parser/utils"
 )
 
-// DB part end ^
-
 func (r *Redis) GetJenkinsServers() []types.JenkinsServer {
 	var servers []types.JenkinsServer
 
@@ -29,11 +27,11 @@ func (r *Redis) GetJenkinsServers() []types.JenkinsServer {
 				fmt.Println("can not unmarshal jenkins server")
 			}
 
-			plugins, _ := r.GetJenkinsPlugins(jenkinsServer.Name)
+			projects, _ := r.GetJenkinsProjects(jenkinsServer.Name)
 			servers = append(servers, types.JenkinsServer{
 				Name:    jenkinsServer.Name,
 				Core:    jenkinsServer.Core,
-				Plugins: plugins,
+				Plugins: projects,
 			})
 		}
 	}
@@ -82,11 +80,11 @@ func (r *Redis) DeleteJenkinsServer(serverName string) {
 	r.Del(path)
 }
 
-func (r *Redis) GetAllPluginsFromServers() []string {
+func (r *Redis) GetAllProjectsFromServers() []string {
 	var result []string
-	pluginKeys, _ := r.Keys("servers:*:plugins:*")
+	projectKeys, _ := r.Keys("servers:*:plugins:*")
 
-	for _, path := range pluginKeys {
+	for _, path := range projectKeys {
 		splitted := strings.Split(path, ":")
 		result = append(result, splitted[len(splitted)-1])
 	}
@@ -107,29 +105,29 @@ func (r *Redis) ChangeJenkinServerPluginVersion(serverName string, pluginName st
 	return nil
 }
 
-func (r *Redis) GetJenkinsPlugins(jenkinsServer string) ([]types.JenkinsPlugin, error) {
+func (r *Redis) GetJenkinsProjects(jenkinsServer string) ([]types.JenkinsPlugin, error) {
 	var jenkinsPlugins []types.JenkinsPlugin
-	pluginKeys, _ := r.Keys(fmt.Sprintf("servers:%s:plugins:*", jenkinsServer))
+	projectKeys, _ := r.Keys(fmt.Sprintf("servers:%s:plugins:*", jenkinsServer))
 
-	for _, pluginKey := range pluginKeys {
+	for _, projectKey := range projectKeys {
 
 		// get plugin name from path (is there is a better way? )
-		path := strings.Split(pluginKey, ":")
-		pluginName := path[len(path)-1]
-		pluginVersionByte, _ := r.Get(pluginKey).Bytes()
+		path := strings.Split(projectKey, ":")
+		projectName := path[len(path)-1]
+		pluginVersionByte, _ := r.Get(projectKey).Bytes()
 
 		var version string
 		err := json.Unmarshal(pluginVersionByte, &version)
 		if err != nil {
 			fmt.Println("can not unmarshal version")
 		}
-		projectError := r.GetProjectError(pluginName)
+		projectError := r.GetProjectError(projectName)
 
 		jenkinsPlugins = append(jenkinsPlugins, types.JenkinsPlugin{
-			Name:         pluginName,
+			Name:         projectName,
 			Version:      version,
 			Error:        projectError,
-			IsDownloaded: r.IsProjectDownloaded(pluginName),
+			IsDownloaded: r.IsProjectDownloaded(projectName),
 		})
 	}
 
@@ -170,15 +168,15 @@ func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
 	return nil
 }
 
-func (r *Redis) GetLastUpdatedTime(pluginName string) string {
+func (r *Redis) GetLastUpdatedTime(projectName string) string {
 
-	serverJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated")).Bytes()
+	serverJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "lastUpdated")).Bytes()
 	return string(serverJson)
 }
 
-func (r *Redis) SetProjectError(pluginName string, value string) error {
+func (r *Redis) SetProjectError(projectName string, value string) error {
 	jsonData, _ := json.Marshal(value)
-	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "error"),
+	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "error"),
 		jsonData)
 	if err != nil {
 		log.Println("SetProjectError error:")

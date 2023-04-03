@@ -22,7 +22,7 @@ func (h *CommonHandler) projectsHandler(w http.ResponseWriter, r *http.Request) 
 
 	var projects []types.JenkinsPlugin
 
-	allProjects := h.Redis.GetAllPluginsFromServers()
+	allProjects := h.Redis.GetAllProjectsFromServers()
 
 	for _, projectName := range allProjects {
 		projects = append(projects, types.JenkinsPlugin{

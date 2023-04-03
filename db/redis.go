@@ -252,19 +252,6 @@ func (r *Redis) AddDebugData() {
 
 		}
 	}
-
-	// r.AddJenkinsServerPlugin("jenkins-one", types.JenkinsPlugin{
-	// 	Name:    "plugin-installation-manager-tool",
-	// 	Version: "2.10.0",
-	// })
-	// r.AddJenkinsServerPlugin("jenkins-two", types.JenkinsPlugin{
-	// 	Name:    "plugin-installation-manager-tool",
-	// 	Version: "2.10.0",
-	// })
-	// r.AddJenkinsServerPlugin("jenkins-one", types.JenkinsPlugin{
-	// 	Name:    "okhttp-api-plugin",
-	// 	Version: "4.9.3-108.v0feda04578cf",
-	// })
 }
 
 func (r *Redis) Get(key string) *redis.StringCmd {

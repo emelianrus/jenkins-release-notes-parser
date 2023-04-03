@@ -21,7 +21,7 @@ func StartQueue(redisclient *db.Redis, github github.GitHub) {
 	defer serviceMutex.Unlock()
 
 	for {
-		for _, pluginName := range redisclient.GetAllPluginsFromServers() {
+		for _, pluginName := range redisclient.GetAllProjectsFromServers() {
 			// TODO: error api 404
 			ghReleaseNotes, err := github.Download(pluginName)
 
