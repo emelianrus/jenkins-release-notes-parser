@@ -6,6 +6,7 @@ function ProjectCard({ project }) {
       <div className="cardd">
         <section aria-labelledby="hd-0de31afa">
             <div className="d-flex flex-column flex-md-row my-5 flex-justify-center">
+              {/* left menu */}
               <div className="col-md-2 d-flex flex-md-column flex-row flex-wrap pr-md-6 mb-2 mb-md-0 flex-items-start pt-md-4">
                 <div className="mb-2 f4 mr-3 mr-md-0 col-12">
                   {project.created_at}
@@ -14,6 +15,7 @@ function ProjectCard({ project }) {
                   {project.tag_name}
                 </div>
               </div>
+              {/* left menu end */}
 
               <div className="col-md-9">
                 <div data-view-component="true" className="Box">
