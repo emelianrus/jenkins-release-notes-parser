@@ -1,14 +1,43 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-import React from "react";
-  
-const Github = () => {
+import ProjectsList from '../components/ProjectsList';
+
+import React, { useState, useEffect } from "react";
+
+function Projects() {
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    setProjects([{
+      name: "projectName1",
+      is_downloaded: true,
+      has_error: false,
+      last_updated: "Feb12 12:55"
+    },
+    {
+      name: "projectName2",
+      is_downloaded: false,
+      has_error: false,
+      last_updated: "Aug12 1:14"
+    }])
+    // async function fetchData() {
+    //   try {
+    //     const response = await fetch("http://localhost:8080/projects");
+    //     const data = await response.json();
+    //     setProjects(data);
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // }
+
+    // fetchData();
+  }, []);
+
   return (
     <div>
-      <h1>
-        PROJECTS PAGE CONTENT
-      </h1>
+      <ProjectsList projects={projects} />
     </div>
   );
-};
-  
-export default Github;
+}
+
+export default Projects;
