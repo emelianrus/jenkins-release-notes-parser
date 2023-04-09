@@ -5,9 +5,7 @@ import (
 	"runtime"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/db"
-	"github.com/emelianrus/jenkins-release-notes-parser/github"
-	"github.com/emelianrus/jenkins-release-notes-parser/web"
-	"github.com/emelianrus/jenkins-release-notes-parser/worker"
+	"github.com/emelianrus/jenkins-release-notes-parser/routes"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,12 +20,22 @@ func init() {
 
 func main() {
 	redisclient := db.NewRedisClient()
-	githubClient := github.NewGitHubClient()
-	// TODO: remove used during development
-	redisclient.AddDebugData()
+
+	if redisclient.Status() != nil {
+		logrus.Errorln("failed to connect to redis")
+	} else {
+		// TODO: remove used during development
+		redisclient.AddDebugData()
+	}
+
+	// githubClient := github.NewGitHubClient()
 
 	// TODO: should be update plugin function executed once per day
-	go worker.StartQueue(redisclient, githubClient)
+	// go worker.StartQueue(redisclient, githubClient)
 
-	web.StartWeb(redisclient, &githubClient)
+	// GIN
+	router := routes.SetupRouter()
+	router.Run(":8080")
+	// WEB
+	// web.StartWeb(redisclient, &githubClient)
 }

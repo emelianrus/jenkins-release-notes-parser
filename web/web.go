@@ -211,11 +211,14 @@ func StartWeb(redisclient *db.Redis, githubClient *github.GitHub) {
 	log.Println("Starting server")
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		logrus.Infoln("/ route reached redirect to /servers")
+		http.Redirect(w, r, "/servers", http.StatusSeeOther)
+
 		if r.URL.Path != "/" {
 			errorHandler(w, r, http.StatusNotFound)
 			return
 		}
-		http.RedirectHandler("/servers", http.StatusSeeOther)
+
 	})
 
 	// Pages
