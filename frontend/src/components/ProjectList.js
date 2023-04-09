@@ -15,10 +15,12 @@ function ProjectList({ projects }) {
   return (
     <div className="project-list">
       <div id="repository-container-header" className="pt-3 hide-full-screen">
-        <div class="d-flex flex-wrap flex-justify-end px-md-4 px-lg-5">
-          <span>
-            REPO_GROUP/PROJECT_NAME
-          </span>
+        <div className="d-flex flex-wrap flex-justify-end px-md-4 px-lg-5">
+          <div className="d-flex flex-wrap flex-items-center wb-break-word f3 text-normal">
+            REPO_GROUP
+            <span className="mx-1 flex-self-stretch color-fg-muted">/</span>
+            PROJECT_NAME
+          </div>
         </div>
       </div>
 

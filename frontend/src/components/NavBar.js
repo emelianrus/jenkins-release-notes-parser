@@ -8,9 +8,9 @@ function NavBar() {
       <Container>
       <Nav className="mr-auto">
         <Navbar.Brand href="#home" className="mr-auto">TITLE</Navbar.Brand>
-        <Nav.Link href="#home">Servers</Nav.Link>
-        <Nav.Link href="#link">Projects</Nav.Link>
-        <Nav.Link href="#link">Github</Nav.Link>
+        <Nav.Link href="#servers">Servers</Nav.Link>
+        <Nav.Link href="#projects">Projects</Nav.Link>
+        <Nav.Link href="#github">Github</Nav.Link>
       </Nav>
       </Container>
     </Navbar>
