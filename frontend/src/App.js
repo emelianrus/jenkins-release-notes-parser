@@ -1,34 +1,26 @@
-import './App.css';
+// import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import NavBar from './components/NavBar';
-import ProjectList from './components/ProjectList';
+import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 
-import React, { useState, useEffect } from "react";
-
+import Releases from './pages/releases';
+import Projects from './pages/projects';
+import Github from './pages/github';
 
 function App() {
-  const [projects, setProjects] = useState([]);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch("http://localhost:8080/projects");
-        const data = await response.json();
-        setProjects(data);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    fetchData();
-  }, []);
 
   return (
-    <div>
-      <NavBar />
-      <ProjectList projects={projects} />
-    </div>
+    <Router>
+      <div>
+        <NavBar />
+        <Routes>
+          <Route path='/release-notes' element={<Releases/>} />
+          <Route path='/projects' element={<Projects/>} />
+          <Route path='/github' element={<Github/>} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

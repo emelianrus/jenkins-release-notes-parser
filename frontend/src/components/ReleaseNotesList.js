@@ -1,10 +1,10 @@
-import './ProjectList.css';
+import './ReleaseNotesList.css';
 
-import ProjectCard from './ProjectCard';
+import ReleaseNoteCard from './ReleaseNoteCard';
 import React, { useState } from "react";
 
 
-function ProjectList({ projects }) {
+function ReleaseNotesList({ projects }) {
 
   const [inputValue, setInputValue] = useState("");
 
@@ -39,11 +39,11 @@ function ProjectList({ projects }) {
         </div>
         {/* top menu releases find edit ^^ */}
 
-        {projects.map(project => <ProjectCard key={project.name} project={project} />)}
+        {projects.map(project => <ReleaseNoteCard key={project.name} project={project} />)}
       </div>
     </div>
   );
 }
 
 
-export default ProjectList;
+export default ReleaseNotesList;

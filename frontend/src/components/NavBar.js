@@ -7,10 +7,10 @@ function NavBar() {
     <Navbar bg="light" expand="lg">
       <Container>
       <Nav className="mr-auto">
-        <Navbar.Brand href="#home" className="mr-auto">TITLE</Navbar.Brand>
-        <Nav.Link href="#servers">Servers</Nav.Link>
-        <Nav.Link href="#projects">Projects</Nav.Link>
-        <Nav.Link href="#github">Github</Nav.Link>
+        <Navbar.Brand href="/" className="mr-auto">TITLE</Navbar.Brand>
+        <Nav.Link href="/release-notes">Releases</Nav.Link>
+        <Nav.Link href="/projects">Projects</Nav.Link>
+        <Nav.Link href="/github">Github</Nav.Link>
       </Nav>
       </Container>
     </Navbar>

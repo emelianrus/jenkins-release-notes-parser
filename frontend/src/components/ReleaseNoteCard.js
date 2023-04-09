@@ -1,6 +1,6 @@
 
 
-function ProjectCard({ project }) {
+function ReleaseNoteCard({ project }) {
     return (
       // TODO: fix class name
       <div className="cardd">
@@ -44,6 +44,6 @@ function ProjectCard({ project }) {
     );
 }
 
-export default ProjectCard;
+export default ReleaseNoteCard;
 
 

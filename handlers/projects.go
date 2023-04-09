@@ -47,6 +47,17 @@ func GetAllProjects(c *gin.Context) {
 		</ul>`),
 		CreatedAt: "FEB 15",
 	})
+	releaseNotes = append(releaseNotes, types.GitHubReleaseNote{
+		Name:    "3.3.3",
+		TagName: "3.3.3T",
+		Body: string(`<h2>🐛 Bug fixes333</h2>
+		<ul>
+			<li>abasdfasdfadf (<a class="issue-link js-issue-link" href="#">#526</a>)
+			<a href="https://github.com/timja">@timja</a>
+			</li>
+		</ul>`),
+		CreatedAt: "MAR 7",
+	})
 
 	// c.JSON(200, pessoas)
 
