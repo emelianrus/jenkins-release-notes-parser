@@ -1,26 +1,60 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func AddProject(c *gin.Context) {
+	logrus.Infoln("AddProject")
 	c.JSON(http.StatusOK, "ASd")
 }
 
 func AddMultiplyProjects(c *gin.Context) {
+	logrus.Infoln("AddMultiplyProjects")
 	c.JSON(http.StatusOK, "ASd")
 }
 
 func GetProjectById(c *gin.Context) {
+	logrus.Infoln("GetProjectById")
 	projectName := c.DefaultQuery("name", "")
 	c.String(http.StatusOK, "Hello %s", projectName)
 }
 
 func GetAllProjects(c *gin.Context) {
+	logrus.Infoln("GetAllProjects")
+
+}
+
+func GetProjectsById(c *gin.Context) {
+	logrus.Infoln("GetProjectsById")
+	c.JSON(http.StatusOK, "GetProjectsById")
+}
+
+func DeleteProject(c *gin.Context) {
+	logrus.Infoln("DeleteProject")
+	id := c.DefaultQuery("id", "")
+	c.String(http.StatusOK, "Hello %s", id)
+}
+
+func DeleteMultiplyProjects(c *gin.Context) {
+	logrus.Infoln("DeleteMultiplyProjects")
+	var ids []string
+	if err := c.BindJSON(&ids); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
+		return
+	}
+	// Your logic to delete the items with the given IDs goes here
+	c.JSON(http.StatusOK, gin.H{"message": "Deleted items with IDs", "ids": ids})
+}
+
+func GetProjectReleaseNotes(c *gin.Context) {
+	logrus.Infoln("GetProjectReleaseNotes")
+	name := c.Param("name")
 
 	releaseNotes := []types.GitHubReleaseNote{}
 
@@ -59,26 +93,17 @@ func GetAllProjects(c *gin.Context) {
 		CreatedAt: "MAR 7",
 	})
 
-	// c.JSON(200, pessoas)
-
-	c.JSON(http.StatusOK, releaseNotes)
-}
-
-func GetProjectsById(c *gin.Context) {
-	c.JSON(http.StatusOK, "GetProjectsById")
-}
-
-func DeleteProject(c *gin.Context) {
-	id := c.DefaultQuery("id", "")
-	c.String(http.StatusOK, "Hello %s", id)
-}
-
-func DeleteMultiplyProjects(c *gin.Context) {
-	var ids []string
-	if err := c.BindJSON(&ids); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
-		return
+	type Resp struct {
+		Name         string
+		ProjectGroup string
+		ReleaseNotes []types.GitHubReleaseNote
 	}
-	// Your logic to delete the items with the given IDs goes here
-	c.JSON(http.StatusOK, gin.H{"message": "Deleted items with IDs", "ids": ids})
+
+	resp := Resp{
+		Name:         name,
+		ProjectGroup: "jenkinsci",
+		ReleaseNotes: releaseNotes,
+	}
+	c.JSON(http.StatusOK, resp)
+	fmt.Printf("HITED %s", name)
 }

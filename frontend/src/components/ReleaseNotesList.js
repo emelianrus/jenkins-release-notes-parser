@@ -4,8 +4,7 @@ import ReleaseNoteCard from './ReleaseNoteCard';
 import React, { useState } from "react";
 
 
-function ReleaseNotesList({ projects }) {
-
+function ReleaseNotesList({ projects, projectName, projectGroup}) {
   const [inputValue, setInputValue] = useState("");
 
   const handleInputChange = (event) => {
@@ -17,9 +16,9 @@ function ReleaseNotesList({ projects }) {
       <div id="repository-container-header" className="pt-3 hide-full-screen">
         <div className="d-flex flex-wrap flex-justify-end px-md-4 px-lg-5">
           <div className="d-flex flex-wrap flex-items-center wb-break-word f3 text-normal">
-            REPO_GROUP
+            {projectGroup}
             <span className="mx-1 flex-self-stretch color-fg-muted">/</span>
-            PROJECT_NAME
+            {projectName}
           </div>
         </div>
       </div>
