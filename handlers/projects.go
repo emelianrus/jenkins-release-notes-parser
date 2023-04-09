@@ -109,5 +109,5 @@ func GetProjectReleaseNotes(c *gin.Context) {
 		ReleaseNotes: releaseNotes,
 	}
 	c.JSON(http.StatusOK, resp)
-	fmt.Printf("HITED %s/%s ", ownerName, repoName)
+	fmt.Printf("HITED %s/%s\n", ownerName, repoName)
 }

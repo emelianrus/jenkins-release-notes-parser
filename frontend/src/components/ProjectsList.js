@@ -1,15 +1,9 @@
 
 import ProjectCard from './ProjectsCard';
-import React, { useState } from "react";
+import React from "react";
 
 
 function ProjectsList({ projects }) {
-
-  const [inputValue, setInputValue] = useState("");
-
-  const handleInputChange = (event) => {
-    setInputValue(event.target.value);
-  };
 
   return (
     <div className="project-list">
@@ -24,11 +18,7 @@ function ProjectsList({ projects }) {
                 <th>Force Download</th>
               </tr>
             </thead>
-
-            {projects.map(project => <ProjectCard key={project.name} project={project} />)}
-
-
-
+              {projects.map(project => <ProjectCard key={project.name} project={project} />)}
           </table>
         </div>
       </div>
