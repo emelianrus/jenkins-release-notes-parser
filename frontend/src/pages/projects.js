@@ -10,12 +10,14 @@ function Projects() {
   useEffect(() => {
     setProjects([{
       name: "projectName1",
+      owner: "ownername1",
       is_downloaded: true,
       has_error: false,
       last_updated: "Feb12 12:55"
     },
     {
       name: "projectName2",
+      owner: "ownername2",
       is_downloaded: false,
       has_error: false,
       last_updated: "Aug12 1:14"

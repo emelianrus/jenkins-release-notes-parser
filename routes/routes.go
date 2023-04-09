@@ -27,7 +27,8 @@ func SetupRouter() *gin.Engine {
 	router.GET("/", handlers.RedirectToRoot)
 	router.GET("/ping", handlers.Ping)
 
-	router.GET("/project/:name/release-notes", handlers.GetProjectReleaseNotes)
+	// https://api.github.com/repos/OWNER/REPO/releases
+	router.GET("/project/:owner/:repo/releases", handlers.GetProjectReleaseNotes)
 
 	// GET single project
 	router.GET("/project", handlers.GetProjectById)

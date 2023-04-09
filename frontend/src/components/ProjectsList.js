@@ -1,5 +1,5 @@
 
-import ProjectCard from './ProjectCard';
+import ProjectCard from './ProjectsCard';
 import React, { useState } from "react";
 
 
@@ -13,11 +13,11 @@ function ProjectsList({ projects }) {
 
   return (
     <div className="project-list">
-      <div class="container-sm mt-5 ml-5 mr-5">
+      <div className="container-sm mt-5 ml-5 mr-5">
         <h3>Title</h3>
-        <div class="table-responsive">
-          <table class="table">
-            <thead class="thead-light">
+        <div className="table-responsive">
+          <table className="table">
+            <thead className="thead-light">
               <tr>
                 <th>Project name</th>
                 <th>Download status</th>

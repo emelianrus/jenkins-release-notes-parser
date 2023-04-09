@@ -15,34 +15,34 @@ func AddProject(c *gin.Context) {
 }
 
 func AddMultiplyProjects(c *gin.Context) {
-	logrus.Infoln("AddMultiplyProjects")
+	logrus.Infoln("AddMultiplyProjects route reached")
 	c.JSON(http.StatusOK, "ASd")
 }
 
 func GetProjectById(c *gin.Context) {
-	logrus.Infoln("GetProjectById")
+	logrus.Infoln("GetProjectById route reached")
 	projectName := c.DefaultQuery("name", "")
 	c.String(http.StatusOK, "Hello %s", projectName)
 }
 
 func GetAllProjects(c *gin.Context) {
-	logrus.Infoln("GetAllProjects")
+	logrus.Infoln("GetAllProjects route reached")
 
 }
 
 func GetProjectsById(c *gin.Context) {
-	logrus.Infoln("GetProjectsById")
+	logrus.Infoln("GetProjectsById route reached")
 	c.JSON(http.StatusOK, "GetProjectsById")
 }
 
 func DeleteProject(c *gin.Context) {
-	logrus.Infoln("DeleteProject")
+	logrus.Infoln("DeleteProject route reached")
 	id := c.DefaultQuery("id", "")
 	c.String(http.StatusOK, "Hello %s", id)
 }
 
 func DeleteMultiplyProjects(c *gin.Context) {
-	logrus.Infoln("DeleteMultiplyProjects")
+	logrus.Infoln("DeleteMultiplyProjects route reached")
 	var ids []string
 	if err := c.BindJSON(&ids); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
@@ -52,9 +52,11 @@ func DeleteMultiplyProjects(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Deleted items with IDs", "ids": ids})
 }
 
+// TODO: https://api.github.com/repos/OWNER/REPO/releases
 func GetProjectReleaseNotes(c *gin.Context) {
-	logrus.Infoln("GetProjectReleaseNotes")
-	name := c.Param("name")
+	logrus.Infoln("GetProjectReleaseNotes route reached")
+	ownerName := c.Param("owner")
+	repoName := c.Param("repo")
 
 	releaseNotes := []types.GitHubReleaseNote{}
 
@@ -94,16 +96,18 @@ func GetProjectReleaseNotes(c *gin.Context) {
 	})
 
 	type Resp struct {
-		Name         string
+		Repo         string
+		Owner        string
 		ProjectGroup string
 		ReleaseNotes []types.GitHubReleaseNote
 	}
 
 	resp := Resp{
-		Name:         name,
+		Repo:         repoName,
+		Owner:        ownerName,
 		ProjectGroup: "jenkinsci",
 		ReleaseNotes: releaseNotes,
 	}
 	c.JSON(http.StatusOK, resp)
-	fmt.Printf("HITED %s", name)
+	fmt.Printf("HITED %s/%s ", ownerName, repoName)
 }

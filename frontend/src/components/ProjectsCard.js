@@ -1,0 +1,41 @@
+import { Link } from 'react-router-dom';
+
+
+function ProjectCard({ project }) {
+    return (
+      // TODO: fix class name
+      <tbody>
+        <tr id="server-plugins">
+          <td>
+              <span id="plugin-name-ranged">
+                <Link to={`/test/${project.owner}/${project.name}/releases`}>
+                  { project.name }
+                </Link>
+              </span>
+          </td>
+          <td>
+            <ul>
+              <li>
+                <span>Is Downloaded:</span> <span>{ project.is_downloaded.toString() }</span>
+              </li>
+              <li>
+                <span>Has Error:</span> <span>{ project.has_error.toString() }</span>
+              </li>
+              <li>
+                <span>Last Updated:</span> <span>{ project.last_updated }</span>
+              </li>
+            </ul>
+          </td>
+          <td >
+            <span id="plugin-name-ranged">
+              <button type="button" className="btn btn-primary rescan-btn">rescan</button>
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    );
+}
+
+export default ProjectCard;
+
+
