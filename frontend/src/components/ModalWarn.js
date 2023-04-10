@@ -9,7 +9,7 @@ function WarningModal() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch(`http://localhost:8080/redis/status`);
+        const response = await fetch("http://localhost:8080/redis/status");
         const data = await response.json();
         if (data == "") {
           setShowAlert(false);
