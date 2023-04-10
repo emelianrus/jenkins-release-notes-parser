@@ -2,27 +2,28 @@ import { Link } from 'react-router-dom';
 
 
 function ProjectCard({ project }) {
+
     return (
       // TODO: fix class name
       <tbody>
         <tr id="server-plugins">
           <td>
               <span id="plugin-name-ranged">
-                <Link to={`/test/${project.owner}/${project.name}/releases`}>
-                  { project.name }
+                <Link to={`/test/${project.Owner}/${project.Name}/releases`}>
+                  { project.Name }
                 </Link>
               </span>
           </td>
           <td>
             <ul>
               <li>
-                <span>Is Downloaded:</span> <span>{ project.is_downloaded.toString() }</span>
+                <span>Is Downloaded:</span> <span>{ project.IsDownloaded.toString() }</span>
               </li>
               <li>
-                <span>Has Error:</span> <span>{ project.has_error.toString() }</span>
+                <span>Has Error:</span> <span>{ project.Error }</span>
               </li>
               <li>
-                <span>Last Updated:</span> <span>{ project.last_updated }</span>
+                <span>Last Updated:</span> <span>{ project.LastUpdated }</span>
               </li>
             </ul>
           </td>

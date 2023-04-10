@@ -3,13 +3,19 @@ package routes
 import (
 	"net/http"
 
+	"github.com/emelianrus/jenkins-release-notes-parser/db"
 	"github.com/emelianrus/jenkins-release-notes-parser/handlers"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter() *gin.Engine {
+func SetupRouter(db *db.Redis) *gin.Engine {
 	router := gin.Default()
+
+	handler := handlers.ProjectService{
+		Redis: db,
+	}
+
 	// router.GET("/books", handlers.GetBooks)
 	// router.GET("/books/:isbn", handlers.GetBookByISBN)
 	// // router.DELETE("/books/:isbn", handlers.DeleteBookByISBN)
@@ -28,21 +34,21 @@ func SetupRouter() *gin.Engine {
 	router.GET("/ping", handlers.Ping)
 
 	// https://api.github.com/repos/OWNER/REPO/releases
-	router.GET("/project/:owner/:repo/releases", handlers.GetProjectReleaseNotes)
+	router.GET("/project/:owner/:repo/releases", handler.GetProjectReleaseNotes)
 
 	// GET single project
-	router.GET("/project", handlers.GetProjectById)
+	router.GET("/project", handler.GetProjectById)
 	// POST single projet
-	router.POST("/project", handlers.GetAllProjects)
+	router.POST("/project", handler.GetAllProjects)
 	// DELETE single project
-	router.DELETE("/project", handlers.DeleteProject)
+	router.DELETE("/project", handler.DeleteProject)
 
 	// TODO: should it be separate functions? or cast everything to list?
 	// GET all projects
-	router.GET("/projects", handlers.GetAllProjects)
-	router.POST("/projects", handlers.GetAllProjects)
+	router.GET("/projects", handler.GetAllProjects)
+	router.POST("/projects", handler.GetAllProjects)
 	// DELETE multiple items by ID
-	router.DELETE("/projects", handlers.DeleteMultiplyProjects)
+	router.DELETE("/projects", handler.DeleteMultiplyProjects)
 
 	return router
 }

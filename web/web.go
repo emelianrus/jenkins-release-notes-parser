@@ -111,7 +111,7 @@ func (h *CommonHandler) addJenkinsPlugin(w http.ResponseWriter, r *http.Request)
 				continue
 			}
 
-			plugin := types.JenkinsPlugin{
+			plugin := types.Project{
 				Name:    fmt.Sprintf("%v", name),
 				Version: fmt.Sprintf("%v", version),
 			}

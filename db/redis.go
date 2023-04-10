@@ -70,8 +70,9 @@ func (r *Redis) AddDebugData() {
 	for _, line := range lines {
 		kv := strings.Split(line, ":")
 		if len(kv) == 2 {
-			r.AddJenkinsServerPlugin("jenkins-one", types.JenkinsPlugin{
+			r.AddJenkinsServerPlugin("jenkins-one", types.Project{
 				Name:    kv[0],
+				Owner:   "jenkinsci",
 				Version: kv[1],
 			})
 

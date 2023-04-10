@@ -8,8 +8,9 @@ type GitHubReleaseNote struct {
 	CreatedAt string `json:"created_at"`
 }
 
-type JenkinsPlugin struct {
+type Project struct {
 	Name         string
+	Owner        string
 	Version      string
 	Error        string
 	IsDownloaded bool
@@ -20,5 +21,5 @@ type JenkinsPlugin struct {
 type JenkinsServer struct {
 	Name    string
 	Core    string
-	Plugins []JenkinsPlugin
+	Plugins []Project
 }

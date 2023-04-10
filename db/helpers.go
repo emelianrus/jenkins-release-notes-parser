@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"strings"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/github"
@@ -105,8 +106,8 @@ func (r *Redis) ChangeJenkinServerPluginVersion(serverName string, pluginName st
 	return nil
 }
 
-func (r *Redis) GetJenkinsProjects(jenkinsServer string) ([]types.JenkinsPlugin, error) {
-	var jenkinsPlugins []types.JenkinsPlugin
+func (r *Redis) GetJenkinsProjects(jenkinsServer string) ([]types.Project, error) {
+	var jenkinsPlugins []types.Project
 	projectKeys, _ := r.Keys(fmt.Sprintf("servers:%s:plugins:*", jenkinsServer))
 
 	for _, projectKey := range projectKeys {
@@ -123,7 +124,7 @@ func (r *Redis) GetJenkinsProjects(jenkinsServer string) ([]types.JenkinsPlugin,
 		}
 		projectError := r.GetProjectError(projectName)
 
-		jenkinsPlugins = append(jenkinsPlugins, types.JenkinsPlugin{
+		jenkinsPlugins = append(jenkinsPlugins, types.Project{
 			Name:         projectName,
 			Version:      version,
 			Error:        projectError,
@@ -134,7 +135,7 @@ func (r *Redis) GetJenkinsProjects(jenkinsServer string) ([]types.JenkinsPlugin,
 	return jenkinsPlugins, nil
 }
 
-func (r *Redis) AddJenkinsServerPlugin(serverName string, plugin types.JenkinsPlugin) error {
+func (r *Redis) AddJenkinsServerPlugin(serverName string, plugin types.Project) error {
 	_, err := r.Get(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name)).Bytes()
 	if err != nil {
 		logrus.Infoln(fmt.Sprintf("servers:%s:plugins:%s", serverName, plugin.Name) + " not found in redis, adding...")
@@ -218,6 +219,74 @@ func (r *Redis) IsProjectDownloaded(projectName string) bool {
 // 	}
 // 	return nil
 // }
+
+func (r *Redis) GetAllProject() ([]types.Project, error) {
+	var projects []types.Project
+	// TODO: this should be configurable
+	repoOwner := "jenkinsci"
+
+	// get list of all projects
+	var projectsTmp []string
+	projectsKeys, _ := r.Keys(fmt.Sprintf("github:%s:*", repoOwner))
+	for _, key := range projectsKeys {
+		splitted := strings.Split(key, ":")
+		projectsTmp = append(projectsTmp, splitted[2])
+	}
+	projectsTmp = utils.RemoveDuplicates(projectsTmp)
+
+	// gather project data
+	for _, key := range projectsTmp {
+
+		projects = append(projects, types.Project{
+			Name:  key,
+			Owner: repoOwner,
+			// TODO: should gather all fields
+			Error:        "some error",
+			IsDownloaded: true, // r.IsProjectDownloaded(key)
+			LastUpdated:  "Tue 15 2022",
+		})
+
+	}
+
+	return projects, nil
+}
+
+func (r *Redis) GetProject(projectOwner string, projectName string) ([]types.GitHubReleaseNote, error) {
+
+	releaseNotes := []types.GitHubReleaseNote{}
+
+	// get all versions for specific project
+	projectVersionsJson, err := r.Get(fmt.Sprintf("github:%s:%s:versions", projectOwner, projectName)).Bytes()
+	if err != nil {
+		return releaseNotes, errors.New("error in getPlugins " + projectName)
+	}
+	// convert json versions to []string
+	var versions []string
+	err = json.Unmarshal(projectVersionsJson, &versions)
+	if err != nil {
+		logrus.Errorln(err)
+	}
+
+	for _, version := range versions {
+		// get release notes of specific release
+		pluginJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", projectOwner, projectName, version)).Bytes()
+		var releaseNote types.GitHubReleaseNote
+		err := json.Unmarshal(pluginJson, &releaseNote)
+		if err != nil {
+			logrus.Errorln(err)
+			// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
+			return releaseNotes, errors.New("failed to unmarshal ReleaseNote")
+		}
+		// append release version note to list
+		releaseNote.Body = string(template.HTML(
+			utils.ReplaceGitHubLinks(
+				utils.ConvertMarkDownToHtml(releaseNote.Body))))
+		releaseNotes = append(releaseNotes, releaseNote)
+
+	}
+
+	return releaseNotes, nil
+}
 
 func (r *Redis) GetPluginWithVersion(projectName string, projectVersion string) (types.GitHubReleaseNote, error) {
 	pluginJson, _ := r.Get(fmt.Sprintf("github:jenkinsci:%s:%s", projectName, projectVersion)).Bytes()

@@ -18,7 +18,7 @@ function ProjectsList({ projects }) {
                 <th>Force Download</th>
               </tr>
             </thead>
-              {projects.map(project => <ProjectCard key={project.name} project={project} />)}
+              {projects.map(project => <ProjectCard key={project.Name} project={project} />)}
           </table>
         </div>
       </div>

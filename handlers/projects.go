@@ -4,44 +4,51 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/emelianrus/jenkins-release-notes-parser/db"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
-func AddProject(c *gin.Context) {
+// struct for handlers to use DB connection
+type ProjectService struct {
+	Redis *db.Redis
+}
+
+func (s *ProjectService) AddProject(c *gin.Context) {
 	logrus.Infoln("AddProject")
 	c.JSON(http.StatusOK, "ASd")
 }
 
-func AddMultiplyProjects(c *gin.Context) {
+func (s *ProjectService) AddMultiplyProjects(c *gin.Context) {
 	logrus.Infoln("AddMultiplyProjects route reached")
 	c.JSON(http.StatusOK, "ASd")
 }
 
-func GetProjectById(c *gin.Context) {
+func (s *ProjectService) GetProjectById(c *gin.Context) {
 	logrus.Infoln("GetProjectById route reached")
 	projectName := c.DefaultQuery("name", "")
 	c.String(http.StatusOK, "Hello %s", projectName)
 }
 
-func GetAllProjects(c *gin.Context) {
+func (s *ProjectService) GetAllProjects(c *gin.Context) {
 	logrus.Infoln("GetAllProjects route reached")
-
+	projects, _ := s.Redis.GetAllProject()
+	c.JSON(http.StatusOK, projects)
 }
 
-func GetProjectsById(c *gin.Context) {
+func (s *ProjectService) GetProjectsById(c *gin.Context) {
 	logrus.Infoln("GetProjectsById route reached")
 	c.JSON(http.StatusOK, "GetProjectsById")
 }
 
-func DeleteProject(c *gin.Context) {
+func (s *ProjectService) DeleteProject(c *gin.Context) {
 	logrus.Infoln("DeleteProject route reached")
 	id := c.DefaultQuery("id", "")
 	c.String(http.StatusOK, "Hello %s", id)
 }
 
-func DeleteMultiplyProjects(c *gin.Context) {
+func (s *ProjectService) DeleteMultiplyProjects(c *gin.Context) {
 	logrus.Infoln("DeleteMultiplyProjects route reached")
 	var ids []string
 	if err := c.BindJSON(&ids); err != nil {
@@ -53,47 +60,16 @@ func DeleteMultiplyProjects(c *gin.Context) {
 }
 
 // TODO: https://api.github.com/repos/OWNER/REPO/releases
-func GetProjectReleaseNotes(c *gin.Context) {
+func (s *ProjectService) GetProjectReleaseNotes(c *gin.Context) {
 	logrus.Infoln("GetProjectReleaseNotes route reached")
 	ownerName := c.Param("owner")
 	repoName := c.Param("repo")
 
-	releaseNotes := []types.GitHubReleaseNote{}
-
-	releaseNotes = append(releaseNotes, types.GitHubReleaseNote{
-		Name:    "1.1.1",
-		TagName: "1.1.1T",
-		Body: string(`<h2>🐛 Bug fixes</h2>
-		<ul>
-			<li>Fix publish release artifact GitHub action (<a class="issue-link js-issue-link" href="#">#526</a>)
-			<a href="https://github.com/timja">@timja</a>
-			</li>
-		</ul>`),
-		CreatedAt: "AUG 21",
-	})
-
-	releaseNotes = append(releaseNotes, types.GitHubReleaseNote{
-		Name:    "2.2.2",
-		TagName: "2.2.2T",
-		Body: string(`<h2>🐛 Bug fixes222</h2>
-		<ul>
-			<li>abasdfasdfadf (<a class="issue-link js-issue-link" href="#">#526</a>)
-			<a href="https://github.com/timja">@timja</a>
-			</li>
-		</ul>`),
-		CreatedAt: "FEB 15",
-	})
-	releaseNotes = append(releaseNotes, types.GitHubReleaseNote{
-		Name:    "3.3.3",
-		TagName: "3.3.3T",
-		Body: string(`<h2>🐛 Bug fixes333</h2>
-		<ul>
-			<li>abasdfasdfadf (<a class="issue-link js-issue-link" href="#">#526</a>)
-			<a href="https://github.com/timja">@timja</a>
-			</li>
-		</ul>`),
-		CreatedAt: "MAR 7",
-	})
+	releaseNotes, err := s.Redis.GetProject(ownerName, repoName)
+	if err != nil {
+		logrus.Errorf("can not get project %s:%s\n", ownerName, repoName)
+		logrus.Errorln(err)
+	}
 
 	type Resp struct {
 		Repo         string

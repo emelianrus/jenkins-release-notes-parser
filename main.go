@@ -34,7 +34,7 @@ func main() {
 	// go worker.StartQueue(redisclient, githubClient)
 
 	// GIN
-	router := routes.SetupRouter()
+	router := routes.SetupRouter(redisclient)
 	router.Run(":8080")
 	// WEB
 	// web.StartWeb(redisclient, &githubClient)

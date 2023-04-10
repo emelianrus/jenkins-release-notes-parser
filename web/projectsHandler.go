@@ -10,7 +10,7 @@ import (
 
 type projectsPage struct {
 	Title      string
-	Projects   []types.JenkinsPlugin
+	Projects   []types.Project
 	ServerName string
 }
 
@@ -20,12 +20,12 @@ func (h *CommonHandler) projectsHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var projects []types.JenkinsPlugin
+	var projects []types.Project
 
 	allProjects := h.Redis.GetAllProjectsFromServers()
 
 	for _, projectName := range allProjects {
-		projects = append(projects, types.JenkinsPlugin{
+		projects = append(projects, types.Project{
 			Name:         projectName,
 			IsDownloaded: h.Redis.IsProjectDownloaded(projectName),
 			Error:        h.Redis.GetProjectError(projectName),
