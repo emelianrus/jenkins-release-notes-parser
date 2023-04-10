@@ -238,5 +238,5 @@ func StartWeb(redisclient *db.Redis, githubClient *github.GitHub) {
 	http.HandleFunc("/add-server", redisHandler.addJenkinsServer)
 	http.HandleFunc("/delete-server", redisHandler.deleteJenkinsServer)
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8084", nil))
 }
