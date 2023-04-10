@@ -30,6 +30,7 @@ function App() {
       </div>
     </Router>
 
+    {/* show message when redis is down */}
     <ModalWarn />
 
     </>

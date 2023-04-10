@@ -18,7 +18,11 @@ function ProjectsList({ projects }) {
                 <th>Force Download</th>
               </tr>
             </thead>
-              {projects.map(project => <ProjectCard key={project.Name} project={project} />)}
+
+            {projects.length === 0
+              ? <tbody><tr><td>No projects to display</td></tr></tbody>
+              : projects.map(project => <ProjectCard key={project.Name} project={project} />)
+            }
           </table>
         </div>
       </div>

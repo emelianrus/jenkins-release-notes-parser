@@ -17,7 +17,10 @@ function Projects() {
 
         const data = await response.json();
         // pass as new single object instead of several params
-        setProjects(data);
+        if (data) {
+          setProjects(data);
+        }
+
       } catch (error) {
         console.error(error);
       }
