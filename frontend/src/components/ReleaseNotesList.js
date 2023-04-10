@@ -24,7 +24,7 @@ function ReleaseNotesList({ projects, projectRepo, projectOwner}) {
       </div>
 
       <div className="clearfix container-xl px-3 px-md-4 px-lg-5 mt-4">
-        <div className="d-flex flex-justify-center">
+        {/* <div className="d-flex flex-justify-center">
           <div className="d-flex flex-column flex-sm-row flex-wrap mb-3 pb-3 col-11 justify-content-sm-end border-bottom">
             <div className="d-flex flex-column flex-md-row">
               <div>
@@ -35,7 +35,7 @@ function ReleaseNotesList({ projects, projectRepo, projectOwner}) {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
         {/* top menu releases find edit ^^ */}
 
         {projects.map(project => <ReleaseNoteCard key={project.name} project={project} />)}

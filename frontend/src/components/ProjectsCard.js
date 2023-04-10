@@ -9,7 +9,7 @@ function ProjectCard({ project }) {
         <tr id="server-plugins">
           <td>
               <span id="plugin-name-ranged">
-                <Link to={`/test/${project.Owner}/${project.Name}/releases`}>
+                <Link to={`/repo/${project.Owner}/${project.Name}/releases`}>
                   { project.Name }
                 </Link>
               </span>
@@ -29,7 +29,7 @@ function ProjectCard({ project }) {
           </td>
           <td >
             <span id="plugin-name-ranged">
-              <button type="button" className="btn btn-primary rescan-btn">rescan</button>
+              <button type="button" className="btn btn-primary rescan-btn">rescan now</button>
             </span>
           </td>
         </tr>

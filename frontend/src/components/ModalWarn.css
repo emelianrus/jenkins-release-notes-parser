@@ -1,0 +1,14 @@
+.warning-window {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    background-color: red;
+    padding: 10px;
+    border-radius: 5px 0 0 0;
+    box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.warning-text {
+    color: white;
+    font-weight: bold;
+}

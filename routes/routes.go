@@ -33,6 +33,8 @@ func SetupRouter(db *db.Redis) *gin.Engine {
 	router.GET("/", handlers.RedirectToRoot)
 	router.GET("/ping", handlers.Ping)
 
+	router.GET("/redis/status", handler.RedisStatus)
+
 	// https://api.github.com/repos/OWNER/REPO/releases
 	router.GET("/project/:owner/:repo/releases", handler.GetProjectReleaseNotes)
 

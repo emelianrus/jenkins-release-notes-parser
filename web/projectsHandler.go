@@ -27,9 +27,9 @@ func (h *CommonHandler) projectsHandler(w http.ResponseWriter, r *http.Request) 
 	for _, projectName := range allProjects {
 		projects = append(projects, types.Project{
 			Name:         projectName,
-			IsDownloaded: h.Redis.IsProjectDownloaded(projectName),
-			Error:        h.Redis.GetProjectError(projectName),
-			LastUpdated:  h.Redis.GetLastUpdatedTime(projectName),
+			IsDownloaded: h.Redis.IsProjectDownloaded("jenkinsci", projectName),
+			Error:        h.Redis.GetProjectError("jenkinsci", projectName),
+			LastUpdated:  h.Redis.GetLastUpdatedTime("jenkinsci", projectName),
 		})
 	}
 

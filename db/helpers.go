@@ -122,13 +122,13 @@ func (r *Redis) GetJenkinsProjects(jenkinsServer string) ([]types.Project, error
 		if err != nil {
 			logrus.Errorln("can not unmarshal version")
 		}
-		projectError := r.GetProjectError(projectName)
+		projectError := r.GetProjectError("jenkinsci", projectName)
 
 		jenkinsPlugins = append(jenkinsPlugins, types.Project{
 			Name:         projectName,
 			Version:      version,
 			Error:        projectError,
-			IsDownloaded: r.IsProjectDownloaded(projectName),
+			IsDownloaded: r.IsProjectDownloaded("jenkinsci", projectName),
 		})
 	}
 
@@ -169,9 +169,9 @@ func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
 	return nil
 }
 
-func (r *Redis) GetLastUpdatedTime(projectName string) string {
+func (r *Redis) GetLastUpdatedTime(projectOwner string, projectName string) string {
 
-	serverJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "lastUpdated")).Bytes()
+	serverJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", projectOwner, projectName, "lastUpdated")).Bytes()
 	return string(serverJson)
 }
 
@@ -187,13 +187,13 @@ func (r *Redis) SetProjectError(projectName string, value string) error {
 	return nil
 }
 
-func (r *Redis) GetProjectError(projectName string) string {
-	serverJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "error")).Bytes()
+func (r *Redis) GetProjectError(projectOwner string, projectName string) string {
+	serverJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", projectOwner, projectName, "error")).Bytes()
 	return string(serverJson)
 }
 
-func (r *Redis) IsProjectDownloaded(projectName string) bool {
-	_, err := r.Get(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "versions")).Bytes()
+func (r *Redis) IsProjectDownloaded(projectOwner string, projectName string) bool {
+	_, err := r.Get(fmt.Sprintf("github:%s:%s:%s", projectOwner, projectName, "versions")).Bytes()
 	if err == nil {
 		return true
 	} else {
@@ -235,15 +235,15 @@ func (r *Redis) GetAllProject() ([]types.Project, error) {
 	projectsTmp = utils.RemoveDuplicates(projectsTmp)
 
 	// gather project data
-	for _, key := range projectsTmp {
+	for _, projectName := range projectsTmp {
 
 		projects = append(projects, types.Project{
-			Name:  key,
+			Name:  projectName,
 			Owner: repoOwner,
 			// TODO: should gather all fields
-			Error:        "some error",
-			IsDownloaded: true, // r.IsProjectDownloaded(key)
-			LastUpdated:  "Tue 15 2022",
+			Error:        r.GetProjectError(repoOwner, projectName),
+			IsDownloaded: r.IsProjectDownloaded(repoOwner, projectName),
+			LastUpdated:  r.GetLastUpdatedTime(repoOwner, projectName),
 		})
 
 	}
