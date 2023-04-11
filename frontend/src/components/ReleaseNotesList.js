@@ -38,7 +38,7 @@ function ReleaseNotesList({ projects, projectRepo, projectOwner}) {
         </div> */}
         {/* top menu releases find edit ^^ */}
 
-        {projects.map(project => <ReleaseNoteCard key={project.name} project={project} />)}
+        {projects.map(project => <ReleaseNoteCard key={project.Name} project={project} />)}
       </div>
     </div>
   );

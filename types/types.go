@@ -1,11 +1,11 @@
 package types
 
-// response from github getted from release path
-type GitHubReleaseNote struct {
-	Name      string `json:"name"`     // Version
-	TagName   string `json:"tag_name"` // Version
-	Body      string `json:"body"`     // this is markdown formated text of release note
-	CreatedAt string `json:"created_at"`
+// main type of downloaded project
+type ReleaseNote struct {
+	Name      string
+	Tag       string
+	BodyHTML  string
+	CreatedAt string
 }
 
 type Project struct {

@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
+	"github.com/emelianrus/jenkins-release-notes-parser/utils"
 )
 
 type GitHub struct {
@@ -25,6 +27,14 @@ type GitHubStats struct {
 	RateLimitUsed     int   // X-RateLimit-Used 		| 60			| In units
 
 	WaitSlotSeconds int // Seconds to reset RateLimit slots, if negative free to go
+}
+
+// response from github getted from release path
+type gitHubReleaseNote struct {
+	Name      string `json:"name"`     // Version
+	TagName   string `json:"tag_name"` // Version
+	Body      string `json:"body"`     // this is markdown formated text of release note
+	CreatedAt string `json:"created_at"`
 }
 
 func NewGitHubClient() GitHub {
@@ -79,7 +89,9 @@ func (g *GitHub) waitUntilNextSlotAvailable() {
 	time.Sleep(time.Second * time.Duration(g.GitHubStats.WaitSlotSeconds))
 }
 
-func (g *GitHub) Download(projectName string) ([]types.GitHubReleaseNote, error) {
+func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
+	releaseNotes := []types.ReleaseNote{}
+
 	if g.Initialized {
 		g.updateWaitSlotSeconds()
 	}
@@ -129,7 +141,7 @@ func (g *GitHub) Download(projectName string) ([]types.GitHubReleaseNote, error)
 			fmt.Printf("API error: %s\n", resp.Status)
 			return nil, fmt.Errorf("API error %s", resp.Status)
 		}
-		var releases []types.GitHubReleaseNote
+		var releases []gitHubReleaseNote
 		err = json.NewDecoder(resp.Body).Decode(&releases)
 		if err != nil {
 			// fmt.Println("error decoding github response")
@@ -139,6 +151,16 @@ func (g *GitHub) Download(projectName string) ([]types.GitHubReleaseNote, error)
 
 		fmt.Println("finished download goroutine " + projectName)
 
-		return releases, nil
+		for _, release := range releases {
+			releaseNotes = append(releaseNotes, types.ReleaseNote{
+				Name: release.Name,
+				Tag:  release.TagName,
+				BodyHTML: string(template.HTML(
+					utils.ReplaceGitHubLinks(
+						utils.ConvertMarkDownToHtml(release.Body)))),
+				CreatedAt: release.CreatedAt,
+			})
+		}
+		return releaseNotes, nil
 	}
 }

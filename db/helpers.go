@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"html/template"
 	"strings"
 
-	"github.com/emelianrus/jenkins-release-notes-parser/github"
+	"github.com/emelianrus/jenkins-release-notes-parser/sources/github"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/emelianrus/jenkins-release-notes-parser/utils"
 	"github.com/sirupsen/logrus"
@@ -79,18 +78,6 @@ func (r *Redis) DeleteJenkinsServer(serverName string) {
 	path := fmt.Sprintf("servers:%s", serverName)
 	logrus.Infof("Removing jenkins server %s\n", path)
 	r.Del(path)
-}
-
-func (r *Redis) GetAllProjectsFromServers() []string {
-	var result []string
-	projectKeys, _ := r.Keys("servers:*:plugins:*")
-
-	for _, path := range projectKeys {
-		splitted := strings.Split(path, ":")
-		result = append(result, splitted[len(splitted)-1])
-	}
-	result = utils.RemoveDuplicates(result)
-	return result
 }
 
 func (r *Redis) ChangeJenkinServerPluginVersion(serverName string, pluginName string, newVersion string) error {
@@ -220,7 +207,20 @@ func (r *Redis) IsProjectDownloaded(projectOwner string, projectName string) boo
 // 	return nil
 // }
 
-func (r *Redis) GetAllProject() ([]types.Project, error) {
+// from "servers:*:plugins:*" redis path
+func (r *Redis) GetAllProjectsFromServers() []string {
+	var result []string
+	projectKeys, _ := r.Keys("servers:*:plugins:*")
+
+	for _, path := range projectKeys {
+		splitted := strings.Split(path, ":")
+		result = append(result, splitted[len(splitted)-1])
+	}
+	result = utils.RemoveDuplicates(result)
+	return result
+}
+
+func (r *Redis) GetAllProjects() ([]types.Project, error) {
 	var projects []types.Project
 	// TODO: this should be configurable
 	repoOwner := "jenkinsci"
@@ -251,9 +251,9 @@ func (r *Redis) GetAllProject() ([]types.Project, error) {
 	return projects, nil
 }
 
-func (r *Redis) GetProject(projectOwner string, projectName string) ([]types.GitHubReleaseNote, error) {
+func (r *Redis) GetProject(projectOwner string, projectName string) ([]types.ReleaseNote, error) {
 
-	releaseNotes := []types.GitHubReleaseNote{}
+	releaseNotes := []types.ReleaseNote{}
 
 	// get all versions for specific project
 	projectVersionsJson, err := r.Get(fmt.Sprintf("github:%s:%s:versions", projectOwner, projectName)).Bytes()
@@ -270,7 +270,7 @@ func (r *Redis) GetProject(projectOwner string, projectName string) ([]types.Git
 	for _, version := range versions {
 		// get release notes of specific release
 		pluginJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", projectOwner, projectName, version)).Bytes()
-		var releaseNote types.GitHubReleaseNote
+		var releaseNote types.ReleaseNote
 		err := json.Unmarshal(pluginJson, &releaseNote)
 		if err != nil {
 			logrus.Errorln(err)
@@ -278,9 +278,7 @@ func (r *Redis) GetProject(projectOwner string, projectName string) ([]types.Git
 			return releaseNotes, errors.New("failed to unmarshal ReleaseNote")
 		}
 		// append release version note to list
-		releaseNote.Body = string(template.HTML(
-			utils.ReplaceGitHubLinks(
-				utils.ConvertMarkDownToHtml(releaseNote.Body))))
+		// releaseNote.Body = releaseNote.BodyHTML
 		releaseNotes = append(releaseNotes, releaseNote)
 
 	}
@@ -288,15 +286,15 @@ func (r *Redis) GetProject(projectOwner string, projectName string) ([]types.Git
 	return releaseNotes, nil
 }
 
-func (r *Redis) GetPluginWithVersion(projectName string, projectVersion string) (types.GitHubReleaseNote, error) {
+func (r *Redis) GetPluginWithVersion(projectName string, projectVersion string) (types.ReleaseNote, error) {
 	pluginJson, _ := r.Get(fmt.Sprintf("github:jenkinsci:%s:%s", projectName, projectVersion)).Bytes()
-	var releaseNote types.GitHubReleaseNote
+	var releaseNote types.ReleaseNote
 	err := json.Unmarshal(pluginJson, &releaseNote)
 
 	if err != nil {
 		logrus.Errorln(err)
 		// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
-		return types.GitHubReleaseNote{}, errors.New("failed to unmarshal ReleaseNote")
+		return types.ReleaseNote{}, errors.New("failed to unmarshal ReleaseNote")
 	}
 	return releaseNote, nil
 }

@@ -23,7 +23,7 @@ function Releases() {
         // /project/:owner/:repo/releases
         const response = await fetch(`http://localhost:8080/project/${owner}/${repo}/releases`);
         const data = await response.json();
-
+        console.log(data)
         // pass as new single object instead of several params
         setProjects(data.ReleaseNotes);
         setProjectRepo(repo);

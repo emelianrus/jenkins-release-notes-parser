@@ -33,7 +33,7 @@ func (s *ProjectService) GetProjectById(c *gin.Context) {
 
 func (s *ProjectService) GetAllProjects(c *gin.Context) {
 	logrus.Infoln("GetAllProjects route reached")
-	projects, _ := s.Redis.GetAllProject()
+	projects, _ := s.Redis.GetAllProjects()
 	c.JSON(http.StatusOK, projects)
 }
 
@@ -75,7 +75,7 @@ func (s *ProjectService) GetProjectReleaseNotes(c *gin.Context) {
 		Repo         string
 		Owner        string
 		ProjectGroup string
-		ReleaseNotes []types.GitHubReleaseNote
+		ReleaseNotes []types.ReleaseNote
 	}
 
 	resp := Resp{

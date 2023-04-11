@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (r *Redis) SaveReleaseNotesToDB(releases []types.GitHubReleaseNote, projectName string) error {
+func (r *Redis) SaveReleaseNotesToDB(releases []types.ReleaseNote, projectName string) error {
 
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("02 January 2006 15:04")
@@ -33,16 +33,18 @@ func (r *Redis) SaveReleaseNotesToDB(releases []types.GitHubReleaseNote, project
 
 		// TODO: some plugins doesnt have name, so replace with tag
 		if release.Name == "" {
-			release.Name = release.TagName
+			release.Name = release.Tag
 		}
+
 		versions = append(versions, release.Name)
-		key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, release.Name)
 
 		jsonData, err := json.Marshal(release)
 		if err != nil {
 			// log.Println(err)
 			return fmt.Errorf("error Marshal release: %s", err)
 		}
+		// save release file
+		key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, release.Name)
 		err = r.Set(key, jsonData)
 		if err != nil {
 			log.Println(err)
@@ -58,6 +60,7 @@ func (r *Redis) SaveReleaseNotesToDB(releases []types.GitHubReleaseNote, project
 		log.Println(err)
 		return fmt.Errorf("error setting version for release: %s", err)
 	}
+
 	if len(versions) == 0 {
 		fmt.Println("Project doesn't have releases: " + projectName)
 		return nil
