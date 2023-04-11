@@ -12,6 +12,7 @@ import (
 
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/emelianrus/jenkins-release-notes-parser/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type GitHub struct {
@@ -44,7 +45,7 @@ func NewGitHubClient() GitHub {
 func (g *GitHub) HasRequestSlot() bool {
 	var reservedSlots = 5
 	if g.GitHubStats.RateLimitRemaning == 0 && g.GitHubStats.RateLimit == 0 {
-		fmt.Println("Can not get rate limit, github just created")
+		logrus.Infoln("Can not get rate limit, github just created")
 	}
 
 	if g.GitHubStats.RateLimitRemaning < g.GitHubStats.RateLimit-reservedSlots {
@@ -80,12 +81,12 @@ func (g *GitHub) updateWaitSlotSeconds() {
 	timeToWait := g.GitHubStats.RateLimitReset - nowEpoch
 
 	g.GitHubStats.WaitSlotSeconds = int(timeToWait)
-	fmt.Printf("g.WaitSlotSeconds: %d\n", g.GitHubStats.WaitSlotSeconds)
+	logrus.Infof("g.WaitSlotSeconds: %d\n", g.GitHubStats.WaitSlotSeconds)
 
 }
 
 func (g *GitHub) waitUntilNextSlotAvailable() {
-	fmt.Printf("Rate limit reached, waiting until %d seconds\n", g.GitHubStats.WaitSlotSeconds)
+	logrus.Infof("Rate limit reached, waiting until %d seconds\n", g.GitHubStats.WaitSlotSeconds)
 	time.Sleep(time.Second * time.Duration(g.GitHubStats.WaitSlotSeconds))
 }
 
@@ -104,17 +105,18 @@ func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
 	// TODO: how to handle this with no rely on jenkins specific projects
 	// we need to add suffix to plugins it differs plugin name and github project
 	if !strings.HasSuffix(projectName, "-plugin") {
+		logrus.Warnf("project %s doesn't have 'Name'\n", projectName)
 		projectName = projectName + "-plugin"
 	}
 
-	fmt.Println("executed download goroutine " + projectName)
+	logrus.Infoln("executed download goroutine " + projectName)
 
 	// Make a request to the API to get the release notes
 	url := fmt.Sprintf("https://api.github.com/repos/jenkinsci/%s/releases", projectName)
-	fmt.Println(url)
+	logrus.Infoln(url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		fmt.Println("Error creating request:", err)
+		logrus.Errorln("Error creating request:", err)
 		return nil, errors.New("error making request")
 	}
 
@@ -122,9 +124,9 @@ func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
 	for {
 		resp, err := g.Client.Do(req)
 		g.SyncStats(resp)
-		fmt.Printf("RateLimitUsed: %d\n", g.GitHubStats.RateLimitUsed)
+		logrus.Infof("RateLimitUsed: %d\n", g.GitHubStats.RateLimitUsed)
 		if err != nil {
-			fmt.Println("Error making request:", err)
+			logrus.Errorln("Error making request:", err)
 			continue // Try again
 		}
 
@@ -138,7 +140,7 @@ func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
 
 		if resp.StatusCode != http.StatusOK {
 			// The API returned an error, so print the status code and message and exit
-			fmt.Printf("API error: %s\n", resp.Status)
+			logrus.Errorf("API error: %s\n", resp.Status)
 			return nil, fmt.Errorf("API error %s", resp.Status)
 		}
 		var releases []gitHubReleaseNote
@@ -149,7 +151,7 @@ func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
 			return nil, errors.New("error decoding github response")
 		}
 
-		fmt.Println("finished download goroutine " + projectName)
+		logrus.Infoln("finished download goroutine " + projectName)
 
 		for _, release := range releases {
 			releaseNotes = append(releaseNotes, types.ReleaseNote{
