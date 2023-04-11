@@ -38,7 +38,7 @@ function WarningModal() {
 }
 
 
-export default WarningModal;
+export default React.memo(WarningModal);
 
 
 

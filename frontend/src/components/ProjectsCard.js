@@ -27,7 +27,7 @@ function ProjectCard({ project }) {
               </li>
             </ul>
           </td>
-          <td >
+          <td>
             <span id="plugin-name-ranged">
               <button type="button" className="btn btn-primary rescan-btn">rescan now</button>
             </span>

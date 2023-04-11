@@ -11,7 +11,7 @@ function NavBar() {
         {/* <Nav.Link href="/release-notes">Releases</Nav.Link> */}
         <Nav.Link href="/projects">Projects</Nav.Link>
         <Nav.Link href="/notifications">Notifications</Nav.Link>
-        {/* <Nav.Link href="/github">Github</Nav.Link> */}
+        <Nav.Link href="/github">Github</Nav.Link>
       </Nav>
       </Container>
     </Navbar>

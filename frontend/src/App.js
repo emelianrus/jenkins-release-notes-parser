@@ -23,15 +23,13 @@ function App() {
           <Route path='/projects' element={<Projects/>} />
           <Route path='/github' element={<Github/>} />
           <Route path='/notifications' element={<Github/>} />
-
-          <Route path="/repo/:owner/:repo/releases" element={<ReleasesNotes />} />
-
+          <Route path="/repo/:owner/:repo/releases" element={<ReleasesNotes/>} />
         </Routes>
       </div>
     </Router>
 
     {/* show message when redis is down */}
-    <ModalWarn />
+    {/* <ModalWarn /> */}
 
     </>
 
