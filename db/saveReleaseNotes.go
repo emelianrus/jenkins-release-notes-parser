@@ -12,9 +12,8 @@ import (
 )
 
 func (r *Redis) SaveReleaseNotesToDB(releases []types.ReleaseNote, projectName string) error {
-
 	currentTime := time.Now()
-	formattedTime := currentTime.Format("02 January 2006 15:04")
+	formattedTime := currentTime.Format("02 January 2006 15:04:05")
 
 	logrus.Debugf("update latestUpdated time to: %v", currentTime)
 
@@ -63,7 +62,8 @@ func (r *Redis) SaveReleaseNotesToDB(releases []types.ReleaseNote, projectName s
 
 	if len(versions) == 0 {
 		fmt.Println("Project doesn't have releases: " + projectName)
-		return nil
+		r.SetProjectError(projectName, "project doesn't have releases")
+		return fmt.Errorf("project doesn't have releases")
 	}
 	// save "latestVersion" file
 	jsonLatestVersion, _ := json.Marshal(versions[0])

@@ -36,14 +36,12 @@ func StartQueue(redisclient *db.Redis, gh github.GitHub, ps jenkins.PluginSite) 
 			if err == nil {
 				redisclient.SaveReleaseNotesToDB(releaseNotes, project)
 			} else {
-				logrus.Errorln("Downloading repo error:")
-				logrus.Errorln(err)
+
 				redisclient.SaveReleaseNotesToDB([]types.ReleaseNote{}, project)
 				redisclient.SetProjectError(project, err.Error())
+				logrus.Errorln("Downloading repo error:")
+				logrus.Errorln(err)
 			}
-
-			// redisclient.SaveGithubStats(gh.GitHubStats)
-			redisclient.SaveReleaseNotesToDB(releaseNotes, project)
 		}
 		logrus.Infoln("sleep 3 hours")
 		time.Sleep(time.Hour * 3)
