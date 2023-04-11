@@ -1,10 +1,5 @@
 
 import React from "react";
-import test from '../resources/plugins.json'
-
-
-// console.log(test)
-
 
 import JsonEditor from "../components/JsonEditor";
 

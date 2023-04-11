@@ -1,44 +1,48 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import AceEditor from 'react-ace';
+import 'ace-builds/src-noconflict/mode-java';
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-monokai';
 
 function JsonEditor({ data }) {
-  const [jsonData, setJsonData] = useState(data);
-  const [isEditing, setIsEditing] = useState(true);
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
+  const [isModified, setIsModified] = useState(false);
+  const [editorValue, setEditorValue] = useState(JSON.stringify(data, null, 2));
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSave = () => {
-    setIsEditing(false);
-    // Send the updated JSON data to the server or perform any other actions here
-  };
+    try {
+      JSON.parse(editorValue);
+      setErrorMessage("");
+    } catch (e) {
+      setErrorMessage(e.message);
+    }
 
-  const handleCancel = () => {
-    setJsonData(data);
-    setIsEditing(false);
-  };
+    setIsModified(false);
+  }
 
-  const handleInputChange = (event) => {
-    setJsonData(JSON.parse(event.target.value));
-  };
+  const handleChange = (value) => {
+    setEditorValue(value);
+    setIsModified(true);
+  }
 
   return (
-    <div>
-      <pre>{JSON.stringify(jsonData, null, 2)}</pre>
-      {isEditing ? (
-        <>
-          <textarea
-            value={JSON.stringify(jsonData)}
-            onChange={handleInputChange}
-            rows={10}
-            cols={50}
-          />
-          <button onClick={handleSave}>Save</button>
-          <button onClick={handleCancel}>Cancel</button>
-        </>
-      ) : (
-        <button onClick={handleEdit}>Edit</button>
-      )}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div id="error-message" style={{ backgroundColor: 'red', color: 'white' }}>{errorMessage}</div>
+      <AceEditor
+        mode="java"
+        theme="monokai"
+        onChange={(value) => {
+          handleChange(value)
+        }}
+        name="my-editor"
+        editorProps={{ $blockScrolling: true }}
+        value={editorValue}
+        height="500px"
+        width="500px"
+      />
+      <button onClick={handleSave}>Save</button>
+      <p>Status: {isModified ? 'unsaved' : 'saved'}</p>
     </div>
   );
 }
