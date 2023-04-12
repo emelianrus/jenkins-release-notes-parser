@@ -23,7 +23,7 @@ func SetupRouter(db *db.Redis) *gin.Engine {
 	// router.POST("/books", handlers.PostBook)
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPatch, http.MethodPost, http.MethodHead, http.MethodDelete, http.MethodOptions},
 		AllowHeaders:     []string{"Content-Type", "X-XSRF-TOKEN", "Accept", "Origin", "X-Requested-With", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -51,6 +51,9 @@ func SetupRouter(db *db.Redis) *gin.Engine {
 	router.POST("/projects", handler.GetAllProjects)
 	// DELETE multiple items by ID
 	router.DELETE("/projects", handler.DeleteMultiplyProjects)
+
+	router.POST("/watcher-list", handler.EditWatcherList)
+	router.GET("/watcher-list", handler.GetWatcherList)
 
 	return router
 }

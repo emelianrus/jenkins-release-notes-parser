@@ -1,19 +1,44 @@
-import React, { useState } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-java';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-monokai';
+import React, { useState, useEffect } from "react";
 
-function JsonEditor({ data }) {
+function JsonEditor() {
 
   const [isModified, setIsModified] = useState(false);
-  const [editorValue, setEditorValue] = useState(JSON.stringify(data, null, 2));
+  const [editorValue, setEditorValue] = useState(JSON.stringify());
   const [errorMessage, setErrorMessage] = useState("");
+
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        // TODO: https://api.github.com/repos/OWNER/REPO/releases
+        // repos/:owner/:repo/releases
+        // /project/:owner/:repo/releases
+        const response = await fetch(`http://localhost:8080/watcher-list`);
+
+        const data = await response.json();
+        // pass as new single object instead of several params
+        if (data) {
+          setEditorValue(JSON.stringify(data, null, 2));
+        }
+
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    fetchData();
+  }, []);
+
 
   const handleSave = () => {
     try {
       JSON.parse(editorValue);
       setErrorMessage("");
+      handleClick()
     } catch (e) {
       setErrorMessage(e.message);
     }
@@ -24,6 +49,14 @@ function JsonEditor({ data }) {
   const handleChange = (value) => {
     setEditorValue(value);
     setIsModified(true);
+  }
+
+  function handleClick() {
+    fetch('http://localhost:8080/watcher-list', {  // Enter your IP address here
+      method: 'POST',
+      mode: 'cors',
+      body: editorValue
+    })
   }
 
   return (
@@ -39,7 +72,9 @@ function JsonEditor({ data }) {
         editorProps={{ $blockScrolling: true }}
         value={editorValue}
         height="500px"
-        width="500px"
+        width="550px"
+        fontFamily= "tahoma"
+        fontSize= "14pt"
       />
       <button onClick={handleSave}>Save</button>
       <p>Status: {isModified ? 'unsaved' : 'saved'}</p>

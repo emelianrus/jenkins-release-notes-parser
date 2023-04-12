@@ -4,7 +4,7 @@ import React from "react";
 import JsonEditor from "../components/JsonEditor";
 
 
-const Github = () => {
+const WatcherList = () => {
   const data = {
     "ace-editor": "1.1",
     "ansicolor": "1.0.2",
@@ -19,4 +19,4 @@ const Github = () => {
   );
 };
 
-export default Github;
+export default WatcherList;
