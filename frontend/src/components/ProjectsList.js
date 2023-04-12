@@ -19,7 +19,7 @@ function ProjectsList({ projects }) {
               </tr>
             </thead>
 
-            {projects.length === 0
+            {projects === undefined
               ? <tbody><tr><td>No projects to display</td></tr></tbody>
               : projects.map(project => <ProjectCard key={project.Name} project={project} />)
             }
