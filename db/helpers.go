@@ -207,7 +207,7 @@ func (r *Redis) IsProjectDownloaded(projectOwner string, projectName string) boo
 // 	return nil
 // }
 
-var WATCHER_LIST_PATH = "test:testing"
+var WATCHER_LIST_PATH = "watcher:data"
 
 func (r *Redis) GetWatcherList() (map[string]string, error) {
 	watcherList, err := r.Get(WATCHER_LIST_PATH).Bytes()
@@ -239,6 +239,7 @@ func (r *Redis) SetWatcherList(content map[string]string) error {
 	return nil
 }
 
+// TODO: change to read from watcherList
 // from "servers:*:plugins:*" redis path
 func (r *Redis) GetAllProjectsFromServers() []string {
 	var result []string
@@ -270,9 +271,8 @@ func (r *Redis) GetAllProjects() ([]types.Project, error) {
 	for _, projectName := range projectsTmp {
 
 		projects = append(projects, types.Project{
-			Name:  projectName,
-			Owner: repoOwner,
-			// TODO: should gather all fields
+			Name:         projectName,
+			Owner:        repoOwner,
 			Error:        r.GetProjectError(repoOwner, projectName),
 			IsDownloaded: r.IsProjectDownloaded(repoOwner, projectName),
 			LastUpdated:  r.GetLastUpdatedTime(repoOwner, projectName),

@@ -3,7 +3,6 @@ package db
 import (
 	"strings"
 
-	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
 )
@@ -63,23 +62,18 @@ func (r *Redis) AddDebugData() {
 	mina-sshd-api-common:2.9.1-44.v476733c11f82
 	commons-lang3-api:3.12.0-36.vd97de6465d5b_`
 
-	// plugins := `
-	// jira:3.8`
-	plugins = strings.ReplaceAll(plugins, " ", "")
-	plugins = strings.ReplaceAll(plugins, "\t", "")
-	// Split by ":"
 	lines := strings.Split(plugins, "\n")
-	for _, line := range lines {
-		kv := strings.Split(line, ":")
-		if len(kv) == 2 {
-			r.AddJenkinsServerPlugin("jenkins-one", types.Project{
-				Name:    kv[0],
-				Owner:   "jenkinsci",
-				Version: kv[1],
-			})
 
+	m := make(map[string]string)
+	for _, line := range lines {
+		pair := strings.Split(line, ":")
+		if len(pair) == 2 {
+			m[strings.TrimSpace(pair[0])] = strings.TrimSpace(pair[1])
 		}
 	}
+
+	r.SetWatcherList(m)
+
 }
 
 func (r *Redis) Get(key string) *redis.StringCmd {

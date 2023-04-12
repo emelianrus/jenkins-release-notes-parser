@@ -59,6 +59,7 @@ function JsonEditor() {
     })
   }
 
+  // https://github.com/securingsincity/react-ace/blob/master/docs/Ace.md#available-props
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div id="error-message" style={{ backgroundColor: 'red', color: 'white' }}>{errorMessage}</div>
@@ -71,10 +72,11 @@ function JsonEditor() {
         name="my-editor"
         editorProps={{ $blockScrolling: true }}
         value={editorValue}
-        height="500px"
-        width="550px"
+        height="800px"
+        width="800px"
         fontFamily= "tahoma"
         fontSize= "14pt"
+        tabSize="2"
       />
       <button onClick={handleSave}>Save</button>
       <p>Status: {isModified ? 'unsaved' : 'saved'}</p>
