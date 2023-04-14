@@ -26,3 +26,6 @@ go-get:
 
 go-install:
 	@GOPATH=$(GOPATH) GOBIN=$(GOBIN) go install $(GOFILES)
+
+run:
+	docker-compose up -d

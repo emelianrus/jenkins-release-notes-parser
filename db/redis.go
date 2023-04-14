@@ -28,7 +28,7 @@ func (r *Redis) Status() error {
 func (r *Redis) AddDebugData() {
 	logrus.Infoln("Append debug data to redis")
 	// r.AddJenkinsServer("jenkins-two", "2.3233.1")
-	r.AddJenkinsServer("jenkins-one", "2.3233.2")
+	// r.AddJenkinsServer("jenkins-one", "2.3233.2")
 
 	// plugins := `mina-sshd-api-common:2.9.1-44.v476733c11f82`
 	plugins := `
