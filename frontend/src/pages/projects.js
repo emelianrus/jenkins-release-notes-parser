@@ -16,18 +16,15 @@ function Projects() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // TODO: https://api.github.com/repos/OWNER/REPO/releases
-        // repos/:owner/:repo/releases
-        // /project/:owner/:repo/releases
         const response = await fetch(`http://localhost:8080/projects`);
 
         const data = await response.json();
-        // pass as new single object instead of several params
 
         data.sort((a, b) => a.Project.Name.localeCompare(b.Project.Name));
         if (data) {
           setAllProjects(data);
 
+          // TODO: refact, for sure exist better way
           // by default show watcher list projects
           let resultData = data.filter(item => item.IsInWatcherList === true)
           setResultData(resultData)
