@@ -20,7 +20,7 @@ var (
 func StartQueuePluginSite(redisclient *db.Redis, ps jenkins.PluginSite) {
 	logrus.Infoln("StartQueue...")
 
-	projects, _ := redisclient.GetWatcherList()
+	projects, _ := redisclient.GetWatcherData()
 	for {
 		for projectName := range projects {
 

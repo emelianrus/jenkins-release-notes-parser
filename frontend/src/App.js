@@ -8,7 +8,9 @@ import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 
 import ReleasesNotes from './pages/release-notes';
 import Projects from './pages/projects';
+import PotentialUpdates from './pages/potential-updates';
 import WatcherList from './pages/watcherList';
+import APIStats from './pages/apiStats';
 
 function App() {
 
@@ -23,6 +25,8 @@ function App() {
           <Route path='/watcher-list' element={<WatcherList/>} />
           <Route path='/notifications' />
           <Route path="/repo/:owner/:repo/releases" element={<ReleasesNotes/>} />
+          <Route path="/api-stats" element={<APIStats/>} />
+          <Route path="/potential-updates" element={<PotentialUpdates/>} />
         </Routes>
       </div>
     </Router>

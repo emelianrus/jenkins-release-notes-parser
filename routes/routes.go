@@ -55,5 +55,7 @@ func SetupRouter(redis *db.Redis) *gin.Engine {
 	router.POST("/watcher-list", handler.EditWatcherList)
 	router.GET("/watcher-list", handler.GetWatcherList)
 
+	router.GET("/potential-updates", handler.GetPotentialUpdates)
+
 	return router
 }

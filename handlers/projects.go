@@ -34,13 +34,13 @@ func (s *ProjectService) GetProjectById(c *gin.Context) {
 func (s *ProjectService) GetAllProjects(c *gin.Context) {
 	logrus.Infoln("GetAllProjects route reached")
 	projects, _ := s.Redis.GetAllProjects()
-	watcherList, _ := s.Redis.GetWatcherList()
+	watcherList, _ := s.Redis.GetWatcherData()
 
-	type ResultPlugins struct {
+	type resultPlugins struct {
 		IsInWatcherList bool
 		Project         types.Project
 	}
-	result := []ResultPlugins{}
+	result := []resultPlugins{}
 
 	for _, project := range projects {
 		var inWatcherList bool = false
@@ -48,7 +48,7 @@ func (s *ProjectService) GetAllProjects(c *gin.Context) {
 			inWatcherList = true
 		}
 
-		result = append(result, ResultPlugins{
+		result = append(result, resultPlugins{
 			IsInWatcherList: inWatcherList,
 			Project:         project,
 		})
@@ -56,6 +56,12 @@ func (s *ProjectService) GetAllProjects(c *gin.Context) {
 
 	c.JSON(http.StatusOK, result)
 }
+func (s *ProjectService) GetPotentialUpdates(c *gin.Context) {
+	logrus.Infoln("GetWatcherProjects route reached")
+	potentialUpdates, _ := s.Redis.GetPotentialUpdates()
+	c.JSON(http.StatusOK, potentialUpdates)
+}
+
 func (s *ProjectService) GetWatcherProjects(c *gin.Context) {
 	logrus.Infoln("GetWatcherProjects route reached")
 	projects, _ := s.Redis.GetWatcherProjects()
@@ -74,7 +80,7 @@ func (s *ProjectService) DeleteProject(c *gin.Context) {
 }
 
 func (s *ProjectService) GetWatcherList(c *gin.Context) {
-	watcherList, err := s.Redis.GetWatcherList()
+	watcherList, err := s.Redis.GetWatcherData()
 	if err != nil {
 		logrus.Errorln("can not get watcher list")
 		logrus.Errorln(err)
@@ -117,7 +123,7 @@ func (s *ProjectService) GetProjectReleaseNotes(c *gin.Context) {
 	ownerName := c.Param("owner")
 	repoName := c.Param("repo")
 
-	releaseNotes, err := s.Redis.GetProject(ownerName, repoName)
+	releaseNotes, err := s.Redis.GetProjectReleaseNotes(ownerName, repoName)
 	if err != nil {
 		logrus.Errorf("can not get project %s:%s\n", ownerName, repoName)
 		logrus.Errorln(err)

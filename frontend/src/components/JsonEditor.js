@@ -52,7 +52,7 @@ function JsonEditor() {
   }
 
   function handleClick() {
-    fetch('http://localhost:8080/watcher-list', {  // Enter your IP address here
+    fetch('http://localhost:8080/watcher-list', {
       method: 'POST',
       mode: 'cors',
       body: editorValue
