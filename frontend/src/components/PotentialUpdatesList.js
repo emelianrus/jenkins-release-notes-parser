@@ -5,7 +5,9 @@ import React from "react";
 
 
 function PotentialUpdatesList({ projects }) {
-
+  if (typeof projects === 'object' && Object.keys(projects).length === 0) {
+    return <p><b>No updates found.</b></p>;
+  }
   return (
     <div className="project-list">
 
