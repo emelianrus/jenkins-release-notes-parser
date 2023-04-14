@@ -11,20 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// TODO: change to read from watcherList
-// from "servers:*:plugins:*" redis path
-func (r *Redis) GetAllProjectsFromServers() []string {
-	var result []string
-	projectKeys, _ := r.Keys("servers:*:plugins:*")
-
-	for _, path := range projectKeys {
-		splitted := strings.Split(path, ":")
-		result = append(result, splitted[len(splitted)-1])
-	}
-	result = utils.RemoveDuplicates(result)
-	return result
-}
-
 func (r *Redis) GetAllProjects() ([]types.Project, error) {
 	var projects []types.Project
 	// TODO: this should be configurable
