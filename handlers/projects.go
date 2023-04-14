@@ -36,6 +36,11 @@ func (s *ProjectService) GetAllProjects(c *gin.Context) {
 	projects, _ := s.Redis.GetAllProjects()
 	c.JSON(http.StatusOK, projects)
 }
+func (s *ProjectService) GetWatcherProjects(c *gin.Context) {
+	logrus.Infoln("GetWatcherProjects route reached")
+	projects, _ := s.Redis.GetWatcherProjects()
+	c.JSON(http.StatusOK, projects)
+}
 
 func (s *ProjectService) GetProjectsById(c *gin.Context) {
 	logrus.Infoln("GetProjectsById route reached")

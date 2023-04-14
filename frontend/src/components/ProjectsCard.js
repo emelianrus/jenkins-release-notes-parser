@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 
 function ProjectCard({ project }) {
 
+  // style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+
+    let hasError = project.Error ? <span style={{ backgroundColor: '#ffcccc' }}> {project.Error} </span> : "no"
+
     return (
       // TODO: fix class name
       <tbody>
@@ -20,7 +24,7 @@ function ProjectCard({ project }) {
                 <span>Is Downloaded:</span> <span>{ project.IsDownloaded.toString() }</span>
               </li>
               <li>
-                <span>Has Error:</span> <span>{ project.Error }</span>
+                <span>Has Error:</span> <span>{ hasError }</span>
               </li>
               <li>
                 <span>Last Updated:</span> <span>{ project.LastUpdated }</span>

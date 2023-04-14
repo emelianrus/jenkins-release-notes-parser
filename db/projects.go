@@ -11,6 +11,29 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func (r *Redis) GetWatcherProjects() ([]types.Project, error) {
+	var projects []types.Project
+	// TODO: this should be configurable
+	repoOwner := "jenkinsci"
+
+	watcherProjects, _ := r.GetWatcherList()
+
+	// gather project data
+	for projectName := range watcherProjects {
+
+		projects = append(projects, types.Project{
+			Name:         projectName,
+			Owner:        repoOwner,
+			Error:        r.GetProjectError(repoOwner, projectName),
+			IsDownloaded: r.IsProjectDownloaded(repoOwner, projectName),
+			LastUpdated:  r.GetLastUpdatedTime(repoOwner, projectName),
+		})
+
+	}
+
+	return projects, nil
+}
+
 func (r *Redis) GetAllProjects() ([]types.Project, error) {
 	var projects []types.Project
 	// TODO: this should be configurable
@@ -18,7 +41,9 @@ func (r *Redis) GetAllProjects() ([]types.Project, error) {
 
 	// get list of all projects
 	var projectsTmp []string
+
 	projectsKeys, _ := r.Keys(fmt.Sprintf("github:%s:*", repoOwner))
+
 	for _, key := range projectsKeys {
 		splitted := strings.Split(key, ":")
 		projectsTmp = append(projectsTmp, splitted[2])

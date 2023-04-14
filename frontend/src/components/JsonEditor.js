@@ -76,7 +76,7 @@ function JsonEditor() {
         width="800px"
         fontFamily= "tahoma"
         fontSize= "14pt"
-        tabSize="2"
+        // tabSize="2"
       />
       <button onClick={handleSave}>Save</button>
       <p>Status: {isModified ? 'unsaved' : 'saved'}</p>

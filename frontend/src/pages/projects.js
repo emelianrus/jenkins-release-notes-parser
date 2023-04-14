@@ -20,6 +20,7 @@ function Projects() {
         if (data) {
           setProjects(data);
         }
+        data.sort((a, b) => a.Name.localeCompare(b.Name));
 
       } catch (error) {
         console.error(error);

@@ -47,7 +47,7 @@ func SetupRouter(db *db.Redis) *gin.Engine {
 
 	// TODO: should it be separate functions? or cast everything to list?
 	// GET all projects
-	router.GET("/projects", handler.GetAllProjects)
+	router.GET("/projects", handler.GetWatcherProjects)
 	router.POST("/projects", handler.GetAllProjects)
 	// DELETE multiple items by ID
 	router.DELETE("/projects", handler.DeleteMultiplyProjects)
