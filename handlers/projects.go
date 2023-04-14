@@ -34,7 +34,27 @@ func (s *ProjectService) GetProjectById(c *gin.Context) {
 func (s *ProjectService) GetAllProjects(c *gin.Context) {
 	logrus.Infoln("GetAllProjects route reached")
 	projects, _ := s.Redis.GetAllProjects()
-	c.JSON(http.StatusOK, projects)
+	watcherList, _ := s.Redis.GetWatcherList()
+
+	type ResultPlugins struct {
+		IsInWatcherList bool
+		Project         types.Project
+	}
+	result := []ResultPlugins{}
+
+	for _, project := range projects {
+		var inWatcherList bool = false
+		if _, ok := watcherList[project.Name]; ok {
+			inWatcherList = true
+		}
+
+		result = append(result, ResultPlugins{
+			IsInWatcherList: inWatcherList,
+			Project:         project,
+		})
+	}
+
+	c.JSON(http.StatusOK, result)
 }
 func (s *ProjectService) GetWatcherProjects(c *gin.Context) {
 	logrus.Infoln("GetWatcherProjects route reached")
