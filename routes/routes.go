@@ -9,11 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(db *db.Redis) *gin.Engine {
+func SetupRouter(redis *db.Redis) *gin.Engine {
 	router := gin.Default()
 
 	handler := handlers.ProjectService{
-		Redis: db,
+		Redis: redis,
 	}
 
 	// router.GET("/books", handlers.GetBooks)
