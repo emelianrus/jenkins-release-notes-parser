@@ -8,6 +8,7 @@ import (
 )
 
 func (r *Redis) SetLastUpdatedTime(pluginName string, value string) error {
+	logrus.Debugf("update latestUpdated time to: %v", value)
 
 	jsonData, _ := json.Marshal(value)
 	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", pluginName, "lastUpdated"),

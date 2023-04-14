@@ -12,6 +12,7 @@ type Downloader interface {
 
 // DownloadPlugin(github, "my-github-project")
 // DownloadPlugin(pluginSite, "my-plugin-site-project")
+// Download single plugin from source
 func DownloadPlugin(d Downloader, projectName string) ([]types.ReleaseNote, error) {
 	releaseNotes, err := d.Download(projectName)
 	return releaseNotes, err

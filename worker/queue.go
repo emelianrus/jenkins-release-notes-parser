@@ -1,13 +1,11 @@
 package worker
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/db"
 	"github.com/emelianrus/jenkins-release-notes-parser/sources"
-	"github.com/emelianrus/jenkins-release-notes-parser/sources/github"
 	jenkins "github.com/emelianrus/jenkins-release-notes-parser/sources/jenkinsPluginSite"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/sirupsen/logrus"
@@ -19,33 +17,30 @@ var (
 
 // used as go StartQueue()
 // can be executed by button from UI so we need to be sure running only one instance at once
-func StartQueue(redisclient *db.Redis, gh github.GitHub, ps jenkins.PluginSite) {
+func StartQueuePluginSite(redisclient *db.Redis, ps jenkins.PluginSite) {
 	logrus.Infoln("StartQueue...")
-	serviceMutex.Lock()
-	defer serviceMutex.Unlock()
 
+	projects, _ := redisclient.GetWatcherList()
 	for {
-		projects := redisclient.GetAllProjectsFromServers()
-		fmt.Println(projects)
+		for projectName := range projects {
 
-		for _, project := range projects {
-			// TODO: error api 404
-			releaseNotes, err := sources.DownloadPlugin(&ps, project)
-			// releaseNotes, err := gh.Download(projectName)
+			releaseNotes, err := sources.DownloadPlugin(&ps, projectName)
 
 			if err == nil {
-				redisclient.SaveReleaseNotesToDB(releaseNotes, project)
+				redisclient.SaveReleaseNotesToDB(releaseNotes, projectName)
 			} else {
-
-				redisclient.SaveReleaseNotesToDB([]types.ReleaseNote{}, project)
-				redisclient.SetProjectError(project, err.Error())
 				logrus.Errorln("Downloading repo error:")
 				logrus.Errorln(err)
+
+				redisclient.SaveReleaseNotesToDB([]types.ReleaseNote{}, projectName)
+				redisclient.SetProjectError(projectName, err.Error())
 			}
 		}
-		logrus.Infoln("sleep 3 hours")
-		time.Sleep(time.Hour * 3)
+
+		logrus.Infoln("StartQueuePluginSite done. doing sleep for 24h")
+		time.Sleep(time.Hour * 24)
 	}
+
 }
 
 // func StartQueuePluginsSite(redisclient *db.Redis, gh github.GitHub, ps jenkins.PluginSite) {

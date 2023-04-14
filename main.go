@@ -6,7 +6,6 @@ import (
 
 	"github.com/emelianrus/jenkins-release-notes-parser/db"
 	"github.com/emelianrus/jenkins-release-notes-parser/routes"
-	"github.com/emelianrus/jenkins-release-notes-parser/sources/github"
 	jenkins "github.com/emelianrus/jenkins-release-notes-parser/sources/jenkinsPluginSite"
 	"github.com/emelianrus/jenkins-release-notes-parser/worker"
 	"github.com/sirupsen/logrus"
@@ -31,11 +30,11 @@ func Start() {
 		redisclient.AddDebugData()
 	}
 
-	githubClient := github.NewGitHubClient()
+	// githubClient := github.NewGitHubClient()
 	pluginSiteClient := jenkins.NewPluginSite()
 
 	// TODO: should be update plugin function executed once per day
-	go worker.StartQueue(redisclient, githubClient, pluginSiteClient)
+	go worker.StartQueuePluginSite(redisclient, pluginSiteClient)
 
 	// GIN
 	router := routes.SetupRouter(redisclient)

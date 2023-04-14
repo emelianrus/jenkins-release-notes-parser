@@ -8,18 +8,13 @@ import (
 	"time"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
-	"github.com/sirupsen/logrus"
 )
 
 func (r *Redis) SaveReleaseNotesToDB(releases []types.ReleaseNote, projectName string) error {
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("02 January 2006 15:04:05")
 
-	logrus.Debugf("update latestUpdated time to: %v", currentTime)
-
-	// set lastUpdated file for repo
-	err := r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "lastUpdated"),
-		formattedTime)
+	err := r.SetLastUpdatedTime(projectName, formattedTime)
 	if err != nil {
 		log.Println(err)
 		return errors.New("set lastUpdated failed")
