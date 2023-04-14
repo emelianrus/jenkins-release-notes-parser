@@ -131,14 +131,16 @@ func (r *Redis) GetPotentialUpdates() (PotentialUpdates, error) {
 					// if not reached
 					resultRelaseNotes = append(resultRelaseNotes, releaseNote)
 				}
+				if len(resultRelaseNotes) > 0 {
+					potentialUpdates[watcherProjectName] = resultRelaseNotes
+				}
 
-				potentialUpdates[watcherProjectName] = resultRelaseNotes
 			}
 
 		}
 
 	}
-
+	fmt.Println(potentialUpdates)
 	return potentialUpdates, nil
 
 }

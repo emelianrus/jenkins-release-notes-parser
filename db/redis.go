@@ -32,9 +32,8 @@ func (r *Redis) AddDebugData() {
 
 	// plugins := `mina-sshd-api-common:2.9.1-44.v476733c11f82`
 	plugins := `
-	ant:473.vcfd6b_16ca_581
-	antisamy-markup-formatter:2.7
-	apache-httpcomponents-client-4-api:4.5.13-138.v4e7d9a_7b_a_e61`
+	ant:481.v7b_09e538fcca
+	antisamy-markup-formatter:159.v25b_c67cd35fb_`
 
 	lines := strings.Split(plugins, "\n")
 
