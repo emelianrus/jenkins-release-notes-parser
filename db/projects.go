@@ -140,7 +140,7 @@ func (r *Redis) GetPotentialUpdates() (PotentialUpdates, error) {
 		}
 
 	}
-	fmt.Println(potentialUpdates)
+
 	return potentialUpdates, nil
 
 }

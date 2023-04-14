@@ -4,12 +4,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import PotentialUpdatesList from '../components/PotentialUpdatesList';
 
 import React, { useState, useEffect } from "react";
-import { useParams } from 'react-router-dom';
 
 function PotentialUpdates() {
 
   const [projects, setProjects] = useState([]);
-  const [empty, setEmpty] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
