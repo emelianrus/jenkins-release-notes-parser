@@ -4,7 +4,7 @@ import PotentialUpdatesCard from './PotentialUpdatesCard';
 import React from "react";
 
 
-function PotentialUpdatesList({ projects}) {
+function PotentialUpdatesList({ projects }) {
 
   return (
     <div className="project-list">
