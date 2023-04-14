@@ -16,7 +16,7 @@ func (r *Redis) GetWatcherProjects() ([]types.Project, error) {
 	// TODO: this should be configurable
 	repoOwner := "jenkinsci"
 
-	watcherProjects, _ := r.GetWatcherList()
+	watcherProjects, _ := r.GetWatcherData()
 
 	// gather project data
 	for projectName := range watcherProjects {
@@ -66,7 +66,8 @@ func (r *Redis) GetAllProjects() ([]types.Project, error) {
 	return projects, nil
 }
 
-func (r *Redis) GetProject(projectOwner string, projectName string) ([]types.ReleaseNote, error) {
+// get one project with release notes
+func (r *Redis) GetProjectReleaseNotes(projectOwner string, projectName string) ([]types.ReleaseNote, error) {
 
 	releaseNotes := []types.ReleaseNote{}
 
@@ -99,4 +100,45 @@ func (r *Redis) GetProject(projectOwner string, projectName string) ([]types.Rel
 	}
 
 	return releaseNotes, nil
+}
+
+type PotentialUpdates map[string][]types.ReleaseNote
+
+func (r *Redis) GetPotentialUpdates() (PotentialUpdates, error) {
+	watcherListProjects, _ := r.GetWatcherData()
+	potentialUpdates := PotentialUpdates{}
+	cachedProjects, _ := r.GetAllProjects()
+
+	for watcherProjectName, watcherProjectVersion := range watcherListProjects {
+
+		for _, cachedProject := range cachedProjects {
+			if cachedProject.Name == watcherProjectName {
+				// we hit cached plugin with watcher plugin name
+				// now need to get release notes from top of cached to watcher set version
+
+				releaseNotes, _ := r.GetProjectReleaseNotes("jenkinsci", watcherProjectName)
+				// iterate over release notes
+
+				var resultRelaseNotes []types.ReleaseNote
+
+				for _, releaseNote := range releaseNotes {
+					// reached installed version. break
+					logrus.Debugf("releaseNote.Name %s ||| watcherProject.Version %s\n", releaseNote.Name, watcherProjectVersion)
+					if releaseNote.Name == watcherProjectVersion {
+						break
+					}
+
+					// if not reached
+					resultRelaseNotes = append(resultRelaseNotes, releaseNote)
+				}
+
+				potentialUpdates[watcherProjectName] = resultRelaseNotes
+			}
+
+		}
+
+	}
+
+	return potentialUpdates, nil
+
 }

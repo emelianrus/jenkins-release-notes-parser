@@ -9,7 +9,7 @@ import (
 
 var WATCHER_LIST_PATH = "watcher:data"
 
-func (r *Redis) GetWatcherList() (map[string]string, error) {
+func (r *Redis) GetWatcherData() (map[string]string, error) {
 	watcherList, err := r.Get(WATCHER_LIST_PATH).Bytes()
 	if err != nil {
 		logrus.Errorln("can not get watcher list")
