@@ -7,6 +7,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func (r *RedisStorage) Status() error {
+	return r.DB.Status()
+}
+
 func (r *RedisStorage) SetLastUpdatedTime(pluginName string, value string) error {
 	logrus.Debugf("update latestUpdated time to: %v", value)
 

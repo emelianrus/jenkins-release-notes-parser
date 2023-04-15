@@ -35,7 +35,7 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 	// =================== helpers ===================
 	router.GET("/", handlers.RedirectToRoot)
 	router.GET("/ping", handlers.Ping)
-	// router.GET("/redis/status", handler.RedisStatus)
+	router.GET("/redis/status", handler.RedisStatus)
 
 	router.POST("/watcher-list", handler.EditWatcherList)
 	router.GET("/watcher-list", handler.GetWatcherList)
