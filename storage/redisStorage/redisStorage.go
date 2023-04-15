@@ -11,6 +11,7 @@ type RedisStorage struct {
 	DB storage.Storage
 }
 
+// TODO: temp function, this should be set via API
 func (r *RedisStorage) AddDebugData() {
 	logrus.Infoln("Append debug data to redis")
 	// r.AddJenkinsServer("jenkins-two", "2.3233.1")

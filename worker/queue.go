@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"sync"
 	"time"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/sources"
@@ -11,9 +10,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var (
-	serviceMutex sync.Mutex
-)
+// var (
+// 	serviceMutex sync.Mutex
+// )
 
 // used as go StartQueue()
 // can be executed by button from UI so we need to be sure running only one instance at once
