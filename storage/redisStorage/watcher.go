@@ -1,4 +1,4 @@
-package db
+package redisStorage
 
 import (
 	"encoding/json"
@@ -8,8 +8,8 @@ import (
 
 var WATCHER_LIST_PATH = "watcher:data"
 
-func (r *Redis) GetWatcherData() (map[string]string, error) {
-	watcherList, err := r.Get(WATCHER_LIST_PATH).Bytes()
+func (r *RedisStorage) GetWatcherData() (map[string]string, error) {
+	watcherList, err := r.DB.Get(WATCHER_LIST_PATH)
 	if err != nil {
 		logrus.Errorln("can not get watcher list")
 		logrus.Errorln(err)
@@ -24,14 +24,14 @@ func (r *Redis) GetWatcherData() (map[string]string, error) {
 	return result, nil
 }
 
-func (r *Redis) SetWatcherList(content map[string]string) error {
+func (r *RedisStorage) SetWatcherList(content map[string]string) error {
 	jsonBody, err := json.Marshal(content)
 	if err != nil {
 		logrus.Errorln("failed to marshal body")
 		logrus.Errorln(err)
 	}
 
-	err = r.Set(WATCHER_LIST_PATH, jsonBody)
+	err = r.DB.Set(WATCHER_LIST_PATH, jsonBody)
 	if err != nil {
 		logrus.Errorln(err)
 	}

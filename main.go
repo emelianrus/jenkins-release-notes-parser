@@ -4,9 +4,11 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/emelianrus/jenkins-release-notes-parser/db"
 	"github.com/emelianrus/jenkins-release-notes-parser/routes"
 	jenkins "github.com/emelianrus/jenkins-release-notes-parser/sources/jenkinsPluginSite"
+	"github.com/emelianrus/jenkins-release-notes-parser/storage"
+	"github.com/emelianrus/jenkins-release-notes-parser/storage/db"
+	rs "github.com/emelianrus/jenkins-release-notes-parser/storage/redisStorage"
 	"github.com/emelianrus/jenkins-release-notes-parser/worker"
 	"github.com/sirupsen/logrus"
 )
@@ -21,50 +23,31 @@ func init() {
 }
 
 func Start() {
-	redisclient := db.NewRedisClient()
 
-	if redisclient.Status() != nil {
+	redis := db.NewRedisClient()
+
+	redisStorage := &rs.RedisStorage{
+		DB: storage.SetStorage(redis),
+	}
+
+	if redis.Status() != nil {
 		logrus.Errorln("failed to connect to redis")
 	} else {
 		// TODO: remove used during development
-		redisclient.AddDebugData()
+		redisStorage.AddDebugData()
 	}
 
 	// githubClient := github.NewGitHubClient()
 	pluginSiteClient := jenkins.NewPluginSite()
 
 	// TODO: should be update plugin function executed once per day
-	go worker.StartQueuePluginSite(redisclient, pluginSiteClient)
+	go worker.StartQueuePluginSite(redisStorage, pluginSiteClient)
 
 	// GIN
-	router := routes.SetupRouter(redisclient)
+	router := routes.SetupRouter(redisStorage)
 	router.Run(":8080")
 }
 
-// func Testing() {
-
-// 	github := github.NewGitHubClient()
-// 	pluginSite := jenkins.NewPluginSite()
-
-// 	releases, err := sources.DownloadPlugin(&pluginSite, "ant")
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	for _, v := range releases {
-// 		fmt.Println(v.Name)
-// 	}
-
-// 	releases, err = sources.DownloadPlugin(&github, "ant")
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	for _, v := range releases {
-// 		fmt.Println(v.Name)
-// 	}
-// }
-
 func main() {
 	Start()
-	// Testing()
-
 }

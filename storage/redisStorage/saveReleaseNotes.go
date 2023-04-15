@@ -1,4 +1,4 @@
-package db
+package redisStorage
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 )
 
-func (r *Redis) SaveReleaseNotesToDB(releases []types.ReleaseNote, projectName string) error {
+func (r *RedisStorage) SaveReleaseNotesToDB(releases []types.ReleaseNote, projectName string) error {
 	currentTime := time.Now()
 	formattedTime := currentTime.Format("02 January 2006 15:04:05")
 
@@ -39,7 +39,7 @@ func (r *Redis) SaveReleaseNotesToDB(releases []types.ReleaseNote, projectName s
 		}
 		// save release file
 		key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, release.Name)
-		err = r.Set(key, jsonData)
+		err = r.DB.Set(key, jsonData)
 		if err != nil {
 			log.Println(err)
 			return fmt.Errorf("error setting release: %s", err)
@@ -48,7 +48,7 @@ func (r *Redis) SaveReleaseNotesToDB(releases []types.ReleaseNote, projectName s
 
 	// save "versions" file
 	jsonVersions, _ := json.Marshal(versions)
-	err = r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "versions"),
+	err = r.DB.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "versions"),
 		jsonVersions)
 	if err != nil {
 		log.Println(err)
@@ -62,7 +62,7 @@ func (r *Redis) SaveReleaseNotesToDB(releases []types.ReleaseNote, projectName s
 	}
 	// save "latestVersion" file
 	jsonLatestVersion, _ := json.Marshal(versions[0])
-	err = r.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "latestVersion"),
+	err = r.DB.Set(fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "latestVersion"),
 		jsonLatestVersion)
 	if err != nil {
 		log.Println(err)
