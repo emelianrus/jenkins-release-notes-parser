@@ -14,15 +14,23 @@ function APIStats() {
             <div class="stats-column">
               <h2>github stats</h2>
               <div class="stats-row">
-                <div class="stats-key">api calls used</div>
+                <div class="stats-key">RateLimit</div>
                 <div class="stats-value">11</div>
               </div>
               <div class="stats-row">
-                <div class="stats-key">api calls total</div>
+                <div class="stats-key">RateLimitRemaning</div>
                 <div class="stats-value">11</div>
               </div>
               <div class="stats-row">
-                <div class="stats-key">api reset time</div>
+                <div class="stats-key">RateLimitReset</div>
+                <div class="stats-value">1234</div>
+              </div>
+              <div class="stats-row">
+                <div class="stats-key">RateLimitUsed</div>
+                <div class="stats-value">1234</div>
+              </div>
+              <div class="stats-row">
+                <div class="stats-key">WaitSlotSeconds</div>
                 <div class="stats-value">1234</div>
               </div>
             </div>
