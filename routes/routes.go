@@ -30,12 +30,13 @@ func SetupRouter(redis *db.Redis) *gin.Engine {
 		AllowCredentials: true,
 	}))
 
-	// helpers
+	// =================== routes ===================
+
+	// =================== helpers ===================
 	router.GET("/", handlers.RedirectToRoot)
 	router.GET("/ping", handlers.Ping)
 	router.GET("/redis/status", handler.RedisStatus)
 
-	// === routes ===
 	router.POST("/watcher-list", handler.EditWatcherList)
 	router.GET("/watcher-list", handler.GetWatcherList)
 
@@ -45,6 +46,8 @@ func SetupRouter(redis *db.Redis) *gin.Engine {
 	router.GET("/projects", handler.GetAllProjects)
 	// https://api.github.com/repos/OWNER/REPO/releases
 	router.GET("/project/:owner/:repo/releases", handler.GetProjectReleaseNotes)
+
+	router.GET("/api/stats", handler.GetApiStats)
 
 	return router
 }

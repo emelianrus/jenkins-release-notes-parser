@@ -25,3 +25,10 @@ func (s *ProjectService) RedisStatus(c *gin.Context) {
 		c.JSON(http.StatusOK, err.Error())
 	}
 }
+
+func (s *ProjectService) GetApiStats(c *gin.Context) {
+	// err := s.Redis.Status()
+	// TODO: implement get api stats from redis
+
+	c.JSON(http.StatusOK, "")
+}

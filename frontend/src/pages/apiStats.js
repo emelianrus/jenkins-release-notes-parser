@@ -1,10 +1,29 @@
 import "./apiStats.css"
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 // TODO: implement this
 // should be useful to track api status just for information
 function APIStats() {
+  const [apiStats, setApiStats] = useState([]);
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        // TODO: https://api.github.com/repos/OWNER/REPO/releases
+        // repos/:owner/:repo/releases
+        // /project/:owner/:repo/releases
+        const response = await fetch(`http://localhost:8080/api/stats`);
+        const data = await response.json();
+
+        // pass as new single object instead of several params
+        setApiStats(data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    fetchData();
+  }, []);
 
   return (
     <div className="container">
