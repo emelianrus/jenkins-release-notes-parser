@@ -1,15 +1,18 @@
 package db
 
 import (
+	"context"
 	"strings"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 )
 
 type Redis struct {
 	client *redis.Client
 }
+
+var ctx = context.Background()
 
 func NewRedisClient() *Redis {
 	logrus.Infoln("Creating redis connection")
@@ -18,11 +21,15 @@ func NewRedisClient() *Redis {
 		// Password: "",
 		DB: 0,
 	})
+	err := client.Set(ctx, "key", "value", 0).Err()
+	if err != nil {
+		panic(err)
+	}
 	return &Redis{client: client}
 }
 
 func (r *Redis) Status() error {
-	return r.client.Ping().Err()
+	return r.client.Ping(ctx).Err()
 }
 
 func (r *Redis) AddDebugData() {
@@ -50,17 +57,17 @@ func (r *Redis) AddDebugData() {
 }
 
 func (r *Redis) Get(key string) *redis.StringCmd {
-	return r.client.Get(key)
+	return r.client.Get(ctx, key)
 }
 
 func (r *Redis) Set(key string, value interface{}) error {
-	return r.client.Set(key, value, 0).Err()
+	return r.client.Set(ctx, key, value, 0).Err()
 }
 
 func (r *Redis) Keys(key string) ([]string, error) {
-	return r.client.Keys(key).Result()
+	return r.client.Keys(ctx, key).Result()
 }
 
 func (r *Redis) Del(key string) *redis.IntCmd {
-	return r.client.Del(key)
+	return r.client.Del(ctx, key)
 }
