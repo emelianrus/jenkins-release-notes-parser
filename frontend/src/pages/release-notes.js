@@ -8,8 +8,6 @@ import { useParams } from 'react-router-dom';
 
 function Releases() {
   const { owner, repo } = useParams();
-  // console.log(owner);
-  // console.log(repo);
 
   const [projects, setProjects] = useState([]);
   const [projectRepo, setProjectRepo] = useState("");

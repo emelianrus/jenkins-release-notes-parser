@@ -14,17 +14,6 @@ type ProjectService struct {
 	Redis *db.Redis
 }
 
-func (s *ProjectService) AddMultiplyProjects(c *gin.Context) {
-	logrus.Infoln("AddMultiplyProjects route reached")
-	c.JSON(http.StatusOK, "ASd")
-}
-
-func (s *ProjectService) GetProjectById(c *gin.Context) {
-	logrus.Infoln("GetProjectById route reached")
-	projectName := c.DefaultQuery("name", "")
-	c.String(http.StatusOK, "Hello %s", projectName)
-}
-
 func (s *ProjectService) GetAllProjects(c *gin.Context) {
 	logrus.Infoln("GetAllProjects route reached")
 	projects, _ := s.Redis.GetAllProjects()
@@ -54,23 +43,6 @@ func (s *ProjectService) GetPotentialUpdates(c *gin.Context) {
 	logrus.Infoln("GetWatcherProjects route reached")
 	potentialUpdates, _ := s.Redis.GetPotentialUpdates()
 	c.JSON(http.StatusOK, potentialUpdates)
-}
-
-func (s *ProjectService) DeleteProject(c *gin.Context) {
-	logrus.Infoln("DeleteProject route reached")
-	id := c.DefaultQuery("id", "")
-	c.String(http.StatusOK, "Hello %s", id)
-}
-
-func (s *ProjectService) DeleteMultiplyProjects(c *gin.Context) {
-	logrus.Infoln("DeleteMultiplyProjects route reached")
-	var ids []string
-	if err := c.BindJSON(&ids); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
-		return
-	}
-	// Your logic to delete the items with the given IDs goes here
-	c.JSON(http.StatusOK, gin.H{"message": "Deleted items with IDs", "ids": ids})
 }
 
 // TODO: https://api.github.com/repos/OWNER/REPO/releases
