@@ -21,10 +21,6 @@ func NewRedisClient() *Redis {
 		// Password: "",
 		DB: 0,
 	})
-	err := client.Set(ctx, "key", "value", 0).Err()
-	if err != nil {
-		panic(err)
-	}
 	return &Redis{client: client}
 }
 
