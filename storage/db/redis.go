@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"strings"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
@@ -28,32 +27,8 @@ func (r *Redis) Status() error {
 	return r.client.Ping(ctx).Err()
 }
 
-func (r *Redis) AddDebugData() {
-	logrus.Infoln("Append debug data to redis")
-	// r.AddJenkinsServer("jenkins-two", "2.3233.1")
-	// r.AddJenkinsServer("jenkins-one", "2.3233.2")
-
-	// plugins := `mina-sshd-api-common:2.9.1-44.v476733c11f82`
-	plugins := `
-	ant:475.vf34069fef73c
-	antisamy-markup-formatter:159.v25b_c67cd35fb_`
-
-	lines := strings.Split(plugins, "\n")
-
-	m := make(map[string]string)
-	for _, line := range lines {
-		pair := strings.Split(line, ":")
-		if len(pair) == 2 {
-			m[strings.TrimSpace(pair[0])] = strings.TrimSpace(pair[1])
-		}
-	}
-
-	r.SetWatcherList(m)
-
-}
-
-func (r *Redis) Get(key string) *redis.StringCmd {
-	return r.client.Get(ctx, key)
+func (r *Redis) Get(key string) ([]byte, error) {
+	return r.client.Get(ctx, key).Bytes()
 }
 
 func (r *Redis) Set(key string, value interface{}) error {
@@ -64,6 +39,7 @@ func (r *Redis) Keys(key string) ([]string, error) {
 	return r.client.Keys(ctx, key).Result()
 }
 
+// TODO: not used
 func (r *Redis) Del(key string) *redis.IntCmd {
 	return r.client.Del(ctx, key)
 }

@@ -4,9 +4,11 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/emelianrus/jenkins-release-notes-parser/db"
 	"github.com/emelianrus/jenkins-release-notes-parser/routes"
 	jenkins "github.com/emelianrus/jenkins-release-notes-parser/sources/jenkinsPluginSite"
+	"github.com/emelianrus/jenkins-release-notes-parser/storage"
+	"github.com/emelianrus/jenkins-release-notes-parser/storage/db"
+	rs "github.com/emelianrus/jenkins-release-notes-parser/storage/redisStorage"
 	"github.com/emelianrus/jenkins-release-notes-parser/worker"
 	"github.com/sirupsen/logrus"
 )
@@ -21,9 +23,17 @@ func init() {
 }
 
 func Start() {
-	redisclient := db.NewRedisClient()
+	// redisClie := db.NewRedisClient()
 
-	if redisclient.Status() != nil {
+	redis := db.NewRedisClient()
+
+	redisStorage := storage.SetStorage(redis)
+
+	redisclient := &rs.RedisStorage{
+		DB: redisStorage,
+	}
+
+	if redis.Status() != nil {
 		logrus.Errorln("failed to connect to redis")
 	} else {
 		// TODO: remove used during development

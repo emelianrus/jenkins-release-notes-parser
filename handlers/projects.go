@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/emelianrus/jenkins-release-notes-parser/db"
+	"github.com/emelianrus/jenkins-release-notes-parser/storage/redisStorage"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -11,7 +11,7 @@ import (
 
 // struct for handlers to use DB connection
 type ProjectService struct {
-	Redis *db.Redis
+	Redis *redisStorage.RedisStorage
 }
 
 func (s *ProjectService) GetAllProjects(c *gin.Context) {
@@ -57,14 +57,14 @@ func (s *ProjectService) GetProjectReleaseNotes(c *gin.Context) {
 		logrus.Errorln(err)
 	}
 
-	type Resp struct {
+	type projectReleaseNotes struct {
 		Repo         string
 		Owner        string
 		ProjectGroup string
 		ReleaseNotes []types.ReleaseNote
 	}
 
-	resp := Resp{
+	resp := projectReleaseNotes{
 		Repo:         repoName,
 		Owner:        ownerName,
 		ProjectGroup: "jenkinsci",

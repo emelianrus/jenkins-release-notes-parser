@@ -1,4 +1,4 @@
-package db
+package redisStorage
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (r *Redis) GetAllProjects() ([]types.Project, error) {
+func (r *RedisStorage) GetAllProjects() ([]types.Project, error) {
 	var projects []types.Project
 	// TODO: this should be configurable
 	repoOwner := "jenkinsci"
@@ -19,7 +19,7 @@ func (r *Redis) GetAllProjects() ([]types.Project, error) {
 	// get list of all projects
 	var projectsTmp []string
 
-	projectsKeys, _ := r.Keys(fmt.Sprintf("github:%s:*", repoOwner))
+	projectsKeys, _ := r.DB.Keys(fmt.Sprintf("github:%s:*", repoOwner))
 
 	for _, key := range projectsKeys {
 		splitted := strings.Split(key, ":")
@@ -44,12 +44,12 @@ func (r *Redis) GetAllProjects() ([]types.Project, error) {
 }
 
 // get one project with release notes
-func (r *Redis) GetProjectReleaseNotes(projectOwner string, projectName string) ([]types.ReleaseNote, error) {
+func (r *RedisStorage) GetProjectReleaseNotes(projectOwner string, projectName string) ([]types.ReleaseNote, error) {
 
 	releaseNotes := []types.ReleaseNote{}
 
 	// get all versions for specific project
-	projectVersionsJson, err := r.Get(fmt.Sprintf("github:%s:%s:versions", projectOwner, projectName)).Bytes()
+	projectVersionsJson, err := r.DB.Get(fmt.Sprintf("github:%s:%s:versions", projectOwner, projectName))
 	if err != nil {
 		return releaseNotes, errors.New("error in getPlugins " + projectName)
 	}
@@ -62,7 +62,7 @@ func (r *Redis) GetProjectReleaseNotes(projectOwner string, projectName string) 
 
 	for _, version := range versions {
 		// get release notes of specific release
-		pluginJson, _ := r.Get(fmt.Sprintf("github:%s:%s:%s", projectOwner, projectName, version)).Bytes()
+		pluginJson, _ := r.DB.Get(fmt.Sprintf("github:%s:%s:%s", projectOwner, projectName, version))
 		var releaseNote types.ReleaseNote
 		err := json.Unmarshal(pluginJson, &releaseNote)
 		if err != nil {

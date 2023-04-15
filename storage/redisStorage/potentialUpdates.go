@@ -1,4 +1,4 @@
-package db
+package redisStorage
 
 import (
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
@@ -7,7 +7,7 @@ import (
 
 type PotentialUpdates map[string][]types.ReleaseNote
 
-func (r *Redis) GetPotentialUpdates() (PotentialUpdates, error) {
+func (r *RedisStorage) GetPotentialUpdates() (PotentialUpdates, error) {
 	watcherListProjects, _ := r.GetWatcherData()
 	potentialUpdates := PotentialUpdates{}
 	cachedProjects, _ := r.GetAllProjects()

@@ -4,9 +4,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/emelianrus/jenkins-release-notes-parser/db"
 	"github.com/emelianrus/jenkins-release-notes-parser/sources"
 	jenkins "github.com/emelianrus/jenkins-release-notes-parser/sources/jenkinsPluginSite"
+	"github.com/emelianrus/jenkins-release-notes-parser/storage/redisStorage"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/sirupsen/logrus"
 )
@@ -17,24 +17,21 @@ var (
 
 // used as go StartQueue()
 // can be executed by button from UI so we need to be sure running only one instance at once
-func StartQueuePluginSite(redisclient *db.Redis, ps jenkins.PluginSite) {
+func StartQueuePluginSite(redisclient *redisStorage.RedisStorage, ps jenkins.PluginSite) {
 	logrus.Infoln("StartQueue...")
 
 	projects, _ := redisclient.GetWatcherData()
 	for {
 		for projectName := range projects {
 
-			releaseNotes, err := sources.DownloadPlugin(&ps, projectName)
-
-			if err == nil {
-				redisclient.SaveReleaseNotesToDB(releaseNotes, projectName)
-			} else {
+			releaseNotes, err := sources.DownloadProject(&ps, projectName)
+			if err != nil {
 				logrus.Errorln("Downloading repo error:")
 				logrus.Errorln(err)
-
-				redisclient.SaveReleaseNotesToDB([]types.ReleaseNote{}, projectName)
+				releaseNotes = []types.ReleaseNote{}
 				redisclient.SetProjectError(projectName, err.Error())
 			}
+			redisclient.SaveReleaseNotesToDB(releaseNotes, projectName)
 		}
 
 		logrus.Infoln("StartQueuePluginSite done. doing sleep for 24h")

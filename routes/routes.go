@@ -3,13 +3,13 @@ package routes
 import (
 	"net/http"
 
-	"github.com/emelianrus/jenkins-release-notes-parser/db"
 	"github.com/emelianrus/jenkins-release-notes-parser/handlers"
+	"github.com/emelianrus/jenkins-release-notes-parser/storage/redisStorage"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(redis *db.Redis) *gin.Engine {
+func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 	router := gin.Default()
 
 	handler := handlers.ProjectService{
@@ -35,7 +35,7 @@ func SetupRouter(redis *db.Redis) *gin.Engine {
 	// =================== helpers ===================
 	router.GET("/", handlers.RedirectToRoot)
 	router.GET("/ping", handlers.Ping)
-	router.GET("/redis/status", handler.RedisStatus)
+	// router.GET("/redis/status", handler.RedisStatus)
 
 	router.POST("/watcher-list", handler.EditWatcherList)
 	router.GET("/watcher-list", handler.GetWatcherList)
