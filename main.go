@@ -23,58 +23,31 @@ func init() {
 }
 
 func Start() {
-	// redisClie := db.NewRedisClient()
 
 	redis := db.NewRedisClient()
 
-	redisStorage := storage.SetStorage(redis)
-
-	redisclient := &rs.RedisStorage{
-		DB: redisStorage,
+	redisStorage := &rs.RedisStorage{
+		DB: storage.SetStorage(redis),
 	}
 
 	if redis.Status() != nil {
 		logrus.Errorln("failed to connect to redis")
 	} else {
 		// TODO: remove used during development
-		redisclient.AddDebugData()
+		redisStorage.AddDebugData()
 	}
 
 	// githubClient := github.NewGitHubClient()
 	pluginSiteClient := jenkins.NewPluginSite()
 
 	// TODO: should be update plugin function executed once per day
-	go worker.StartQueuePluginSite(redisclient, pluginSiteClient)
+	go worker.StartQueuePluginSite(redisStorage, pluginSiteClient)
 
 	// GIN
-	router := routes.SetupRouter(redisclient)
+	router := routes.SetupRouter(redisStorage)
 	router.Run(":8080")
 }
 
-// func Testing() {
-
-// 	github := github.NewGitHubClient()
-// 	pluginSite := jenkins.NewPluginSite()
-
-// 	releases, err := sources.DownloadPlugin(&pluginSite, "ant")
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	for _, v := range releases {
-// 		fmt.Println(v.Name)
-// 	}
-
-// 	releases, err = sources.DownloadPlugin(&github, "ant")
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	for _, v := range releases {
-// 		fmt.Println(v.Name)
-// 	}
-// }
-
 func main() {
 	Start()
-	// Testing()
-
 }
