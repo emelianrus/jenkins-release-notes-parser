@@ -2,7 +2,6 @@ package db
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/sirupsen/logrus"
 )
@@ -24,16 +23,17 @@ func (r *Redis) GetWatcherData() (map[string]string, error) {
 
 	return result, nil
 }
+
 func (r *Redis) SetWatcherList(content map[string]string) error {
 	jsonBody, err := json.Marshal(content)
 	if err != nil {
-		fmt.Println("failed to marshal body")
-		fmt.Println(err)
+		logrus.Errorln("failed to marshal body")
+		logrus.Errorln(err)
 	}
 
 	err = r.Set(WATCHER_LIST_PATH, jsonBody)
 	if err != nil {
-		fmt.Println(err)
+		logrus.Errorln(err)
 	}
 
 	return nil

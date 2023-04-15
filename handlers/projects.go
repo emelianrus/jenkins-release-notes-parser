@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/db"
@@ -13,11 +12,6 @@ import (
 // struct for handlers to use DB connection
 type ProjectService struct {
 	Redis *db.Redis
-}
-
-func (s *ProjectService) AddProject(c *gin.Context) {
-	logrus.Infoln("AddProject")
-	c.JSON(http.StatusOK, "ASd")
 }
 
 func (s *ProjectService) AddMultiplyProjects(c *gin.Context) {
@@ -62,48 +56,10 @@ func (s *ProjectService) GetPotentialUpdates(c *gin.Context) {
 	c.JSON(http.StatusOK, potentialUpdates)
 }
 
-func (s *ProjectService) GetWatcherProjects(c *gin.Context) {
-	logrus.Infoln("GetWatcherProjects route reached")
-	projects, _ := s.Redis.GetWatcherProjects()
-	c.JSON(http.StatusOK, projects)
-}
-
-func (s *ProjectService) GetProjectsById(c *gin.Context) {
-	logrus.Infoln("GetProjectsById route reached")
-	c.JSON(http.StatusOK, "GetProjectsById")
-}
-
 func (s *ProjectService) DeleteProject(c *gin.Context) {
 	logrus.Infoln("DeleteProject route reached")
 	id := c.DefaultQuery("id", "")
 	c.String(http.StatusOK, "Hello %s", id)
-}
-
-func (s *ProjectService) GetWatcherList(c *gin.Context) {
-	watcherList, err := s.Redis.GetWatcherData()
-	if err != nil {
-		logrus.Errorln("can not get watcher list")
-		logrus.Errorln(err)
-	}
-	c.JSON(http.StatusOK, watcherList)
-}
-func (s *ProjectService) EditWatcherList(c *gin.Context) {
-	logrus.Infoln("EditWatcherList route reached")
-
-	var body map[string]string
-	if err := c.BindJSON(&body); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	fmt.Printf("Received request body: %+v\n", body)
-
-	err := s.Redis.SetWatcherList(body)
-	if err != nil {
-		logrus.Errorln("can not set watcher list to DB")
-		logrus.Errorln(err)
-	}
-
-	c.String(http.StatusOK, "EditWatcherList")
 }
 
 func (s *ProjectService) DeleteMultiplyProjects(c *gin.Context) {
@@ -143,5 +99,5 @@ func (s *ProjectService) GetProjectReleaseNotes(c *gin.Context) {
 		ReleaseNotes: releaseNotes,
 	}
 	c.JSON(http.StatusOK, resp)
-	fmt.Printf("HITED %s/%s\n", ownerName, repoName)
+	logrus.Infof("HITED %s/%s\n", ownerName, repoName)
 }
