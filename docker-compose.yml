@@ -4,7 +4,7 @@ services:
   redis:
     container_name: redis
     hostname: redis
-    image: redis
+    image: redis:bullseye
     ports:
     - "6379:6379"
   # helper for DB

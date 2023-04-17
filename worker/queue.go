@@ -14,9 +14,8 @@ import (
 // 	serviceMutex sync.Mutex
 // )
 
-// used as go StartQueue()
 // can be executed by button from UI so we need to be sure running only one instance at once
-func StartQueuePluginSite(redisclient *redisStorage.RedisStorage, ps jenkins.PluginSite) {
+func StartWorkerPluginSite(redisclient *redisStorage.RedisStorage, ps jenkins.PluginSite) {
 	logrus.Infoln("StartQueue...")
 
 	projects, _ := redisclient.GetWatcherData()
@@ -25,15 +24,19 @@ func StartQueuePluginSite(redisclient *redisStorage.RedisStorage, ps jenkins.Plu
 
 			releaseNotes, err := sources.DownloadProject(&ps, projectName)
 			if err != nil {
-				logrus.Errorln("Downloading repo error:")
-				logrus.Errorln(err)
 				releaseNotes = []types.ReleaseNote{}
 				redisclient.SetProjectError(projectName, err.Error())
+				logrus.Errorln("Downloading repo error:")
+				logrus.Errorln(err)
+			} else {
+				latestVersionInCache, _ := redisclient.GetLatestVersion("jenkinsci", projectName)
+				logrus.Infof("latestVersionInCache: %s releaseNotes: %s\n", latestVersionInCache, releaseNotes[0].Name)
 			}
+
 			redisclient.SaveReleaseNotesToDB(releaseNotes, projectName)
 		}
 
-		logrus.Infoln("StartQueuePluginSite done. doing sleep for 24h")
+		logrus.Infoln("StartWorkerPluginSite done. doing sleep for 24h")
 		time.Sleep(time.Hour * 24)
 	}
 

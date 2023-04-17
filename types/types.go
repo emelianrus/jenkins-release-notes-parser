@@ -5,6 +5,7 @@ type ReleaseNote struct {
 	Name      string
 	Tag       string
 	BodyHTML  string
+	HTMLURL   string
 	CreatedAt string
 }
 

@@ -23,6 +23,7 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 	// router.POST("/books", handlers.PostBook)
 
 	router.Use(cors.New(cors.Config{
+		// TODO: should not be "*"
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPatch, http.MethodPost, http.MethodHead, http.MethodDelete, http.MethodOptions},
 		AllowHeaders:     []string{"Content-Type", "X-XSRF-TOKEN", "Accept", "Origin", "X-Requested-With", "Authorization"},
@@ -30,12 +31,12 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 		AllowCredentials: true,
 	}))
 
-	// =================== routes ===================
-
 	// =================== helpers ===================
 	router.GET("/", handlers.RedirectToRoot)
 	router.GET("/ping", handlers.Ping)
 	router.GET("/redis/status", handler.RedisStatus)
+
+	// =================== routes ===================
 
 	router.POST("/watcher-list", handler.EditWatcherList)
 	router.GET("/watcher-list", handler.GetWatcherList)

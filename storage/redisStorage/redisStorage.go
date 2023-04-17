@@ -14,13 +14,11 @@ type RedisStorage struct {
 // TODO: temp function, this should be set via API
 func (r *RedisStorage) AddDebugData() {
 	logrus.Infoln("Append debug data to redis")
-	// r.AddJenkinsServer("jenkins-two", "2.3233.1")
-	// r.AddJenkinsServer("jenkins-one", "2.3233.2")
 
-	// plugins := `mina-sshd-api-common:2.9.1-44.v476733c11f82`
 	plugins := `
 	ant:475.vf34069fef73c
-	antisamy-markup-formatter:159.v25b_c67cd35fb_`
+	antisamy-markup-formatter:159.v25b_c67cd35fb_
+	kubernetes:3622.va_9dc5592b_10c`
 
 	lines := strings.Split(plugins, "\n")
 

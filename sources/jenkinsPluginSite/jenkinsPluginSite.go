@@ -56,6 +56,7 @@ func (ps *PluginSite) Download(projectName string) ([]types.ReleaseNote, error) 
 			Name:      release.Name,
 			Tag:       release.TagName,
 			BodyHTML:  release.BodyHTML,
+			HTMLURL:   release.HTMLURL,
 			CreatedAt: release.PublishedAt,
 		})
 	}

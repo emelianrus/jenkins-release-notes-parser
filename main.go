@@ -14,6 +14,7 @@ import (
 )
 
 func init() {
+	// Initial configuration for logger
 	logrus.SetLevel(logrus.DebugLevel)
 	if runtime.GOOS == "windows" {
 		logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
@@ -38,14 +39,17 @@ func Start() {
 	}
 
 	// githubClient := github.NewGitHubClient()
-	pluginSiteClient := jenkins.NewPluginSite()
 
 	// TODO: should be update plugin function executed once per day
-	go worker.StartQueuePluginSite(redisStorage, pluginSiteClient)
+	go worker.StartWorkerPluginSite(redisStorage, jenkins.NewPluginSite())
 
 	// GIN
 	router := routes.SetupRouter(redisStorage)
-	router.Run(":8080")
+	err := router.Run(":8080")
+	if err != nil {
+		logrus.Errorln("Failed to create gin server")
+		logrus.Errorln(err)
+	}
 }
 
 func main() {

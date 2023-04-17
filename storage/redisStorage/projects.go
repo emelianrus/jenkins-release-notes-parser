@@ -43,6 +43,12 @@ func (r *RedisStorage) GetAllProjects() ([]types.Project, error) {
 	return projects, nil
 }
 
+func (r *RedisStorage) GetLatestVersion(projectOwner string, projectName string) (string, error) {
+	latestVersionJson, err := r.DB.Get(fmt.Sprintf("github:%s:%s:latestVersion", projectOwner, projectName))
+
+	return string(latestVersionJson), err
+}
+
 // get one project with release notes
 func (r *RedisStorage) GetProjectReleaseNotes(projectOwner string, projectName string) ([]types.ReleaseNote, error) {
 
