@@ -1,6 +1,8 @@
 # TODO:
-1. create once job download list from github release notes (also should download newly added )
-2. DB should save data to volume and load during app startup
+* we use pluginSite to download releases/versions. it downloads only latest 5.
+  need to fix when i have watcher version(installed version) older than latest 10
+* create once job download list from github release notes (also should download newly added )
+* DB should save data to volume and load during app startup
 
 * if repo not found what to do?
 * queue per day (we need to get updates from repos one per day to get new releases)
@@ -8,7 +10,3 @@
 * add jenkins plugin conroller (update delete add new plugin resolve deps)
 * add feed (show latest updates for plugins, do UI notification? where?)
 
-
-ps
-
-i moved releaseNotes from file-per-version to single "releaseNotes" files per project
