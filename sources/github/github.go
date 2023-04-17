@@ -32,10 +32,10 @@ type GitHubStats struct {
 
 // response from github getted from release path
 type gitHubReleaseNote struct {
-	Name      string `json:"name"`     // Version
-	TagName   string `json:"tag_name"` // Version
-	Body      string `json:"body"`     // this is markdown formated text of release note
-	CreatedAt string `json:"created_at"`
+	Name      string `json:"name"`       // Version
+	TagName   string `json:"tag_name"`   // tag name
+	Body      string `json:"body"`       // this is markdown formated text of release note
+	CreatedAt string `json:"created_at"` //
 }
 
 func NewGitHubClient() GitHub {

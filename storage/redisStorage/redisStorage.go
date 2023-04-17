@@ -30,6 +30,6 @@ func (r *RedisStorage) AddDebugData() {
 		}
 	}
 
-	r.SetWatcherList(m)
+	r.SetWatcherData(m)
 
 }

@@ -25,7 +25,7 @@ func (s *ProjectService) EditWatcherList(c *gin.Context) {
 	}
 	logrus.Infof("Received request body: %+v\n", body)
 
-	err := s.Redis.SetWatcherList(body)
+	err := s.Redis.SetWatcherData(body)
 	if err != nil {
 		logrus.Errorln("can not set watcher list to DB")
 		logrus.Errorln(err)

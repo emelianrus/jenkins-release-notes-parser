@@ -24,7 +24,7 @@ func (r *RedisStorage) GetWatcherData() (map[string]string, error) {
 	return result, nil
 }
 
-func (r *RedisStorage) SetWatcherList(content map[string]string) error {
+func (r *RedisStorage) SetWatcherData(content map[string]string) error {
 	jsonBody, err := json.Marshal(content)
 	if err != nil {
 		logrus.Errorln("failed to marshal body")

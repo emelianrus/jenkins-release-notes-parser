@@ -8,3 +8,7 @@
 * add jenkins plugin conroller (update delete add new plugin resolve deps)
 * add feed (show latest updates for plugins, do UI notification? where?)
 
+
+ps
+
+i moved releaseNotes from file-per-version to single "releaseNotes" files per project

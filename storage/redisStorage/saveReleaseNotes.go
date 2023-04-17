@@ -35,11 +35,11 @@ func (r *RedisStorage) SetLatestVersionFile(projectName string, version string) 
 	return nil
 }
 
-func (r *RedisStorage) SaveReleaseNoteToDB(projectName string, release types.ReleaseNote) error {
+func (r *RedisStorage) SaveReleaseNoteToDB(projectName string, release []types.ReleaseNote) error {
 	// TODO: some plugins doesnt have name, so replace with tag
-	if release.Name == "" {
-		release.Name = release.Tag
-	}
+	// if release.Name == "" {
+	// 	release.Name = release.Tag
+	// }
 
 	jsonData, err := json.Marshal(release)
 	if err != nil {
@@ -47,7 +47,7 @@ func (r *RedisStorage) SaveReleaseNoteToDB(projectName string, release types.Rel
 		return fmt.Errorf("error Marshal release: %s", err)
 	}
 	// save release file
-	key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, release.Name)
+	key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "releaseNotes")
 	err = r.DB.Set(key, jsonData)
 	if err != nil {
 		log.Println(err)
@@ -68,6 +68,8 @@ func (r *RedisStorage) SaveReleaseNotesToDB(releases []types.ReleaseNote, projec
 
 	var versions []string
 
+	var releaseNotes []types.ReleaseNote
+
 	// save repo release notes per version
 	for _, release := range releases {
 
@@ -77,10 +79,10 @@ func (r *RedisStorage) SaveReleaseNotesToDB(releases []types.ReleaseNote, projec
 		}
 
 		versions = append(versions, release.Name)
-
-		r.SaveReleaseNoteToDB(projectName, release)
+		releaseNotes = append(releaseNotes, release)
+		// r.SaveReleaseNoteToDB(projectName, release)
 	}
-
+	r.SaveReleaseNoteToDB(projectName, releaseNotes)
 	// save "versions" file
 	// TODO: do we need to set empty versions file if project doesnt have versions(releases)?
 	r.SetVersionsFile(projectName, versions)
@@ -94,5 +96,6 @@ func (r *RedisStorage) SaveReleaseNotesToDB(releases []types.ReleaseNote, projec
 	// save "latestVersion" file
 	r.SetLatestVersionFile(projectName, versions[0])
 
+	r.GetProjectReleaseNotes("jenkinsci", projectName)
 	return nil
 }
