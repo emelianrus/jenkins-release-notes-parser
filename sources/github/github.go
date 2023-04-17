@@ -159,7 +159,7 @@ func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
 				Tag:  release.TagName,
 				BodyHTML: string(template.HTML(
 					utils.ReplaceGitHubLinks(
-						utils.ConvertMarkDownToHtml(release.Body)))),
+						utils.ConvertMarkdownToHtml(release.Body)))),
 				CreatedAt: release.CreatedAt,
 			})
 		}

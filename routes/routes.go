@@ -16,12 +16,6 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 		Redis: redis,
 	}
 
-	// router.GET("/books", handlers.GetBooks)
-	// router.GET("/books/:isbn", handlers.GetBookByISBN)
-	// // router.DELETE("/books/:isbn", handlers.DeleteBookByISBN)
-	// // router.PUT("/books/:isbn", handlers.UpdateBookByISBN)
-	// router.POST("/books", handlers.PostBook)
-
 	router.Use(cors.New(cors.Config{
 		// TODO: should not be "*"
 		AllowOrigins:     []string{"*"},
