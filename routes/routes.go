@@ -44,5 +44,39 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 
 	router.GET("/api/stats", handler.GetApiStats)
 
+	// TODO: ============== plugin-manager routes ==============
+
+	// should return plugins + versions + core version
+	router.GET("/plugin-manager/get-data", func(c *gin.Context) {
+		type pluginManagerData struct {
+			CoreVersion string
+			Plugins     []struct {
+				Name    string
+				Version string
+			}
+		}
+
+		pmData := pluginManagerData{
+			CoreVersion: "1.0",
+			Plugins: []struct {
+				Name    string
+				Version string
+			}{
+				{Name: "PluginA", Version: "1.2"},
+				{Name: "PluginB", Version: "3.0"},
+				{Name: "PluginC", Version: "2.1"},
+			},
+		}
+		c.JSON(http.StatusOK, pmData)
+	})
+
+	router.POST("/plugin-manager/add-new-plugin", func(ctx *gin.Context) {})
+	router.DELETE("/plugin-manager/delete-plugin", func(ctx *gin.Context) {})
+	router.PUT("/plugin-manager/edit-core-version", func(ctx *gin.Context) {})
+
+	router.POST("/plugin-manager/check-versions", func(ctx *gin.Context) {})
+	router.POST("/plugin-manager/resolve-deps", func(ctx *gin.Context) {})
+	// ==========================================================
+
 	return router
 }

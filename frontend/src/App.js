@@ -6,6 +6,7 @@ import NavBar from './components/NavBar';
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 
 import ReleasesNotes from './pages/release-notes';
+import PluginManager from './pages/plugin-manager';
 import Projects from './pages/projects';
 import PotentialUpdates from './pages/potential-updates';
 import WatcherList from './pages/watcherList';
@@ -26,6 +27,7 @@ function App() {
           <Route path="/repo/:owner/:repo/releases" element={<ReleasesNotes/>} />
           <Route path="/api-stats" element={<APIStats/>} />
           <Route path="/potential-updates" element={<PotentialUpdates/>} />
+          <Route path="/plugin-manager" element={<PluginManager/>} />
         </Routes>
       </div>
     </Router>

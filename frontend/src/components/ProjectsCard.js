@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 
 function ProjectCard({ project }) {
 
-  // style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
-
     let hasError = project.Error ? <span style={{ backgroundColor: '#ffcccc' }}> {project.Error} </span> : "no"
 
     return (

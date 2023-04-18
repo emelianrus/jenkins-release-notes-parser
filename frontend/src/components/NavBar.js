@@ -11,9 +11,10 @@ function NavBar() {
         {/* <Nav.Link href="/release-notes">Releases</Nav.Link> */}
         <Nav.Link href="/projects">Projects</Nav.Link>
         {/* <Nav.Link href="/notifications">Notifications</Nav.Link> */}
-        <Nav.Link href="/watcher-list">WatcherList</Nav.Link>
+        <Nav.Link href="/potential-updates">Potential Updates</Nav.Link>
+        <Nav.Link href="/watcher-list">Watcher Projects</Nav.Link>
+        <Nav.Link href="/plugin-manager">Plugin Manager</Nav.Link>
         <Nav.Link href="/api-stats">API stats</Nav.Link>
-        <Nav.Link href="/potential-updates">PotentialUpdates</Nav.Link>
       </Nav>
       </Container>
     </Navbar>
