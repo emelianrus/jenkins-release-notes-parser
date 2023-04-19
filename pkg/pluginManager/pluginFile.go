@@ -1,4 +1,4 @@
-package plugin
+package pluginManager
 
 // this file should only be for parse file
 /*

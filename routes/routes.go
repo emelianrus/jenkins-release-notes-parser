@@ -4,16 +4,35 @@ import (
 	"net/http"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/handlers"
+	"github.com/emelianrus/jenkins-release-notes-parser/pkg/pluginManager"
 	"github.com/emelianrus/jenkins-release-notes-parser/storage/redisStorage"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
+func preloadPluginManager(pm *pluginManager.PluginManager, redis *redisStorage.RedisStorage) {
+
+	watcherData, _ := redis.GetWatcherData()
+	for name, version := range watcherData {
+		pm.AddPlugin(pluginManager.NewPluginWithVersion(name, version))
+	}
+}
+
 func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 	router := gin.Default()
 
+	pm := pluginManager.NewPluginManager()
+	preloadPluginManager(&pm, redis)
+
+	// pm.FixPluginDependencies()
+
+	// for _, v := range pm {
+	// 	fmt.Println(v.Name)
+	// }
+
 	handler := handlers.ProjectService{
-		Redis: redis,
+		Redis:         redis,
+		PluginManager: pm,
 	}
 
 	router.Use(cors.New(cors.Config{

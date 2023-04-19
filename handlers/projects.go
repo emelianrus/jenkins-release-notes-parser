@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/emelianrus/jenkins-release-notes-parser/pkg/pluginManager"
 	"github.com/emelianrus/jenkins-release-notes-parser/storage/redisStorage"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/gin-gonic/gin"
@@ -11,7 +12,8 @@ import (
 
 // struct for handlers to use DB connection
 type ProjectService struct {
-	Redis *redisStorage.RedisStorage
+	Redis         *redisStorage.RedisStorage
+	PluginManager pluginManager.PluginManager
 }
 
 func (s *ProjectService) GetAllProjects(c *gin.Context) {

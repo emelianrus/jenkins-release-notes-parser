@@ -1,4 +1,4 @@
-package plugin
+package pluginManager
 
 import (
 	"errors"
@@ -44,8 +44,9 @@ type Warnings struct {
 }
 
 type Plugin struct {
-	Name                string
-	Version             string
+	Name    string
+	Version string
+
 	Url                 string
 	Type                PluginType
 	RequiredCoreVersion string
@@ -57,7 +58,7 @@ type Plugin struct {
 
 // Create Plugin from name and version
 func NewPluginWithVersion(name string, version string) *Plugin {
-	logrus.Debugf("Adding new plugin: '%s' with version: '%s'\n", name, version)
+	logrus.Debugf("Creating new plugin: '%s' with version: '%s'\n", name, version)
 	return &Plugin{
 		Name:         name,
 		Version:      version,
@@ -70,7 +71,7 @@ func NewPluginWithVersion(name string, version string) *Plugin {
 
 // Create Plugin from name and url
 func NewPluginWithUrl(name string, url string) *Plugin {
-	logrus.Debugf("Adding new plugin: '%s' with url: '%s'\n", name, url)
+	logrus.Debugf("Creating new plugin: '%s' with url: '%s'\n", name, url)
 	return &Plugin{
 		Name:         name,
 		Version:      "",

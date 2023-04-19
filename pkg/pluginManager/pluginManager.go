@@ -1,4 +1,4 @@
-package plugin
+package pluginManager
 
 import (
 	"bufio"
@@ -32,6 +32,7 @@ func NewPluginManager() PluginManager {
 
 // TODO: return error?
 func (pm *PluginManager) AddPlugin(pl *Plugin) {
+	logrus.Infof("Adding new plugin to pluginManager %s:%s", pl.Name, pl.Version)
 	if _, found := (*pm)[pl.Name]; found {
 		logrus.Warnf("Found copy of plugin in pluginsfile. Plugin name: '%s'\n", pl.Name)
 	}
@@ -151,7 +152,7 @@ func (p *PluginManager) FixPluginDependencies() {
 		for _, plugin := range pluginsToCheck {
 			logrus.Infof("checking plugin: %s:%s  \n", plugin.Name, plugin.Version)
 			// TODO: change to updatecenter + add cache
-			for _, dep := range plugin.LoadDependenciesFromManifest() {
+			for _, dep := range plugin.LoadDependenciesFromUpdateCenter() {
 				plugin.Dependencies[dep.Name] = *NewPluginWithVersion(dep.Name, dep.Version)
 
 				logrus.Infof("checking dep: %s:%s for plugin %s:%s\n", dep.Name, dep.Version, plugin.Name, plugin.Version)
@@ -189,7 +190,7 @@ func (p *PluginManager) FixPluginDependencies() {
 
 					}
 					// try to find in pluginsToCheck list
-				} else if _, found := pluginsToCheck[dep.Name]; found {
+				} else if _, foundItem := pluginsToCheck[dep.Name]; foundItem {
 					if utils.IsNewerThan(dep.Version, pluginsToCheck[dep.Name].Version) {
 						logrus.Infof("Upgrading pluginsToCheck bundled dependency %s:%s -> %s:%s\n", pluginsToCheck[dep.Name].Name, pluginsToCheck[dep.Name].Version, dep.Name, dep.Version)
 
