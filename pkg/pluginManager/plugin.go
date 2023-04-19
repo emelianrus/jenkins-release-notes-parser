@@ -146,8 +146,8 @@ func (p *Plugin) Download() (string, error) {
 	}
 
 	if isExternalPluginType {
-		manifest, _ := manifest.Parse(fileLocation)
-		p.Version = manifest["Plugin-Version"]
+		manifestFile, _ := manifest.Parse(fileLocation)
+		p.Version = manifestFile["Plugin-Version"]
 	}
 
 	logrus.Infof("Downloaded Plugin name: %s, Plugin version: %s, Plugin URL: %s", p.Name, p.Version, p.Url)
@@ -160,9 +160,9 @@ func (p *Plugin) LoadWarnings() {
 	// download plugin hpi file
 	p.Download()
 	// we need manifest to get jenkins core version to get the right update center json
-	manifest, _ := manifest.Parse(fmt.Sprintf("plugins/%s-%s.hpi", p.Name, p.Version))
+	manifestFile, _ := manifest.Parse(fmt.Sprintf("plugins/%s-%s.hpi", p.Name, p.Version))
 	// get update center for current plugin, we will get warnings from UC
-	uc, _ := updateCenter.Get(manifest["Jenkins-Version"])
+	uc, _ := updateCenter.Get(manifestFile["Jenkins-Version"])
 
 	// clear warnings but keep allocated memory
 	p.Warnings = p.Warnings[:0]
@@ -283,11 +283,11 @@ func (p *Plugin) LoadDependenciesFromUpdateCenter() map[string]Plugin {
 func (p *Plugin) LoadDependenciesFromManifest() map[string]Plugin {
 	p.Download()
 	// we need manifest to get jenkins core version to get the right update center json
-	manifest, _ := manifest.Parse(fmt.Sprintf("plugins/%s-%s.hpi", p.Name, p.Version))
+	manifestFile, _ := manifest.Parse(fmt.Sprintf("plugins/%s-%s.hpi", p.Name, p.Version))
 
-	logrus.Debugf("[GetDependenciesFromManifest] plugin name: %s jenkins core: %s\n\n", p.Name, manifest["Jenkins-Version"])
+	logrus.Debugf("[GetDependenciesFromManifest] plugin name: %s jenkins core: %s\n\n", p.Name, manifestFile["Jenkins-Version"])
 
-	for _, dep := range manifest.GetDependencies() {
+	for _, dep := range manifestFile.GetDependencies() {
 		logrus.Debugf("[GetDependenciesFromManifest] %s: all deps from manifest Name: %s Version: %s Optional: %t", p.Name, dep.Name, dep.Version, dep.Optional)
 		if !dep.Optional {
 			p.Dependencies[dep.Name] = *NewPluginWithVersion(dep.Name, dep.Version)
@@ -300,10 +300,10 @@ func (p *Plugin) LoadDependenciesFromManifest() map[string]Plugin {
 func (p *Plugin) GetManifestAttrs() map[string]string {
 	p.Download()
 	// we need manifest to get jenkins core version to get the right update center json
-	manifest, _ := manifest.Parse(fmt.Sprintf("plugins/%s-%s.hpi", p.Name, p.Version))
+	manifestFile, _ := manifest.Parse(fmt.Sprintf("plugins/%s-%s.hpi", p.Name, p.Version))
 
 	attrs := make(map[string]string)
-	for k, v := range manifest {
+	for k, v := range manifestFile {
 		attrs[k] = v
 	}
 

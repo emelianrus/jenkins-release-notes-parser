@@ -59,28 +59,28 @@ func IsNewerThan(newVersion string, oldVersion string) bool {
 	return false
 }
 
-func compareByIter(new string, old string) bool {
-	isNewSemVer, _ := regexp.MatchString(".*-.*", new)
-	isOldSemVer, _ := regexp.MatchString(".*-.*", old)
+func compareByIter(newVersion string, oldVersion string) bool {
+	isNewSemVer, _ := regexp.MatchString(".*-.*", newVersion)
+	isOldSemVer, _ := regexp.MatchString(".*-.*", oldVersion)
 
 	if isNewSemVer && isOldSemVer {
 		logrus.Debugln("checking semver")
 
-		if len(strings.Split(new, "-")[0]) > len(strings.Split(old, "-")[0]) {
+		if len(strings.Split(newVersion, "-")[0]) > len(strings.Split(oldVersion, "-")[0]) {
 			return true
 
-		} else if strings.Split(new, "-")[0] == strings.Split(old, "-")[0] {
-			if compareByIter(strings.Split(new, "-")[0], strings.Split(old, "-")[0]) {
+		} else if strings.Split(newVersion, "-")[0] == strings.Split(oldVersion, "-")[0] {
+			if compareByIter(strings.Split(newVersion, "-")[0], strings.Split(oldVersion, "-")[0]) {
 				return true
 			} else {
-				return compareByIter(strings.Split(new, "-")[1], strings.Split(old, "-")[1])
+				return compareByIter(strings.Split(newVersion, "-")[1], strings.Split(oldVersion, "-")[1])
 			}
 		} else {
-			return compareByIter(strings.Split(new, "-")[0], strings.Split(old, "-")[0])
+			return compareByIter(strings.Split(newVersion, "-")[0], strings.Split(oldVersion, "-")[0])
 		}
 	}
-	newVersionSplit := strings.Split(new, ".")
-	oldVersionSplit := strings.Split(old, ".")
+	newVersionSplit := strings.Split(newVersion, ".")
+	oldVersionSplit := strings.Split(oldVersion, ".")
 
 	for i, new := range newVersionSplit {
 

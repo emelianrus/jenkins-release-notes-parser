@@ -24,9 +24,9 @@ func init() {
 // function to check if file exists
 func IsFileExist(filePath string) bool {
 	logrus.Debugf("Checking is file exist: %s", filePath)
-	_, error := os.Stat(filePath)
+	_, err := os.Stat(filePath)
 
-	if os.IsNotExist(error) {
+	if os.IsNotExist(err) {
 		return false
 	} else {
 		return true
