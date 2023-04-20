@@ -1,11 +1,7 @@
 package pluginManager
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"sort"
-	"sync"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/updateCenter"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/utils"
@@ -61,30 +57,6 @@ func (p *PluginManager) FixWarnings() {
 	p.FixPluginDependencies()
 }
 
-func (p *PluginManager) DumpToFile(fileName string) {
-	file, err := os.Create(fileName)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer file.Close()
-
-	w := bufio.NewWriter(file)
-
-	// Sort items by alph
-	keys := make([]string, 0, len(*p))
-	for k := range *p {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	for _, k := range keys {
-		w.WriteString((*p)[k].Name + ":" + (*p)[k].Version + "\n")
-	}
-
-	w.Flush()
-}
-
 /*
 	PluginA has dep PluginB
 	PluginC has no deps
@@ -105,21 +77,21 @@ func (p *PluginManager) DeletePlugin(pluginName string) error {
 }
 
 // Predownload PluginManager plugins
-func (p *PluginManager) PredownloadPlugins() {
+// func (p *PluginManager) PredownloadPlugins() {
 
-	var wg sync.WaitGroup
+// 	var wg sync.WaitGroup
 
-	for _, plugin := range *p {
-		wg.Add(1)
+// 	for _, plugin := range *p {
+// 		wg.Add(1)
 
-		go func(plugin *Plugin) {
-			defer wg.Done()
-			plugin.Download()
-		}(plugin)
+// 		go func(plugin *Plugin) {
+// 			defer wg.Done()
+// 			plugin.Download()
+// 		}(plugin)
 
-	}
-	wg.Wait()
-}
+// 	}
+// 	wg.Wait()
+// }
 
 // TODO: add tests
 // get plugins which no one rely on
@@ -151,7 +123,6 @@ func (p *PluginManager) FixPluginDependencies() {
 		// Iterate over pluginsToCheck
 		for _, plugin := range pluginsToCheck {
 			logrus.Infof("checking plugin: %s:%s  \n", plugin.Name, plugin.Version)
-			// TODO: change to updatecenter + add cache
 			for _, dep := range plugin.LoadDependenciesFromUpdateCenter() {
 				plugin.Dependencies[dep.Name] = *NewPluginWithVersion(dep.Name, dep.Version)
 
@@ -303,59 +274,3 @@ func (p *PluginManager) GetLatestVersions(uc *updateCenter.UpdateCenter) {
 
 	// p.UpdateFile(p.File.fileName)
 }
-
-// TODO: part of fancy output
-// newPlugins := make(map[string]Plugin)
-// updatedPlugins := make(map[string]Plugin)
-
-// for _, pluginT := range pluginsChecked {
-// 	logrus.Infof("WORKING ON PLUGIN %s\n", pluginT.Name)
-// 	//logrus.Debugf("%s:%s required by: %s\n", pluginT.Name, pluginT.Version, pluginT.RequiredBy)
-// 	if _, found := p.Plugins[pluginT.Name]; found {
-// 		plugin := Plugin{
-// 			Name:         pluginT.Name,
-// 			Version:      pluginT.Version,
-// 			Type:         pluginT.Type,
-// 			Dependencies: pluginT.Dependencies,
-// 			RequiredBy:   pluginT.RequiredBy}
-
-// 		if utils.IsNewerThan(pluginT.Version, p.Plugins[pluginT.Name].Version) {
-// 			updatedPlugins[pluginT.Name] = plugin
-// 		}
-
-// 	} else {
-// 		plugin := Plugin{
-// 			Name:         pluginT.Name,
-// 			Version:      pluginT.Version,
-// 			Dependencies: pluginT.Dependencies,
-// 			RequiredBy:   pluginT.RequiredBy,
-// 		}
-// 		newPlugins[pluginT.Name] = plugin
-// 	}
-// }
-// fmt.Printf("\n\n\n")
-
-// if len(updatedPlugins) > 0 {
-// 	fmt.Println("Updated plugin")
-// 	for _, updated := range updatedPlugins {
-// 		fmt.Printf("%s:%s\n", updated.Name, updated.Version)
-// 		for _, p := range updated.RequiredBy {
-// 			fmt.Printf("    ↳ required by: %s:%s\n", p.Name, p.Version)
-// 		}
-// 	}
-// }
-// if len(newPlugins) > 0 {
-// 	fmt.Println("new ")
-// 	for _, new := range newPlugins {
-// 		fmt.Printf("--- %s:%s\n", new.Name, new.Version)
-// 		for _, p := range new.RequiredBy {
-// 			fmt.Printf("    ↳ required by: %s:%s\n", p.Name, p.Version)
-// 		}
-// 	}
-// }
-
-// if len(newPlugins) < 1 && len(updatedPlugins) < 1 {
-// 	fmt.Println("nothing to do")
-// }
-
-// fmt.Println(pluginsChecked)

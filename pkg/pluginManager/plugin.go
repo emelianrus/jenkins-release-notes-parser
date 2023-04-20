@@ -56,10 +56,17 @@ type Plugin struct {
 	Warnings            []Warnings
 }
 
+func (p *Plugin) predownloadPluginData() {
+	p.LoadRequiredCoreVersion()
+	p.LoadWarnings()
+	p.LoadDependenciesFromUpdateCenter()
+}
+
 // Create Plugin from name and version
 func NewPluginWithVersion(name string, version string) *Plugin {
 	logrus.Debugf("Creating new plugin: '%s' with version: '%s'\n", name, version)
-	return &Plugin{
+
+	pl := &Plugin{
 		Name:         name,
 		Version:      version,
 		Url:          "",
@@ -67,12 +74,15 @@ func NewPluginWithVersion(name string, version string) *Plugin {
 		Dependencies: make(map[string]Plugin),
 		RequiredBy:   make(map[string]string),
 	}
+	pl.predownloadPluginData()
+
+	return pl
 }
 
 // Create Plugin from name and url
 func NewPluginWithUrl(name string, url string) *Plugin {
 	logrus.Debugf("Creating new plugin: '%s' with url: '%s'\n", name, url)
-	return &Plugin{
+	pl := &Plugin{
 		Name:         name,
 		Version:      "",
 		Url:          url,
@@ -80,6 +90,8 @@ func NewPluginWithUrl(name string, url string) *Plugin {
 		Dependencies: make(map[string]Plugin),
 		RequiredBy:   make(map[string]string),
 	}
+	pl.predownloadPluginData()
+	return pl
 }
 
 const JENKINS_PLUGINS_URL = "https://updates.jenkins.io"
@@ -158,11 +170,10 @@ func (p *Plugin) Download() (string, error) {
 // Loads warning to plugin struct
 func (p *Plugin) LoadWarnings() {
 	// download plugin hpi file
-	p.Download()
-	// we need manifest to get jenkins core version to get the right update center json
-	manifestFile, _ := manifest.Parse(fmt.Sprintf("plugins/%s-%s.hpi", p.Name, p.Version))
-	// get update center for current plugin, we will get warnings from UC
-	uc, _ := updateCenter.Get(manifestFile["Jenkins-Version"])
+	// p.Download()
+
+	requiredCoreVersion := p.GetRequiredCoreVersion()
+	uc, _ := updateCenter.Get(requiredCoreVersion)
 
 	// clear warnings but keep allocated memory
 	p.Warnings = p.Warnings[:0]
@@ -196,13 +207,16 @@ func (p *Plugin) LoadWarnings() {
 // get current plugin required core version
 func (p *Plugin) LoadRequiredCoreVersion() {
 	pv, _ := pluginVersions.Get()
-	fmt.Println(pv.Plugins[p.Name][p.Version].RequiredCore)
+	logrus.Infoln(pv.Plugins[p.Name][p.Version].RequiredCore)
 	requiredCore := pv.Plugins[p.Name][p.Version].RequiredCore
 	if requiredCore == "" {
 		logrus.Warnln("[LoadRequiredCoreVersion] version is empty")
 	}
 	p.RequiredCoreVersion = pv.Plugins[p.Name][p.Version].RequiredCore
+}
 
+func (p *Plugin) GetRequiredCoreVersion() string {
+	return p.RequiredCoreVersion
 }
 
 // should fix warnings and paste back to struct
@@ -215,7 +229,7 @@ func (p *Plugin) FixWarnings() error {
 		return nil
 	}
 	pv, _ := pluginVersions.Get() // to check if there any version where warning version +1
-	fmt.Println(pv.Plugins[p.Name][p.Version].RequiredCore)
+	logrus.Infoln(pv.Plugins[p.Name][p.Version].RequiredCore)
 
 	var versions []string
 
@@ -309,55 +323,3 @@ func (p *Plugin) GetManifestAttrs() map[string]string {
 
 	return attrs
 }
-
-// TODO: fix me
-// // returns map [plugin name] = warning
-// func (p *Plugin) CheckWarnings(coreVersion string) map[string][]string {
-// 	plugins := make(map[string]Plugin)
-
-// 	for _, plugin := range p.Plugins {
-// 		plugins[plugin.Name] = *plugin
-// 	}
-
-// 	uc := updateCenter.Get(coreVersion)
-// 	resultWarnings := make(map[string][]string)
-
-// 	for _, warn := range uc.Warnings {
-// 		for _, plugin := range plugins {
-// 			if warn.Name == plugin.Name {
-// 				for _, pluginwarn := range warn.Versions {
-// 					var warnVersion = regexp.MustCompile(pluginwarn.Pattern)
-// 					if warnVersion.MatchString(plugin.Version) {
-// 						message := fmt.Sprintf("%s\n  LastVersions: %s\n  Pattern: %s\n  URL %s\n", warn.Message, pluginwarn.LastVersion, pluginwarn.Pattern, warn.Url)
-// 						resultWarnings[plugin.Name+":"+plugin.Version] = append(resultWarnings[plugin.Name+plugin.Version], message)
-// 					}
-// 				}
-// 			}
-// 		}
-// 	}
-
-// 	return resultWarnings
-// }
-
-// func (p *Plugin) getDependenciesFromMainfest() []manifest.Dependency {
-
-// 	filename := fmt.Sprintf("plugins/%s-%s.hpi", p.Name, p.Version)
-// 	p.Download()
-// 	manifest, _ := manifest.Parse(filename)
-// 	logrus.Infof("plugin name: %s:%s\n", p.Name, p.Version)
-
-// var wg sync.WaitGroup
-// // download deps in parallel
-// for _, dep := range deps {
-// 	wg.Add(1)
-// 	dn := dep.Name
-// 	dv := dep.Version
-// 	go func() {
-// 		defer wg.Done()
-// 		plugin := Plugin{Name: dn, Version: dv}
-// 		plugin.Download()
-// 	}()
-// }
-// wg.Wait()
-// 	return manifest.GetDependencies()
-// }
