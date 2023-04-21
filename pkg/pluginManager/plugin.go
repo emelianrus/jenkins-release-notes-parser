@@ -239,9 +239,9 @@ func (p *Plugin) FixWarnings() error {
 
 	// TODO: refact
 	var nextVersion string
-	var currentVersion string
-	currentVersion = p.Version
-	var nPl Plugin
+	var currentVersion string = p.Version
+	// currentVersion = p.Version
+	var newPlugin Plugin
 	for {
 		var err error
 		nextVersion, err = utils.GetNextVersion(versions, currentVersion)
@@ -258,27 +258,28 @@ func (p *Plugin) FixWarnings() error {
 		}
 		currentVersion = nextVersion
 
-		nPl = Plugin{
+		newPlugin = Plugin{
 			Name:    p.Name,
 			Url:     p.Url,
 			Version: nextVersion,
 		}
 
-		nPl.LoadWarnings()
+		newPlugin.LoadWarnings()
 
-		fmt.Printf("pl : %s version %s warn: %d", nPl.Name, nPl.Version, len(nPl.Warnings))
+		fmt.Printf("pl : %s version %s warn: %d", newPlugin.Name, newPlugin.Version, len(newPlugin.Warnings))
 
-		if len(nPl.Warnings) == 0 {
+		if len(newPlugin.Warnings) == 0 {
 			break
 		}
 	}
 
 	// set new version as current and remove deps as could differs
-	p.Version = nPl.Version
-	p.Url = nPl.Url
-	p.Warnings = nPl.Warnings
+	p.Version = newPlugin.Version
+	p.Url = newPlugin.Url
+	p.Warnings = newPlugin.Warnings
 	p.Dependencies = make(map[string]Plugin)
 	// TODO: error if latest version also has error
+	// p.predownloadPluginData()
 	return nil
 }
 

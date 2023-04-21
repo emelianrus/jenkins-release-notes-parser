@@ -112,17 +112,20 @@ func (p *PluginManager) GetStandalonePlugins() []*Plugin {
 func (p *PluginManager) FixPluginDependencies() {
 
 	pluginsToCheck := make(map[string]Plugin) // plugins has recently updated version or new dependency to check
-	pluginsChecked := make(map[string]Plugin) // checked plugins
+	pluginsChecked := make(map[string]Plugin) // already checked plugins
+
 	// convert all plugins to pluginToCheck
 	for _, pluginPrimary := range *p {
 		pluginsToCheck[pluginPrimary.Name] = *pluginPrimary
 		logrus.Infof("added initial plugin to pluginToCheck %s", pluginPrimary.Name)
 	}
 
-	for ok := true; ok; ok = len(pluginsToCheck) > 0 {
+	// while we have plugin to check do loop
+	for len(pluginsToCheck) > 0 {
 		// Iterate over pluginsToCheck
 		for _, plugin := range pluginsToCheck {
-			logrus.Infof("checking plugin: %s:%s  \n", plugin.Name, plugin.Version)
+			logrus.Infof("checking plugin: %s:%s\n", plugin.Name, plugin.Version)
+
 			for _, dep := range plugin.LoadDependenciesFromUpdateCenter() {
 				plugin.Dependencies[dep.Name] = *NewPluginWithVersion(dep.Name, dep.Version)
 
@@ -133,6 +136,7 @@ func (p *PluginManager) FixPluginDependencies() {
 
 					if utils.IsNewerThan(dep.Version, pluginsChecked[dep.Name].Version) {
 						logrus.Infof("Upgrading pluginsChecked bundled dependency %s:%s -> %s:%s\n", pluginsChecked[dep.Name].Name, pluginsChecked[dep.Name].Version, dep.Name, dep.Version)
+						// if dependency exist in plugin checked and dep version higher than we have
 
 						pluginsChecked[dep.Name].RequiredBy[plugin.Name] = plugin.Version
 
@@ -147,9 +151,11 @@ func (p *PluginManager) FixPluginDependencies() {
 						delete(pluginsChecked, dep.Name)
 					} else {
 						logrus.Infof("Skipping pluginsChecked already installed dependency %s:%s (%s <= %s) \n", dep.Name, pluginsChecked[dep.Name].Version, dep.Version, pluginsChecked[dep.Name].Version)
+						// if dependency exist in plugin checked and dep version lower than we have
 
 						pluginsChecked[dep.Name].RequiredBy[plugin.Name] = plugin.Version
 
+						// TODO: why we need this?
 						pluginsChecked[dep.Name] = Plugin{
 							Name:         pluginsChecked[dep.Name].Name,
 							Version:      pluginsChecked[dep.Name].Version,
@@ -160,6 +166,7 @@ func (p *PluginManager) FixPluginDependencies() {
 						}
 
 					}
+					// if found in pluginsToChecked
 					// try to find in pluginsToCheck list
 				} else if _, foundItem := pluginsToCheck[dep.Name]; foundItem {
 					if utils.IsNewerThan(dep.Version, pluginsToCheck[dep.Name].Version) {
@@ -176,12 +183,14 @@ func (p *PluginManager) FixPluginDependencies() {
 							RequiredBy:   pluginsToCheck[dep.Name].RequiredBy,
 						}
 					} else {
-						// move plugin from tocheck list to checked list
 						logrus.Infof("Skipping pluginsToCheck already installed dependency %s:%s (%s <= %s) \n", dep.Name, pluginsToCheck[dep.Name].Version, dep.Version, pluginsToCheck[dep.Name].Version)
+						// move plugin from tocheck list to checked list
 
 						pluginsToCheck[dep.Name].RequiredBy[plugin.Name] = plugin.Version
-						// TODO: what that part does?
+						// TODO: what that part does? and why we need it?
 						// remove already checked plugin
+						// NOTE: if found in pluginToCheck and version lower than we have
+						// if pluginsToCheck iter var == dependency of itered plugin than move to checked plugin and delete from pluginToCheck
 						if plugin.Name == dep.Name {
 							pluginsChecked[dep.Name] = Plugin{
 								Name:         dep.Name,
@@ -195,8 +204,8 @@ func (p *PluginManager) FixPluginDependencies() {
 							delete(pluginsToCheck, dep.Name)
 						}
 					}
-					// dont have in pluginsChecked and in pluginsToCheck
-					// assumed new dependency
+					// didn't find in pluginsChecked and in pluginsToCheck
+					// assuming new dependency
 				} else {
 					// do not load optional deps
 					// TODO: make env config to set this
@@ -217,6 +226,7 @@ func (p *PluginManager) FixPluginDependencies() {
 					}
 				}
 			}
+
 			logrus.Infof("added current to pluginsChecked %s:%s\n", plugin.Name, plugin.Version)
 			pluginsChecked[plugin.Name] = Plugin{
 				Name:         plugin.Name,

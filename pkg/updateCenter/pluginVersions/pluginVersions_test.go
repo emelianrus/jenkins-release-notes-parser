@@ -7,9 +7,6 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	gotd, _ := Get()
-	fmt.Println(gotd.Plugins["blueocean"]["1.23.3"].RequiredCore)
-
 	tests := []struct {
 		name    string
 		want    *PluginVersions

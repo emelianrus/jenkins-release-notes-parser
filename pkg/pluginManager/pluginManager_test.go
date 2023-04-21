@@ -1,10 +1,11 @@
 package pluginManager
 
 import (
+	"fmt"
 	"os"
-	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -79,10 +80,13 @@ func TestPluginManager_FixPluginDependencies(t *testing.T) {
 			},
 		},
 	}
+
 	have.FixPluginDependencies()
 
-	if !reflect.DeepEqual(&have, &want) {
-		t.Errorf("Not expexted result")
+	diff := cmp.Diff(&have, &want)
+	if diff != "" {
+		t.Errorf("Not expected result")
+		fmt.Println(diff)
 	}
 }
 
