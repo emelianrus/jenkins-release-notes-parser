@@ -2,6 +2,7 @@ package updateCenter
 
 import (
 	"encoding/json"
+	"fmt"
 
 	coreVersions "github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/coreVersion"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/request"
@@ -132,7 +133,7 @@ func Get(coreVersion string) (*UpdateCenter, error) {
 
 	// add prefix to update center json to understand which jenkins core used
 	cacheFileName := "stable-" + coreVersion + "-" + URL_LOCATION
-
+	fmt.Println(URL + urlParam)
 	content, err := request.DoRequestWithCache(URL+urlParam, cacheFileName)
 	if err != nil {
 		return nil, err

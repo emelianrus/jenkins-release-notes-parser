@@ -20,24 +20,33 @@ import (
 
 // TODO: make this[]Plugin???
 // we use map to speedup get set find
-type PluginManager map[string]*Plugin
+type PluginManager struct {
+	Plugins        map[string]*Plugin
+	updateCenter   string
+	pluginVersions string
+}
 
 func NewPluginManager() PluginManager {
 	return PluginManager{}
 }
+func (pm *PluginManager) SetCoreVersion() {
+
+}
+
+func (pm *PluginManager) loadVersions() {}
 
 // TODO: return error?
 func (pm *PluginManager) AddPlugin(pl *Plugin) {
 	logrus.Infof("Adding new plugin to pluginManager %s:%s", pl.Name, pl.Version)
-	if _, found := (*pm)[pl.Name]; found {
+	if _, found := pm.Plugins[pl.Name]; found {
 		logrus.Warnf("Found copy of plugin in pluginsfile. Plugin name: '%s'\n", pl.Name)
 	}
-	(*pm)[pl.Name] = pl
+	pm.Plugins[pl.Name] = pl
 }
 
 // Load plugins warnings into PluginManager struct
-func (p *PluginManager) LoadWarnings() {
-	for _, plugin := range *p {
+func (pm *PluginManager) LoadWarnings() {
+	for _, plugin := range pm.Plugins {
 		plugin.LoadWarnings()
 	}
 }
@@ -48,13 +57,13 @@ func (p *PluginManager) LoadWarnings() {
 // TODO: find better logic than recursion ^
 // like check all plugin version to latest and check warnings
 // need to be aware might require jenkins core version patch
-func (p *PluginManager) FixWarnings() {
-	for _, plugin := range *p {
+func (pm *PluginManager) FixWarnings() {
+	for _, plugin := range pm.Plugins {
 		plugin.FixWarnings()
 		plugin.LoadRequiredCoreVersion()
 	}
 
-	p.FixPluginDependencies()
+	pm.FixPluginDependencies()
 }
 
 /*
@@ -95,9 +104,9 @@ func (p *PluginManager) DeletePlugin(pluginName string) error {
 
 // TODO: add tests
 // get plugins which no one rely on
-func (p *PluginManager) GetStandalonePlugins() []*Plugin {
+func (pm *PluginManager) GetStandalonePlugins() []*Plugin {
 	var plugins []*Plugin
-	for _, plugin := range *p {
+	for _, plugin := range pm.Plugins {
 		if len(plugin.RequiredBy) == 0 {
 			plugins = append(plugins, plugin)
 		}
@@ -109,13 +118,13 @@ func (p *PluginManager) GetStandalonePlugins() []*Plugin {
 // Will get plugin dependencies for plugin list and return result back to PluginManager struct
 // Will replace version of plugin if dep version > current version
 // Used LoadDependenciesFromManifest function as source of versions/plugin so will download hpi files
-func (p *PluginManager) FixPluginDependencies() {
+func (pm *PluginManager) FixPluginDependencies() {
 
 	pluginsToCheck := make(map[string]Plugin) // plugins has recently updated version or new dependency to check
 	pluginsChecked := make(map[string]Plugin) // already checked plugins
 
 	// convert all plugins to pluginToCheck
-	for _, pluginPrimary := range *p {
+	for _, pluginPrimary := range pm.Plugins {
 		pluginsToCheck[pluginPrimary.Name] = *pluginPrimary
 		logrus.Infof("added initial plugin to pluginToCheck %s", pluginPrimary.Name)
 	}
@@ -242,13 +251,13 @@ func (p *PluginManager) FixPluginDependencies() {
 	}
 
 	// clean what we have in slice
-	for k := range *p {
-		delete(*p, k)
+	for k := range pm.Plugins {
+		delete(pm.Plugins, k)
 	}
 
 	// write back to PluginManager struct
 	for _, pl := range pluginsChecked {
-		(*p)[pl.Name] = &Plugin{
+		pm.Plugins[pl.Name] = &Plugin{
 			Name:         pl.Name,
 			Version:      pl.Version,
 			Url:          pl.Url,
@@ -276,9 +285,9 @@ func (p *PluginManager) GeneratePluginDepsFile() {
 }
 
 // TODO: remove unused
-func (p *PluginManager) GetLatestVersions(uc *updateCenter.UpdateCenter) {
+func (pm *PluginManager) GetLatestVersions(uc *updateCenter.UpdateCenter) {
 
-	for _, plugins := range *p {
+	for _, plugins := range pm.Plugins {
 		plugins.Version = uc.Plugins[plugins.Name].Version
 	}
 
