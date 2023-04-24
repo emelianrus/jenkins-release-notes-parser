@@ -2,7 +2,9 @@ package coreVersion
 
 // we don't have cache for coreVersion module
 
-import "github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/request"
+import (
+	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/request"
+)
 
 // Jenkins update center root page url
 const JENKINS_UPDATE_CENTER_URL = "https://updates.jenkins.io"

@@ -3,6 +3,7 @@ package pluginManager
 import (
 	"fmt"
 
+	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/pluginVersions"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/updateCenter"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/utils"
 	"github.com/sirupsen/logrus"
@@ -15,25 +16,39 @@ import (
 * add remove plugin func
 * add logic to add plugin
 * make dump to file flexible
-
  */
 
-// TODO: make this[]Plugin???
-// we use map to speedup get set find
 type PluginManager struct {
-	Plugins        map[string]*Plugin
-	updateCenter   string
-	pluginVersions string
+	Plugins        map[string]*Plugin // we use map to speedup get set find
+	updateCenter   *updateCenter.UpdateCenter
+	pluginVersions *pluginVersions.PluginVersions
 }
 
 func NewPluginManager() PluginManager {
-	return PluginManager{}
+	uc, _ := updateCenter.Get("")
+	pv, _ := pluginVersions.Get()
+	return PluginManager{
+		Plugins:        make(map[string]*Plugin),
+		updateCenter:   uc,
+		pluginVersions: pv,
+	}
 }
-func (pm *PluginManager) SetCoreVersion() {
 
+func (pm *PluginManager) preloadPluginData(p *Plugin) {
+	// Load deps
+	for _, dep := range pm.pluginVersions.Plugins[p.Name][p.Version].Dependencies {
+		if !dep.Optional {
+			p.Dependencies[dep.Name] = Plugin{
+				Name:    dep.Name,
+				Version: dep.Version,
+			}
+		}
+	}
+	// Load url
+	p.Url = pm.pluginVersions.Plugins[p.Name][p.Version].Url
+	// Load required core version
+	p.RequiredCoreVersion = pm.pluginVersions.Plugins[p.Name][p.Version].RequiredCore
 }
-
-func (pm *PluginManager) loadVersions() {}
 
 // TODO: return error?
 func (pm *PluginManager) AddPlugin(pl *Plugin) {
@@ -41,6 +56,9 @@ func (pm *PluginManager) AddPlugin(pl *Plugin) {
 	if _, found := pm.Plugins[pl.Name]; found {
 		logrus.Warnf("Found copy of plugin in pluginsfile. Plugin name: '%s'\n", pl.Name)
 	}
+
+	pm.preloadPluginData(pl)
+
 	pm.Plugins[pl.Name] = pl
 }
 
@@ -60,7 +78,7 @@ func (pm *PluginManager) LoadWarnings() {
 func (pm *PluginManager) FixWarnings() {
 	for _, plugin := range pm.Plugins {
 		plugin.FixWarnings()
-		plugin.LoadRequiredCoreVersion()
+		// plugin.LoadRequiredCoreVersion()
 	}
 
 	pm.FixPluginDependencies()
@@ -152,7 +170,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 						pluginsToCheck[dep.Name] = Plugin{
 							Name:         dep.Name,
 							Version:      dep.Version,
-							Url:          "4444",
+							Url:          dep.Url,
 							Type:         pluginsChecked[dep.Name].Type,
 							Dependencies: pluginsChecked[dep.Name].Dependencies,
 							RequiredBy:   pluginsChecked[dep.Name].RequiredBy,
@@ -187,7 +205,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 							Name:         dep.Name,
 							Version:      dep.Version,
 							Type:         plugin.Type,
-							Url:          "2222",
+							Url:          dep.Url,
 							Dependencies: pluginsToCheck[dep.Name].Dependencies,
 							RequiredBy:   pluginsToCheck[dep.Name].RequiredBy,
 						}

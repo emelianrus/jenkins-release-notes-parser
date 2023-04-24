@@ -113,6 +113,7 @@ type UpdateCenter struct {
 // Returns *UpdateCenter, error type with data
 // you can pass empty string to get latest core version package or specific version of jenkins core
 func Get(coreVersion string) (*UpdateCenter, error) {
+	logrus.Debugln("loading updateCenter")
 	var urlParam string
 	// get update center for specific jenkins core, should be arg for URL
 	if coreVersion == "" {
@@ -122,7 +123,7 @@ func Get(coreVersion string) (*UpdateCenter, error) {
 			return nil, err
 		}
 		coreVersion = stableCoreVersion
-		logrus.Warnln("[WARN] You didn't pass '--core'. Will use LTS core version '%s'", stableCoreVersion)
+		logrus.Warnf("[WARN] You didn't pass '--core'. Will use LTS core version '%s'\n", stableCoreVersion)
 		urlParam = "?version=stable-" + coreVersion
 	} else {
 		// would be good to have param, but all tools requires version only

@@ -54,7 +54,7 @@ type PluginVersions struct {
 // TODO: DRY, make common
 // Returns *PluginVersions, error type with data
 func Get() (*PluginVersions, error) {
-
+	logrus.Debugln("loading pluginVersions")
 	content, err := request.DoRequestWithCache(URL, URL_LOCATION)
 	if err != nil {
 		return nil, err

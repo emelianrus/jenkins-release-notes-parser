@@ -56,11 +56,12 @@ type Plugin struct {
 	Warnings            []Warnings
 }
 
-func (p *Plugin) predownloadPluginData() {
-	p.LoadRequiredCoreVersion()
-	p.LoadWarnings()
-	p.LoadDependenciesFromUpdateCenter()
-}
+// func (p *Plugin) predownloadPluginData() {
+// 	// p.LoadURL()
+// 	// p.LoadRequiredCoreVersion()
+// 	// p.LoadWarnings()
+// 	// p.LoadDependenciesFromUpdateCenter()
+// }
 
 // Create Plugin from name and version
 func NewPluginWithVersion(name string, version string) *Plugin {
@@ -69,12 +70,13 @@ func NewPluginWithVersion(name string, version string) *Plugin {
 	pl := &Plugin{
 		Name:         name,
 		Version:      version,
-		Url:          "",
+		Url:          "default-value-for-url",
 		Type:         UNKNOWN,
 		Dependencies: make(map[string]Plugin),
 		RequiredBy:   make(map[string]string),
 	}
-	pl.predownloadPluginData()
+
+	// pl.predownloadPluginData()
 
 	return pl
 }
@@ -90,7 +92,7 @@ func NewPluginWithUrl(name string, url string) *Plugin {
 		Dependencies: make(map[string]Plugin),
 		RequiredBy:   make(map[string]string),
 	}
-	pl.predownloadPluginData()
+	// pl.predownloadPluginData()
 	return pl
 }
 
@@ -167,13 +169,20 @@ func (p *Plugin) Download() (string, error) {
 	return fileLocation, nil
 }
 
+// func (p *Plugin) LoadURL() {
+// 	logrus.Debugln("LoadURL executed")
+// 	pv, _ := pluginVersions.Get()
+// 	p.Url = pv.Plugins[p.Name][p.Version].Url
+// }
+
 // Loads warning to plugin struct
 func (p *Plugin) LoadWarnings() {
+	logrus.Debugln("LoadWarnings executed")
 	// download plugin hpi file
 	// p.Download()
 
-	requiredCoreVersion := p.GetRequiredCoreVersion()
-	uc, _ := updateCenter.Get(requiredCoreVersion)
+	// requiredCoreVersion := p.GetRequiredCoreVersion()
+	uc, _ := updateCenter.Get(p.RequiredCoreVersion)
 
 	// clear warnings but keep allocated memory
 	p.Warnings = p.Warnings[:0]
@@ -205,19 +214,20 @@ func (p *Plugin) LoadWarnings() {
 }
 
 // get current plugin required core version
-func (p *Plugin) LoadRequiredCoreVersion() {
-	pv, _ := pluginVersions.Get()
-	logrus.Infoln(pv.Plugins[p.Name][p.Version].RequiredCore)
-	requiredCore := pv.Plugins[p.Name][p.Version].RequiredCore
-	if requiredCore == "" {
-		logrus.Warnln("[LoadRequiredCoreVersion] version is empty")
-	}
-	p.RequiredCoreVersion = pv.Plugins[p.Name][p.Version].RequiredCore
-}
+// func (p *Plugin) LoadRequiredCoreVersion() {
+// 	logrus.Debugln("LoadRequiredCoreVersion executed")
+// 	pv, _ := pluginVersions.Get()
+// 	logrus.Infoln(pv.Plugins[p.Name][p.Version].RequiredCore)
+// 	requiredCore := pv.Plugins[p.Name][p.Version].RequiredCore
+// 	if requiredCore == "" {
+// 		logrus.Warnln("[LoadRequiredCoreVersion] version is empty")
+// 	}
+// 	p.RequiredCoreVersion = pv.Plugins[p.Name][p.Version].RequiredCore
+// }
 
-func (p *Plugin) GetRequiredCoreVersion() string {
-	return p.RequiredCoreVersion
-}
+// func (p *Plugin) GetRequiredCoreVersion() string {
+// 	return p.RequiredCoreVersion
+// }
 
 // should fix warnings and paste back to struct
 // TODO: what should we do if all versions with error???
@@ -288,7 +298,12 @@ func (p *Plugin) LoadDependenciesFromUpdateCenter() map[string]Plugin {
 	pv, _ := pluginVersions.Get()
 	for _, dep := range pv.Plugins[p.Name][p.Version].Dependencies {
 		if !dep.Optional {
-			p.Dependencies[dep.Name] = *NewPluginWithVersion(dep.Name, dep.Version)
+
+			p.Dependencies[dep.Name] = Plugin{
+				Name:    dep.Name,
+				Version: dep.Version,
+			}
+
 		}
 	}
 	return p.Dependencies
