@@ -21,11 +21,9 @@ func init() {
 
 func TestPluginManager_FixPluginDependencies(t *testing.T) {
 	havepm := NewPluginManager()
-	havepm.Plugins = map[string]*Plugin{
-		"workflow-step-api": NewPluginWithVersion("workflow-step-api", "625.vd896b_f445a_f8"),
-		"scm-api":           NewPluginWithVersion("scm-api", "602.v6a_81757a_31d2"),
-		"structs":           NewPluginWithVersion("structs", "1.22"),
-	}
+	havepm.AddPlugin(NewPluginWithVersion("workflow-step-api", "625.vd896b_f445a_f8"))
+	havepm.AddPlugin(NewPluginWithVersion("scm-api", "602.v6a_81757a_31d2"))
+	havepm.AddPlugin(NewPluginWithVersion("structs", "1.22"))
 
 	wantpm := NewPluginManager()
 	wantpm.Plugins = map[string]*Plugin{
@@ -99,10 +97,10 @@ func TestPluginManager_LoadWarnings(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	pm.LoadWarnings()
 
+	for _, tt := range tests {
 		for _, plugin := range tt.p {
-			plugin.LoadWarnings()
 			for _, warn := range plugin.Warnings {
 				if _, found := tt.want[plugin.Name][warn.Message]; found {
 					if warn.Versions[0].LastVersion != tt.want[plugin.Name][warn.Message] {
@@ -120,67 +118,27 @@ func TestPluginManager_LoadWarnings(t *testing.T) {
 	}
 }
 
-// func TestPluginManager_FixWarnings(t *testing.T) {
-// 	tests := []struct {
-// 		name string
-// 		p    *PluginManager
-// 	}{
-// 		{
-// 			p: &PluginManager{
-// 				"blueocean": {
-// 					Name:    "blueocean",
-// 					Version: "1.23.2",
+func TestPluginManager_FixWarnings(t *testing.T) {
+	pm := NewPluginManager()
 
-// 					Url:          "",
-// 					Type:         UNKNOWN,
-// 					Dependencies: make(map[string]Plugin),
-// 					RequiredBy:   make(map[string]string),
-// 				},
-// 			},
-// 		},
-// 	}
+	pm.AddPlugin(NewPluginWithVersion("blueocean", "1.23.2"))
+	tests := []struct {
+		name string
+		p    *PluginManager
+	}{
+		{
+			p: &pm,
+		},
+	}
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			tt.p.FixWarnings()
-// 		})
-// 	}
-// }
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.p.FixWarnings()
 
-// func TestPluginManager_GetMainPlugins(t *testing.T) {
-// 	have := &PluginManager{
-// 		"workflow-step-api": {
-// 			Name:         "workflow-step-api",
-// 			Version:      "625.vd896b_f445a_f8",
-// 			Url:          "",
-// 			Type:         UNKNOWN,
-// 			Dependencies: make(map[string]Plugin),
-// 			RequiredBy:   make(map[string]string),
-// 		},
-// 		"scm-api": {
-// 			Name:         "scm-api",
-// 			Version:      "602.v6a_81757a_31d2",
-// 			Url:          "",
-// 			Type:         UNKNOWN,
-// 			Dependencies: make(map[string]Plugin),
-// 			RequiredBy:   make(map[string]string),
-// 		},
-// 		"structs": {
-// 			Name:         "structs",
-// 			Version:      "1.22",
-// 			Url:          "",
-// 			Type:         UNKNOWN,
-// 			Dependencies: make(map[string]Plugin),
-// 			RequiredBy:   make(map[string]string),
-// 		},
-// 	}
-
-// 	//want := []string{"workflow-step-api", "scm-api"}
-// 	have.FixPluginDependencies()
-
-// 	have.GetStandalonePlugins()
-
-// }
+			fmt.Println(tt.p.Plugins["blueocean"].Version)
+		})
+	}
+}
 
 func TestNewPluginManager(t *testing.T) {
 	tests := []struct {

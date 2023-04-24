@@ -49,48 +49,6 @@ func TestPlugin_Download(t *testing.T) {
 	}
 }
 
-func TestPlugin_LoadWarnings(t *testing.T) {
-
-	tests := []struct {
-		name string
-		p    *Plugin
-		want map[string]string
-	}{
-		{
-			name: "blueocean",
-			p: &Plugin{
-				Name:    "blueocean",
-				Version: "1.23.2",
-			},
-			want: map[string]string{
-				"Path traversal vulnerability":                     "1.23.2",
-				"Missing permission check":                         "1.23.2",
-				"CSRF vulnerability and missing permission checks": "1.25.3",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.p.LoadWarnings()
-
-			for _, warning := range tt.p.Warnings {
-				if _, found := tt.want[warning.Message]; !found {
-					t.Errorf("%s should not be here we have %v", warning.Message, tt.want)
-				} else {
-					if warning.Versions[0].LastVersion != tt.want[warning.Message] {
-						t.Errorf("%s Warning version should be %v", warning.Versions[0].LastVersion, tt.want[warning.Message])
-					}
-				}
-			}
-
-			if len(tt.p.Warnings) != len(tt.want) {
-				t.Errorf("Warnings len %d != want len %d", len(tt.p.Warnings), len(tt.want))
-			}
-		})
-	}
-}
-
 func TestPlugin_LoadDependenciesFromManifest(t *testing.T) {
 	pl := NewPluginWithVersion("scm-api", "602.v6a_81757a_31d2")
 	tests := []struct {
@@ -164,33 +122,6 @@ func TestPlugin_LoadDependenciesFromUpdateCenter(t *testing.T) {
 				t.Errorf("Dependencies len %d != want len %d", len(tt.p.Warnings), len(tt.want))
 			}
 		})
-	}
-}
-
-func TestPlugin_FixWarnings(t *testing.T) {
-	tests := []struct {
-		name string
-		p    *Plugin
-	}{
-		{
-			name: "blueocean",
-			p: &Plugin{
-				Name:    "blueocean",
-				Version: "1.23.2",
-			},
-		},
-		{
-			name: "ssh",
-			p: &Plugin{
-				Name:    "ssh",
-				Version: "2.5",
-			},
-		},
-	}
-	// TODO: add tests
-	for _, tt := range tests {
-		tt.p.FixWarnings()
-		// tt.p.LoadRequiredCoreVersion()
 	}
 }
 

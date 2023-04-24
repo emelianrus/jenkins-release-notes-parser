@@ -22,6 +22,7 @@ type PluginManager struct {
 	Plugins        map[string]*Plugin // we use map to speedup get set find
 	updateCenter   *updateCenter.UpdateCenter
 	pluginVersions *pluginVersions.PluginVersions
+	coreVersion    string // todo set core version
 }
 
 func NewPluginManager() PluginManager {
@@ -65,24 +66,142 @@ func (pm *PluginManager) AddPlugin(pl *Plugin) {
 // Load plugins warnings into PluginManager struct
 func (pm *PluginManager) LoadWarnings() {
 	for _, plugin := range pm.Plugins {
-		plugin.LoadWarnings()
+
+		logrus.Debugln("LoadWarnings executed")
+		// download plugin hpi file
+		// p.Download()
+
+		// requiredCoreVersion := p.GetRequiredCoreVersion()
+		// uc, _ := updateCenter.Get(p.RequiredCoreVersion)
+
+		// clear warnings but keep allocated memory
+		plugin.Warnings = plugin.Warnings[:0]
+
+		for _, warn := range pm.updateCenter.Warnings {
+
+			// skip all plugins except current one
+			if warn.Name == plugin.Name {
+
+				// fmt.Println(warn.Message)
+				// fmt.Println(warn.Versions)
+				// fmt.Println(warn.Id)
+
+				for _, warningVersion := range warn.Versions {
+					// if warning version lower then current than we dont have warning
+					if warningVersion.LastVersion == plugin.Version || utils.IsNewerThan(warningVersion.LastVersion, plugin.Version) {
+						// write errors back to plugin
+						// TODO: rewrite resolve deps function, may reuse warnings list when newer plugin comes
+						plugin.Warnings = append(plugin.Warnings, Warnings{
+							Id:      warn.Id,
+							Message: warn.Message,
+							Name:    warn.Name,
+							Url:     warn.Url,
+							Versions: []struct {
+								LastVersion string
+								Pattern     string
+							}(warn.Versions),
+						})
+					}
+				}
+			}
+		}
 	}
 }
 
-// TODO: require jenkins core version?
-// go over plugins with errors and try to update plugin to new version which might not have warn
-// requires FixPluginDependencies after list patch and run FixPluginWarnings again?
-// TODO: find better logic than recursion ^
-// like check all plugin version to latest and check warnings
-// need to be aware might require jenkins core version patch
 func (pm *PluginManager) FixWarnings() {
 	for _, plugin := range pm.Plugins {
-		plugin.FixWarnings()
-		// plugin.LoadRequiredCoreVersion()
-	}
 
-	pm.FixPluginDependencies()
+		// TODO: do not call each time reload warnings everywhere
+		// p.LoadWarnings() // we need to find last version with warning
+		if len(plugin.Warnings) == 0 {
+			logrus.Debugf("No error found for plugin %s version %s", plugin.Name, plugin.Version)
+			// return nil
+		}
+		// pv, _ := pluginVersions.Get() // to check if there any version where warning version +1
+		logrus.Infoln(pm.pluginVersions.Plugins[plugin.Name][plugin.Version].RequiredCore)
+
+		var versions []string
+
+		for version := range pm.pluginVersions.Plugins[plugin.Name] {
+			versions = append(versions, version)
+		}
+
+		// TODO: refact
+		var nextVersion string
+		var currentVersion string = plugin.Version
+		// currentVersion = plugin.Version
+		var newPlugin Plugin
+		for {
+			var err error
+			nextVersion, err = utils.GetNextVersion(versions, currentVersion)
+
+			if nextVersion == "" {
+				logrus.Infoln("Reach get version limit")
+			}
+
+			if err != nil {
+				logrus.Warnf("Error during GetNextVersion for %s\n", currentVersion)
+				logrus.Warnln(err)
+				// return err
+			}
+			currentVersion = nextVersion
+
+			newPlugin = Plugin{
+				Name:    plugin.Name,
+				Url:     plugin.Url,
+				Version: nextVersion,
+			}
+
+			// newPlugin.LoadWarnings()
+
+			fmt.Printf("pl : %s version %s warn: %d", newPlugin.Name, newPlugin.Version, len(newPlugin.Warnings))
+
+			if len(newPlugin.Warnings) == 0 {
+				break
+			}
+		}
+
+		// set new version as current and remove deps as could differs
+		plugin.Version = newPlugin.Version
+		plugin.Url = newPlugin.Url
+		plugin.Warnings = newPlugin.Warnings
+		plugin.Dependencies = make(map[string]Plugin)
+		// TODO: error if latest version also has error
+		// p.predownloadPluginData()
+
+	}
 }
+
+// func (pm *PluginManager) FixPluginWarnings(p *Plugin) {
+
+// 	// clear warnings but keep allocated memory
+// 	p.Warnings = p.Warnings[:0]
+
+// 	for _, warn := range pm.updateCenter.Warnings {
+
+// 		// skip all plugins except current one
+// 		if warn.Name == p.Name {
+
+// 			for _, warningVersion := range warn.Versions {
+// 				// if warning version lower then current than we dont have warning
+// 				if warningVersion.LastVersion == p.Version || utils.IsNewerThan(warningVersion.LastVersion, p.Version) {
+// 					// write errors back to plugin
+// 					// TODO: rewrite resolve deps function, may reuse warnings list when newer plugin comes
+// 					p.Warnings = append(p.Warnings, Warnings{
+// 						Id:      warn.Id,
+// 						Message: warn.Message,
+// 						Name:    warn.Name,
+// 						Url:     warn.Url,
+// 						Versions: []struct {
+// 							LastVersion string
+// 							Pattern     string
+// 						}(warn.Versions),
+// 					})
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
 /*
 	PluginA has dep PluginB
@@ -126,6 +245,7 @@ func (pm *PluginManager) GetStandalonePlugins() []*Plugin {
 	var plugins []*Plugin
 	for _, plugin := range pm.Plugins {
 		if len(plugin.RequiredBy) == 0 {
+
 			plugins = append(plugins, plugin)
 		}
 	}
@@ -133,6 +253,7 @@ func (pm *PluginManager) GetStandalonePlugins() []*Plugin {
 	return plugins
 }
 
+// TODO: this function might add new version or new plugin and we dont have data like url + deps etc for it
 // Will get plugin dependencies for plugin list and return result back to PluginManager struct
 // Will replace version of plugin if dep version > current version
 // Used LoadDependenciesFromManifest function as source of versions/plugin so will download hpi files
@@ -143,6 +264,10 @@ func (pm *PluginManager) FixPluginDependencies() {
 
 	// convert all plugins to pluginToCheck
 	for _, pluginPrimary := range pm.Plugins {
+		if pluginPrimary.Url == "" {
+			pluginPrimary.Url = pm.pluginVersions.Plugins[pluginPrimary.Name][pluginPrimary.Version].Url
+		}
+
 		pluginsToCheck[pluginPrimary.Name] = *pluginPrimary
 		logrus.Infof("added initial plugin to pluginToCheck %s", pluginPrimary.Name)
 	}
@@ -187,7 +312,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 							Name:         pluginsChecked[dep.Name].Name,
 							Version:      pluginsChecked[dep.Name].Version,
 							Type:         pluginsChecked[dep.Name].Type,
-							Url:          "3333",
+							Url:          pluginsChecked[dep.Name].Url,
 							Dependencies: pluginsChecked[dep.Name].Dependencies,
 							RequiredBy:   pluginsChecked[dep.Name].RequiredBy,
 						}
@@ -205,7 +330,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 							Name:         dep.Name,
 							Version:      dep.Version,
 							Type:         plugin.Type,
-							Url:          dep.Url,
+							Url:          pm.pluginVersions.Plugins[dep.Name][dep.Version].Url,
 							Dependencies: pluginsToCheck[dep.Name].Dependencies,
 							RequiredBy:   pluginsToCheck[dep.Name].RequiredBy,
 						}
@@ -223,7 +348,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 								Name:         dep.Name,
 								Version:      dep.Version,
 								Type:         plugin.Type,
-								Url:          "1111",
+								Url:          "4444",
 								Dependencies: pluginsToCheck[dep.Name].Dependencies,
 								RequiredBy:   pluginsToCheck[dep.Name].RequiredBy,
 							}
@@ -245,7 +370,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 						Name:         dep.Name,
 						Version:      dep.Version,
 						Type:         UNKNOWN,
-						Url:          dep.Url,
+						Url:          "55555",
 						Dependencies: make(map[string]Plugin),
 						RequiredBy: map[string]string{
 							plugin.Name: plugin.Version,
