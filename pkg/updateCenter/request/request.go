@@ -67,7 +67,7 @@ func DoRequestWithCache(url string, cacheFileName string) ([]byte, error) {
 		logrus.Debugf("wrote %d bytes to %s\n", b, filePath)
 		defer file.Close()
 	} else {
-		logrus.Infoln("cache hit")
+		logrus.Infoln("cache hit: " + url)
 		fileContent, err = os.ReadFile(filePath)
 		if err != nil {
 			logrus.Errorln(err)
