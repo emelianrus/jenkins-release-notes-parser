@@ -4,6 +4,19 @@ import React from "react";
 
 
 function PluginManagerList({ projects }) {
+  const pluginsArray = [];
+
+  for (const key in projects) {
+    pluginsArray.push({
+      key,
+      project: projects[key]
+    });
+  }
+
+  const pluginCards = pluginsArray.map(plugin => (
+    <PluginManagerCard key={plugin.key} project={plugin.project} />
+  ));
+
 
   return (
     <div className="project-list">
@@ -21,9 +34,10 @@ function PluginManagerList({ projects }) {
               </tr>
             </thead>
 
+            {/* {projectCards.map(project => <PluginManagerCard key={project.key} project={project} />)} */}
             {projects === undefined
               ? <tbody><tr><td>No projects to display</td></tr></tbody>
-              : projects.map(project => <PluginManagerCard key={project.Project.Name} project={project.Project} />)
+              : pluginCards
             }
           </table>
         </div>

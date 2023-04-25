@@ -22,7 +22,7 @@ type PluginManager struct {
 	Plugins        map[string]*Plugin // we use map to speedup get set find
 	updateCenter   *updateCenter.UpdateCenter
 	pluginVersions *pluginVersions.PluginVersions
-	coreVersion    string // todo set core version
+	coreVersion    string // TODO: set core version, currently we use latest
 }
 
 func NewPluginManager() PluginManager {
@@ -32,6 +32,7 @@ func NewPluginManager() PluginManager {
 		Plugins:        make(map[string]*Plugin),
 		updateCenter:   uc,
 		pluginVersions: pv,
+		coreVersion:    "2.235.2", // TODO: should not be hardcoded
 	}
 }
 
@@ -49,6 +50,14 @@ func (pm *PluginManager) preloadPluginData(p *Plugin) {
 	p.Url = pm.pluginVersions.Plugins[p.Name][p.Version].Url
 	// Load required core version
 	p.RequiredCoreVersion = pm.pluginVersions.Plugins[p.Name][p.Version].RequiredCore
+}
+
+func (pm *PluginManager) GetPlugins() map[string]*Plugin {
+	return pm.Plugins
+}
+
+func (pm *PluginManager) GetCoreVersion() string {
+	return pm.coreVersion
 }
 
 // TODO: return error?
@@ -102,14 +111,10 @@ func (pm *PluginManager) LoadWarnings() {
 func (pm *PluginManager) FixWarnings() {
 	for _, plugin := range pm.Plugins {
 
-		// TODO: do not call each time reload warnings everywhere
-		// p.LoadWarnings() // we need to find last version with warning
 		if len(plugin.Warnings) == 0 {
 			logrus.Debugf("No error found for plugin %s version %s", plugin.Name, plugin.Version)
 			// return nil
 		}
-		// pv, _ := pluginVersions.Get() // to check if there any version where warning version +1
-		logrus.Infoln(pm.pluginVersions.Plugins[plugin.Name][plugin.Version].RequiredCore)
 
 		var versions []string
 

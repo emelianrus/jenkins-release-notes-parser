@@ -4,11 +4,13 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import PluginManagerList from '../components/PluginManagerList';
 import Form from 'react-bootstrap/Form';
-import React, { useState } from 'react';
-import JsonEditor from "../components/JsonEditor";
+import React, { useState, useEffect } from "react";
 
 function PluginManager() {
-  // let coreVersion = "2.222.2"
+
+  const [plugins, setPlugins] = useState([]);
+  const [jenkinsCoreVersion, setJenkinsCoreVersion] = useState("");
+
   let data = [
     {
       IsInWatcherList: true,
@@ -57,6 +59,29 @@ function PluginManager() {
   const handleAddNewPlugin = () => setAddNewPlugin(true);
 
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        // TODO: https://api.github.com/repos/OWNER/REPO/releases
+        // repos/:owner/:repo/releases
+        // /project/:owner/:repo/releases
+        const response = await fetch(`http://localhost:8080/plugin-manager/get-data`);
+        const data = await response.json();
+
+        // pass as new single object instead of several params
+        setPlugins(data.Plugins);
+        setCoreVersion(data.CoreVersion)
+
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const newCoreVersion = event.target.elements.coreVersion.value;
@@ -81,7 +106,7 @@ function PluginManager() {
       </div>
 {/* buttons menu end */}
 
-      <PluginManagerList projects={data} />
+      <PluginManagerList projects={plugins} />
 
 
       <div className="container-sm mt-5 ml-5 mr-">
