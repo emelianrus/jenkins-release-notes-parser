@@ -55,13 +55,6 @@ type Plugin struct {
 	Warnings            []Warnings
 }
 
-// func (p *Plugin) predownloadPluginData() {
-// 	// p.LoadURL()
-// 	// p.LoadRequiredCoreVersion()
-// 	// p.LoadWarnings()
-// 	// p.LoadDependenciesFromUpdateCenter()
-// }
-
 // Create Plugin from name and version
 func NewPluginWithVersion(name string, version string) *Plugin {
 	logrus.Debugf("Creating new plugin: '%s' with version: '%s'\n", name, version)
@@ -74,9 +67,6 @@ func NewPluginWithVersion(name string, version string) *Plugin {
 		Dependencies: make(map[string]Plugin),
 		RequiredBy:   make(map[string]string),
 	}
-
-	// pl.predownloadPluginData()
-
 	return pl
 }
 
@@ -91,7 +81,6 @@ func NewPluginWithUrl(name string, url string) *Plugin {
 		Dependencies: make(map[string]Plugin),
 		RequiredBy:   make(map[string]string),
 	}
-	// pl.predownloadPluginData()
 	return pl
 }
 
@@ -167,130 +156,6 @@ func (p *Plugin) Download() (string, error) {
 
 	return fileLocation, nil
 }
-
-// func (p *Plugin) LoadURL() {
-// 	logrus.Debugln("LoadURL executed")
-// 	pv, _ := pluginVersions.Get()
-// 	p.Url = pv.Plugins[p.Name][p.Version].Url
-// }
-
-// Loads warning to plugin struct
-// func (p *Plugin) LoadWarnings(uc *updateCenter.UpdateCenter) {
-// 	logrus.Debugln("LoadWarnings executed")
-// 	// download plugin hpi file
-// 	// p.Download()
-
-// 	// requiredCoreVersion := p.GetRequiredCoreVersion()
-// 	// uc, _ := updateCenter.Get(p.RequiredCoreVersion)
-
-// 	// clear warnings but keep allocated memory
-// 	p.Warnings = p.Warnings[:0]
-
-// 	for _, warn := range uc.Warnings {
-
-// 		// skip all plugins except current one
-// 		if warn.Name == p.Name {
-
-// 			for _, warningVersion := range warn.Versions {
-// 				// if warning version lower then current than we dont have warning
-// 				if warningVersion.LastVersion == p.Version || utils.IsNewerThan(warningVersion.LastVersion, p.Version) {
-// 					// write errors back to plugin
-// 					// TODO: rewrite resolve deps function, may reuse warnings list when newer plugin comes
-// 					p.Warnings = append(p.Warnings, Warnings{
-// 						Id:      warn.Id,
-// 						Message: warn.Message,
-// 						Name:    warn.Name,
-// 						Url:     warn.Url,
-// 						Versions: []struct {
-// 							LastVersion string
-// 							Pattern     string
-// 						}(warn.Versions),
-// 					})
-// 				}
-// 			}
-// 		}
-// 	}
-// }
-
-// get current plugin required core version
-// func (p *Plugin) LoadRequiredCoreVersion() {
-// 	logrus.Debugln("LoadRequiredCoreVersion executed")
-// 	pv, _ := pluginVersions.Get()
-// 	logrus.Infoln(pv.Plugins[p.Name][p.Version].RequiredCore)
-// 	requiredCore := pv.Plugins[p.Name][p.Version].RequiredCore
-// 	if requiredCore == "" {
-// 		logrus.Warnln("[LoadRequiredCoreVersion] version is empty")
-// 	}
-// 	p.RequiredCoreVersion = pv.Plugins[p.Name][p.Version].RequiredCore
-// }
-
-// func (p *Plugin) GetRequiredCoreVersion() string {
-// 	return p.RequiredCoreVersion
-// }
-
-// should fix warnings and paste back to struct
-// TODO: what should we do if all versions with error???
-// func (p *Plugin) FixWarnings(pv *pluginVersions.PluginVersions) error {
-// 	// TODO: do not call each time reload warnings everywhere
-// 	// p.LoadWarnings() // we need to find last version with warning
-// 	if len(p.Warnings) == 0 {
-// 		logrus.Debugf("No error found for plugin %s version %s", p.Name, p.Version)
-// 		return nil
-// 	}
-// 	// pv, _ := pluginVersions.Get() // to check if there any version where warning version +1
-// 	logrus.Infoln(pv.Plugins[p.Name][p.Version].RequiredCore)
-
-// 	var versions []string
-
-// 	for version := range pv.Plugins[p.Name] {
-// 		versions = append(versions, version)
-// 	}
-
-// 	// TODO: refact
-// 	var nextVersion string
-// 	var currentVersion string = p.Version
-// 	// currentVersion = p.Version
-// 	var newPlugin Plugin
-// 	for {
-// 		var err error
-// 		nextVersion, err = utils.GetNextVersion(versions, currentVersion)
-
-// 		if nextVersion == "" {
-// 			logrus.Infoln("Reach get version limit")
-// 		}
-
-// 		if err != nil {
-// 			logrus.Warnf("Error during GetNextVersion for %s\n", currentVersion)
-// 			logrus.Warnln(err)
-
-// 			return err
-// 		}
-// 		currentVersion = nextVersion
-
-// 		newPlugin = Plugin{
-// 			Name:    p.Name,
-// 			Url:     p.Url,
-// 			Version: nextVersion,
-// 		}
-
-// 		// newPlugin.LoadWarnings()
-
-// 		fmt.Printf("pl : %s version %s warn: %d", newPlugin.Name, newPlugin.Version, len(newPlugin.Warnings))
-
-// 		if len(newPlugin.Warnings) == 0 {
-// 			break
-// 		}
-// 	}
-
-// 	// set new version as current and remove deps as could differs
-// 	p.Version = newPlugin.Version
-// 	p.Url = newPlugin.Url
-// 	p.Warnings = newPlugin.Warnings
-// 	p.Dependencies = make(map[string]Plugin)
-// 	// TODO: error if latest version also has error
-// 	// p.predownloadPluginData()
-// 	return nil
-// }
 
 // Loads dependencies from jenkins update center into Plugin struct
 func (p *Plugin) LoadDependenciesFromUpdateCenter() map[string]Plugin {

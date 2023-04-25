@@ -68,11 +68,6 @@ func (pm *PluginManager) LoadWarnings() {
 	for _, plugin := range pm.Plugins {
 
 		logrus.Debugln("LoadWarnings executed")
-		// download plugin hpi file
-		// p.Download()
-
-		// requiredCoreVersion := p.GetRequiredCoreVersion()
-		// uc, _ := updateCenter.Get(p.RequiredCoreVersion)
 
 		// clear warnings but keep allocated memory
 		plugin.Warnings = plugin.Warnings[:0]
@@ -81,10 +76,6 @@ func (pm *PluginManager) LoadWarnings() {
 
 			// skip all plugins except current one
 			if warn.Name == plugin.Name {
-
-				// fmt.Println(warn.Message)
-				// fmt.Println(warn.Versions)
-				// fmt.Println(warn.Id)
 
 				for _, warningVersion := range warn.Versions {
 					// if warning version lower then current than we dont have warning
@@ -172,37 +163,6 @@ func (pm *PluginManager) FixWarnings() {
 	}
 }
 
-// func (pm *PluginManager) FixPluginWarnings(p *Plugin) {
-
-// 	// clear warnings but keep allocated memory
-// 	p.Warnings = p.Warnings[:0]
-
-// 	for _, warn := range pm.updateCenter.Warnings {
-
-// 		// skip all plugins except current one
-// 		if warn.Name == p.Name {
-
-// 			for _, warningVersion := range warn.Versions {
-// 				// if warning version lower then current than we dont have warning
-// 				if warningVersion.LastVersion == p.Version || utils.IsNewerThan(warningVersion.LastVersion, p.Version) {
-// 					// write errors back to plugin
-// 					// TODO: rewrite resolve deps function, may reuse warnings list when newer plugin comes
-// 					p.Warnings = append(p.Warnings, Warnings{
-// 						Id:      warn.Id,
-// 						Message: warn.Message,
-// 						Name:    warn.Name,
-// 						Url:     warn.Url,
-// 						Versions: []struct {
-// 							LastVersion string
-// 							Pattern     string
-// 						}(warn.Versions),
-// 					})
-// 				}
-// 			}
-// 		}
-// 	}
-// }
-
 /*
 	PluginA has dep PluginB
 	PluginC has no deps
@@ -221,23 +181,6 @@ func (p *PluginManager) DeletePlugin(pluginName string) error {
 	// if some one use it print
 	return nil
 }
-
-// Predownload PluginManager plugins
-// func (p *PluginManager) PredownloadPlugins() {
-
-// 	var wg sync.WaitGroup
-
-// 	for _, plugin := range *p {
-// 		wg.Add(1)
-
-// 		go func(plugin *Plugin) {
-// 			defer wg.Done()
-// 			plugin.Download()
-// 		}(plugin)
-
-// 	}
-// 	wg.Wait()
-// }
 
 // TODO: add tests
 // get plugins which no one rely on
@@ -426,28 +369,4 @@ func (pm *PluginManager) FixPluginDependencies() {
 			Type:         pl.Type,
 		}
 	}
-}
-
-/*
-TODO: require jenkins core version?
-go over plugins with errors and try to update plugin to new version which might not have warn
-requires FixPluginDependencies after list patch and run FixPluginWarnings again?
-TODO: find better logic then recursion ^
-like check all plugin version to latest and check warnings
-need to be aware might require jenkins core version patch
-*/
-
-// TODO: remove unused
-func (p *PluginManager) GeneratePluginDepsFile() {
-	fmt.Println("NOT IMPLEMENTED")
-}
-
-// TODO: remove unused
-func (pm *PluginManager) GetLatestVersions(uc *updateCenter.UpdateCenter) {
-
-	for _, plugins := range pm.Plugins {
-		plugins.Version = uc.Plugins[plugins.Name].Version
-	}
-
-	// p.UpdateFile(p.File.fileName)
 }
