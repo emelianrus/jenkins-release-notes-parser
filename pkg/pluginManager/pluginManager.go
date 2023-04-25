@@ -284,7 +284,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 		}
 
 		pluginsToCheck[pluginPrimary.Name] = *pluginPrimary
-		logrus.Infof("added initial plugin to pluginToCheck %s", pluginPrimary.Name)
+		logrus.Infof("[FixPluginDependencies] added initial plugin to pluginToCheck %s", pluginPrimary.Name)
 	}
 
 	// while we have plugin to check do loop

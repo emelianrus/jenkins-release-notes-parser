@@ -122,18 +122,16 @@ func Get(coreVersion string) (*UpdateCenter, error) {
 		if err != nil {
 			return nil, err
 		}
-		coreVersion = stableCoreVersion
+		coreVersion = "stable-" + stableCoreVersion
 		logrus.Warnf("[WARN] You didn't pass '--core'. Will use LTS core version '%s'\n", stableCoreVersion)
-		urlParam = "?version=stable-" + coreVersion
-	} else {
-		// would be good to have param, but all tools requires version only
-		// like give me update center for "1.255.3" without stable prefix or so
-		// stable here for workaround for now, mb will be changed in future
-		urlParam = "?version=stable-" + coreVersion
 	}
+	// would be good to have param, but all tools requires version only
+	// like give me update center for "1.255.3" without stable prefix or so
+	// stable here for workaround for now, mb will be changed in future
+	urlParam = "?version=" + coreVersion
 
 	// add prefix to update center json to understand which jenkins core used
-	cacheFileName := "stable-" + coreVersion + "-" + URL_LOCATION
+	cacheFileName := coreVersion + "-" + URL_LOCATION
 	fmt.Println(URL + urlParam)
 	content, err := request.DoRequestWithCache(URL+urlParam, cacheFileName)
 	if err != nil {
