@@ -26,6 +26,7 @@ func (s *ProjectService) RescanProjectNow(c *gin.Context) {
 	c.String(http.StatusOK, "RescanProjectNow")
 }
 
+// Plugin-manager handler to add new plugin to plugin-manager
 func (s *ProjectService) AddNewPlugin(c *gin.Context) {
 	logrus.Infoln("AddNewPlugin route reached")
 

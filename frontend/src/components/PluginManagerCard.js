@@ -41,6 +41,11 @@ function ProjectCard({ project }) {
         </td>
         <td>
           <ul>
+            latestUpdateTimePH
+          </ul>
+        </td>
+        <td>
+          <ul>
             <li>
               <span>Is dependency of:</span> <span>BUTTON</span>
             </li>
@@ -53,6 +58,11 @@ function ProjectCard({ project }) {
           <span id="plugin-name-ranged">
             <Button variant="primary" onClick={() => handleDoRescan(project.Name, project.Version)}>scan now</Button>
           </span>
+        </td>
+        <td>
+          <ul>
+              <Button variant="danger" >Delete</Button>
+          </ul>
         </td>
       </tr>
     </tbody>

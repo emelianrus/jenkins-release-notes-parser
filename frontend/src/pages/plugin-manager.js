@@ -49,6 +49,9 @@ function PluginManager() {
 
   const [showCoreVersion, setShowCoreVersion] = useState(false);
   const [showAddNewPlugin, setAddNewPlugin] = useState(false);
+  // status should represent status of all plugins
+  // are deps were resolved, are all deps added, are all plugins downloaded
+  const [showSyncStatus, setSyncStatus] = useState("Not in sync");
 
   const [coreVersion, setCoreVersion] = useState("2.222.2");
 
@@ -60,35 +63,22 @@ function PluginManager() {
 
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        // TODO: https://api.github.com/repos/OWNER/REPO/releases
-        // repos/:owner/:repo/releases
-        // /project/:owner/:repo/releases
-        const response = await fetch(`http://localhost:8080/plugin-manager/get-data`);
-        const data = await response.json();
-
-        // pass as new single object instead of several params
-        setPlugins(data.Plugins);
-        setCoreVersion(data.CoreVersion)
-
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
     fetchData();
   }, []);
 
+  const fetchData = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/plugin-manager/get-data`);
+      const data = await response.json();
 
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const newCoreVersion = event.target.elements.coreVersion.value;
-    setCoreVersion(newCoreVersion);
+      setPlugins(data.Plugins);
+      setCoreVersion(data.CoreVersion);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  function handleSaveAddNewPlugin() {
+  const handleSaveAddNewPlugin = () => {
     const pluginName = document.querySelector('input[type="pluginName"]').value;
     const pluginVersion = document.querySelector('input[type="pluginVersion"]').value;
 
@@ -99,19 +89,33 @@ function PluginManager() {
 
     fetch('http://localhost:8080/plugin-manager/add-new-plugin', {
       method: 'POST',
-      mode: 'cors',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(requestData)
+    })
+    .then(() => {
+      // Reload plugins after adding a new plugin
+      fetchData();
+      handleCloseAddNewPlugin(false);
+    })
+    .catch((error) => {
+      console.error(error);
     });
+  };
 
-    handleCloseAddNewPlugin(false)
-  }
+
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const newCoreVersion = event.target.elements.coreVersion.value;
+    setCoreVersion(newCoreVersion);
+  };
 
   return (
     <div>
       {/* buttons menu */}
+
       <div className="project-list">
         <div className="container-sm mt-5 ml-5 mr-5">
           <div className="row justify-content-end">
@@ -120,20 +124,26 @@ function PluginManager() {
             </div>
             <div className="col-auto">
               <Button variant="primary" onClick={handleEditCoreVersion}>Change version</Button>
+              <div>
+                Status: {showSyncStatus}
+              </div>
             </div>
           </div>
         </div>
+
       </div>
 {/* buttons menu end */}
 
       <PluginManagerList projects={plugins} />
 
-
-      <div className="container-sm mt-5 ml-5 mr-">
-        <Button variant="outline-primary" onClick={handleAddNewPlugin}>Add new plugin</Button>
+      <div className="container-sm mt-5 ml-5 d-flex">
+        <div className="mr-2">
+          <Button variant="outline-primary" onClick={handleAddNewPlugin}>Add new plugin</Button>
+        </div>
+        <div className="ml-2">
+          <Button variant="outline-primary" >Check deps</Button>
+        </div>
       </div>
-
-
       {/* ADD NEW PLUGIN MODAL WINDOW */}
       <Modal show={showAddNewPlugin} onHide={handleCloseAddNewPlugin}>
         <Modal.Header closeButton>
@@ -152,7 +162,6 @@ function PluginManager() {
               <Form.Control
                 type="pluginVersion"
                 placeholder=""
-                autoFocus
               />
             </Form.Group>
           </Form>

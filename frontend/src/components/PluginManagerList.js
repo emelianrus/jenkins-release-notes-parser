@@ -30,7 +30,9 @@ function PluginManagerList({ projects }) {
                 <th>Installed version</th>
                 <th>Latest version</th>
                 <th>Download status</th>
+                <th>Deps</th>
                 <th>Force Download</th>
+                <th>Delete</th>
               </tr>
             </thead>
 

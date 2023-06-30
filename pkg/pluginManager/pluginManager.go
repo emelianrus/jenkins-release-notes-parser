@@ -19,10 +19,10 @@ import (
  */
 
 type PluginManager struct {
-	Plugins        map[string]*Plugin // we use map to speedup get set find
-	UpdateCenter   *updateCenter.UpdateCenter
-	PluginVersions *pluginVersions.PluginVersions
-	coreVersion    string // TODO: set core version, currently we use latest
+	Plugins        map[string]*Plugin             // we use map to speedup get set find
+	UpdateCenter   *updateCenter.UpdateCenter     // external. from jenkins api
+	PluginVersions *pluginVersions.PluginVersions // external. from jenkins api
+	coreVersion    string                         // TODO: set core version, currently we use latest
 }
 
 func NewPluginManager() PluginManager {
@@ -68,16 +68,14 @@ func (pm *PluginManager) AddPlugin(pl *Plugin) {
 	}
 
 	pm.preloadPluginData(pl)
-
+	// TODO: sync with DB
 	pm.Plugins[pl.Name] = pl
 }
 
 // Load plugins warnings into PluginManager struct
 func (pm *PluginManager) LoadWarnings() {
+	logrus.Debugln("LoadWarnings executed")
 	for _, plugin := range pm.Plugins {
-
-		logrus.Debugln("LoadWarnings executed")
-
 		// clear warnings but keep allocated memory
 		plugin.Warnings = plugin.Warnings[:0]
 
