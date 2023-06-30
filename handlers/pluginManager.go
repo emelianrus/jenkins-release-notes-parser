@@ -37,7 +37,7 @@ func (s *ProjectService) AddNewPlugin(c *gin.Context) {
 	logrus.Infof("Received request body: %+v\n", body)
 
 	// check if plugin is not exist you can not add it to list
-	if _, exists := s.PluginManager.Plugins[body["name"]]; !exists {
+	if _, exists := s.PluginManager.PluginVersions.Plugins[body["name"]]; !exists {
 		c.String(http.StatusBadRequest, fmt.Sprintf("AddNewPlugin %s:%s is not exist in plugins", body["name"], body["version"]))
 		return
 	}

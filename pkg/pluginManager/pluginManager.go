@@ -20,8 +20,8 @@ import (
 
 type PluginManager struct {
 	Plugins        map[string]*Plugin // we use map to speedup get set find
-	updateCenter   *updateCenter.UpdateCenter
-	pluginVersions *pluginVersions.PluginVersions
+	UpdateCenter   *updateCenter.UpdateCenter
+	PluginVersions *pluginVersions.PluginVersions
 	coreVersion    string // TODO: set core version, currently we use latest
 }
 
@@ -30,15 +30,15 @@ func NewPluginManager() PluginManager {
 	pv, _ := pluginVersions.Get()
 	return PluginManager{
 		Plugins:        make(map[string]*Plugin),
-		updateCenter:   uc,
-		pluginVersions: pv,
+		UpdateCenter:   uc,
+		PluginVersions: pv,
 		coreVersion:    "2.235.2", // TODO: should not be hardcoded
 	}
 }
 
 func (pm *PluginManager) preloadPluginData(p *Plugin) {
 	// Load deps
-	for _, dep := range pm.pluginVersions.Plugins[p.Name][p.Version].Dependencies {
+	for _, dep := range pm.PluginVersions.Plugins[p.Name][p.Version].Dependencies {
 		if !dep.Optional {
 			p.Dependencies[dep.Name] = Plugin{
 				Name:    dep.Name,
@@ -47,9 +47,9 @@ func (pm *PluginManager) preloadPluginData(p *Plugin) {
 		}
 	}
 	// Load url
-	p.Url = pm.pluginVersions.Plugins[p.Name][p.Version].Url
+	p.Url = pm.PluginVersions.Plugins[p.Name][p.Version].Url
 	// Load required core version
-	p.RequiredCoreVersion = pm.pluginVersions.Plugins[p.Name][p.Version].RequiredCore
+	p.RequiredCoreVersion = pm.PluginVersions.Plugins[p.Name][p.Version].RequiredCore
 }
 
 func (pm *PluginManager) GetPlugins() map[string]*Plugin {
@@ -81,7 +81,7 @@ func (pm *PluginManager) LoadWarnings() {
 		// clear warnings but keep allocated memory
 		plugin.Warnings = plugin.Warnings[:0]
 
-		for _, warn := range pm.updateCenter.Warnings {
+		for _, warn := range pm.UpdateCenter.Warnings {
 
 			// skip all plugins except current one
 			if warn.Name == plugin.Name {
@@ -118,7 +118,7 @@ func (pm *PluginManager) FixWarnings() {
 
 		var versions []string
 
-		for version := range pm.pluginVersions.Plugins[plugin.Name] {
+		for version := range pm.PluginVersions.Plugins[plugin.Name] {
 			versions = append(versions, version)
 		}
 
@@ -203,7 +203,7 @@ func (pm *PluginManager) GetStandalonePlugins() []*Plugin {
 
 func (pm *PluginManager) GetDependencies(p Plugin) map[string]Plugin {
 	// pv, _ := pluginVersions.Get()
-	for _, dep := range pm.pluginVersions.Plugins[p.Name][p.Version].Dependencies {
+	for _, dep := range pm.PluginVersions.Plugins[p.Name][p.Version].Dependencies {
 		if !dep.Optional {
 
 			p.Dependencies[dep.Name] = Plugin{
@@ -228,7 +228,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 	// convert all plugins to pluginToCheck
 	for _, pluginPrimary := range pm.Plugins {
 		if pluginPrimary.Url == "" {
-			pluginPrimary.Url = pm.pluginVersions.Plugins[pluginPrimary.Name][pluginPrimary.Version].Url
+			pluginPrimary.Url = pm.PluginVersions.Plugins[pluginPrimary.Name][pluginPrimary.Version].Url
 		}
 
 		pluginsToCheck[pluginPrimary.Name] = *pluginPrimary
@@ -258,7 +258,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 						pluginsToCheck[dep.Name] = Plugin{
 							Name:         dep.Name,
 							Version:      dep.Version,
-							Url:          pm.pluginVersions.Plugins[dep.Name][dep.Version].Url,
+							Url:          pm.PluginVersions.Plugins[dep.Name][dep.Version].Url,
 							Type:         pluginsChecked[dep.Name].Type,
 							Dependencies: pluginsChecked[dep.Name].Dependencies,
 							RequiredBy:   pluginsChecked[dep.Name].RequiredBy,
@@ -293,7 +293,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 							Name:         dep.Name,
 							Version:      dep.Version,
 							Type:         plugin.Type,
-							Url:          pm.pluginVersions.Plugins[dep.Name][dep.Version].Url,
+							Url:          pm.PluginVersions.Plugins[dep.Name][dep.Version].Url,
 							Dependencies: pluginsToCheck[dep.Name].Dependencies,
 							RequiredBy:   pluginsToCheck[dep.Name].RequiredBy,
 						}
@@ -333,7 +333,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 						Name:         dep.Name,
 						Version:      dep.Version,
 						Type:         UNKNOWN,
-						Url:          pm.pluginVersions.Plugins[dep.Name][dep.Version].Url,
+						Url:          pm.PluginVersions.Plugins[dep.Name][dep.Version].Url,
 						Dependencies: make(map[string]Plugin),
 						RequiredBy: map[string]string{
 							plugin.Name: plugin.Version,
