@@ -53,6 +53,9 @@ type Plugin struct {
 	RequiredBy          map[string]string
 	Optional            bool // rely on parent plugin
 	Warnings            []Warnings
+
+	LatestVersion    string
+	InstalledVersion string
 }
 
 // Create Plugin from name and version

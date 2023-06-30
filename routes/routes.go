@@ -67,7 +67,6 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 
 	// should return plugins + versions + core version
 	router.GET("/plugin-manager/get-data", func(c *gin.Context) {
-
 		type pluginManagerData struct {
 			Plugins     map[string]*pluginManager.Plugin
 			CoreVersion string
@@ -80,7 +79,16 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 		c.JSON(http.StatusOK, data)
 	})
 
-	router.POST("/plugin-manager/add-new-plugin", func(ctx *gin.Context) {})
+	router.POST("/plugin-manager/add-new-plugin", handler.AddNewPlugin)
+	// {
+	// 	pm.AddPlugin(pluginManager.NewPluginWithVersion("blueocean", "1.25.5"))
+	// })
+
+	router.POST("/plugin-manager/rescan", handler.RescanProjectNow)
+	//  {
+	// 	pm.AddPlugin(pluginManager.NewPluginWithVersion("blueocean", "1.25.5"))
+	// })
+
 	router.DELETE("/plugin-manager/delete-plugin", func(ctx *gin.Context) {})
 	router.PUT("/plugin-manager/edit-core-version", func(ctx *gin.Context) {})
 

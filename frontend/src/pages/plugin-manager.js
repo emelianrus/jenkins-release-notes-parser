@@ -86,8 +86,28 @@ function PluginManager() {
     event.preventDefault();
     const newCoreVersion = event.target.elements.coreVersion.value;
     setCoreVersion(newCoreVersion);
-    handleClose();
   };
+
+  function handleSaveAddNewPlugin() {
+    const pluginName = document.querySelector('input[type="pluginName"]').value;
+    const pluginVersion = document.querySelector('input[type="pluginVersion"]').value;
+
+    const requestData = {
+      name: pluginName,
+      version: pluginVersion
+    };
+
+    fetch('http://localhost:8080/plugin-manager/add-new-plugin', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestData)
+    });
+
+    handleCloseAddNewPlugin(false)
+  }
 
   return (
     <div>
@@ -99,7 +119,7 @@ function PluginManager() {
               Jenkins core version: {coreVersion}
             </div>
             <div className="col-auto">
-            <Button variant="primary" onClick={handleEditCoreVersion} >Change version</Button>
+              <Button variant="primary" onClick={handleEditCoreVersion}>Change version</Button>
             </div>
           </div>
         </div>
@@ -141,7 +161,7 @@ function PluginManager() {
           <Button variant="secondary" onClick={handleCloseAddNewPlugin}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleCloseAddNewPlugin}>
+          <Button variant="primary" onClick={handleSaveAddNewPlugin}>
             Save Changes
           </Button>
         </Modal.Footer>

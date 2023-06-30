@@ -1,7 +1,19 @@
-import { Link } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 
 function ProjectCard({ project }) {
+
+  function handleDoRescan(name, version){
+    console.log(name);
+    console.log(version);
+    fetch('http://localhost:8080/plugin-manager/rescan', {
+      method: 'POST',
+      mode: 'cors',
+      body: JSON.stringify({
+        name: name,
+        version: version
+      })
+    })
+  }
 
   return (
     // TODO: fix class name
@@ -39,7 +51,7 @@ function ProjectCard({ project }) {
         </td>
         <td>
           <span id="plugin-name-ranged">
-            <Button variant="danger">Delete</Button>{' '}
+            <Button variant="primary" onClick={() => handleDoRescan(project.Name, project.Version)}>scan now</Button>
           </span>
         </td>
       </tr>
