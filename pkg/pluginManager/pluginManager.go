@@ -105,6 +105,9 @@ func (pm *PluginManager) GetCoreVersion() string {
 }
 func (pm *PluginManager) SetCoreVersion(newCoreVersion string) {
 	pm.coreVersion = newCoreVersion
+	uc, _ := updateCenter.Get(newCoreVersion)
+
+	pm.UpdateCenter = uc
 }
 
 // TODO: return error?
