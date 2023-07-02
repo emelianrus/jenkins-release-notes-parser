@@ -54,6 +54,7 @@ type Plugin struct {
 	Optional            bool // rely on parent plugin
 	Warnings            []Warnings
 
+	// ReleaseNotes     []types.ReleaseNote
 	LatestVersion    string
 	InstalledVersion string
 }

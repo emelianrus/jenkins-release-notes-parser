@@ -106,11 +106,14 @@ function PluginManager() {
 
 
 
-  const handleSubmit = (event) => {
+
+
+  const handleEditCoreSubmit = (event) => {
     event.preventDefault();
     const newCoreVersion = event.target.elements.coreVersion.value;
     setCoreVersion(newCoreVersion);
   };
+
 
   return (
     <div>
@@ -183,7 +186,7 @@ function PluginManager() {
           <Modal.Title>Edit Jenkins core version</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form onSubmit={handleSubmit}>
+          <Form onSubmit={handleEditCoreSubmit}>
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
               <Form.Control
                 type="text"

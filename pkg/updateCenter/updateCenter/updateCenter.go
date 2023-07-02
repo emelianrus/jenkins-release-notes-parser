@@ -9,6 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// https://updates.jenkins.io/stable/update-center.actual.json
+
 // TODO: make this configurable
 // Version of jenkins update center repo
 // https://github.com/jenkins-infra/update-center2/blob/master/site/LAYOUT.md#regular-tiered-update-sites-lts-and-weekly

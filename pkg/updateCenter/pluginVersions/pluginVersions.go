@@ -15,6 +15,7 @@ const JENKINS_UPDATE_CENTER_URL = "https://updates.jenkins.io"
 // Endpoint file name
 const URL_LOCATION = "plugin-versions.json"
 
+// https://updates.jenkins.io/current/plugin-versions.json
 const URL = JENKINS_UPDATE_CENTER_URL + "/" + REPO + "/" + URL_LOCATION
 
 // PluginVersions type

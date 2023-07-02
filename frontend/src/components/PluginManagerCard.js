@@ -3,16 +3,27 @@ import Button from 'react-bootstrap/Button';
 function ProjectCard({ project }) {
 
   function handleDoRescan(name, version){
-    console.log(name);
-    console.log(version);
     fetch('http://localhost:8080/plugin-manager/rescan', {
       method: 'POST',
-      mode: 'cors',
+      // mode: 'cors',
       body: JSON.stringify({
         name: name,
         version: version
       })
     })
+  }
+
+  function handleDelete(name){
+    fetch('http://localhost:8080/plugin-manager/delete-plugin', {
+      method: 'DELETE',
+      // mode: 'cors',
+      body: JSON.stringify({
+        name: name
+      })
+    })
+    // TODO: wrong using of components
+    // need state change
+    window.location.reload(false);
   }
 
   return (
@@ -61,7 +72,7 @@ function ProjectCard({ project }) {
         </td>
         <td>
           <ul>
-              <Button variant="danger" >Delete</Button>
+              <Button variant="danger" onClick={() => handleDelete(project.Name)}>Delete</Button>
           </ul>
         </td>
       </tr>

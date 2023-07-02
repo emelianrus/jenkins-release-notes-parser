@@ -6,6 +6,7 @@ import (
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/pluginVersions"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/updateCenter"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/utils"
+	jenkins "github.com/emelianrus/jenkins-release-notes-parser/sources/jenkinsPluginSite"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,25 +20,57 @@ import (
  */
 
 type PluginManager struct {
-	Plugins        map[string]*Plugin             // we use map to speedup get set find
+	Plugins     map[string]*Plugin // we use map to speedup get set find
+	coreVersion string             // TODO: set core version, currently we use latest
+
 	UpdateCenter   *updateCenter.UpdateCenter     // external. from jenkins api
 	PluginVersions *pluginVersions.PluginVersions // external. from jenkins api
-	coreVersion    string                         // TODO: set core version, currently we use latest
+	PluginSite     jenkins.PluginSite
 }
 
 func NewPluginManager() PluginManager {
 	uc, _ := updateCenter.Get("")
 	pv, _ := pluginVersions.Get()
+
 	return PluginManager{
-		Plugins:        make(map[string]*Plugin),
+		Plugins: make(map[string]*Plugin),
+
 		UpdateCenter:   uc,
 		PluginVersions: pv,
 		coreVersion:    "2.235.2", // TODO: should not be hardcoded
+		PluginSite:     jenkins.NewPluginSite(),
+	}
+}
+
+func (pm *PluginManager) generateRequiredBy() {
+	logrus.Infoln("[generateRequiredBy]")
+
+	for _, pl := range pm.Plugins {
+		for depName := range pl.Dependencies {
+			if _, exists := pm.Plugins[depName]; exists {
+				pm.Plugins[depName].RequiredBy[pl.Name] = pl.Version
+			}
+			// else {
+			// 	delete(pm.Plugins[depName].RequiredBy, pl.Name)
+			// }
+		}
+	}
+}
+
+func (pm *PluginManager) cleanRequiredBy(removedProjectName string) {
+	logrus.Infoln("[cleanRequiredBy]")
+
+	for _, pl := range pm.Plugins {
+		if _, exists := pl.RequiredBy[removedProjectName]; exists {
+			logrus.Infof("removed plugin %s from %s.RequiredBy\n", pl.Name, removedProjectName)
+			delete(pl.RequiredBy, removedProjectName)
+		}
 	}
 }
 
 func (pm *PluginManager) preloadPluginData(p *Plugin) {
-	// Load deps
+	logrus.Infof("preloadPluginData %s:%s", p.Name, p.Version)
+	// NOTE: if version is incorrect will not get any data
 	for _, dep := range pm.PluginVersions.Plugins[p.Name][p.Version].Dependencies {
 		if !dep.Optional {
 			p.Dependencies[dep.Name] = Plugin{
@@ -50,6 +83,17 @@ func (pm *PluginManager) preloadPluginData(p *Plugin) {
 	p.Url = pm.PluginVersions.Plugins[p.Name][p.Version].Url
 	// Load required core version
 	p.RequiredCoreVersion = pm.PluginVersions.Plugins[p.Name][p.Version].RequiredCore
+
+	// var versions []string
+
+	// for version := range pm.PluginVersions.Plugins[p.Name] {
+	// 	versions = append(versions, version)
+	// }
+
+	// p.LatestVersion = versions[len(versions)-1]
+
+	// releaseNotes, _ := sources.DownloadProject(&pm.PluginSite, p.Name)
+	// p.ReleaseNotes = releaseNotes
 }
 
 func (pm *PluginManager) GetPlugins() map[string]*Plugin {
@@ -68,8 +112,27 @@ func (pm *PluginManager) AddPlugin(pl *Plugin) {
 	}
 
 	pm.preloadPluginData(pl)
+
 	// TODO: sync with DB
 	pm.Plugins[pl.Name] = pl
+	// reload for each plugin in plugin manager
+	pm.generateRequiredBy()
+}
+
+func (pm *PluginManager) AddPluginWithVersion(pluginName string, version string) {
+	logrus.Infof("[AddPluginWithVersion] Adding new plugin to pluginManager %s:%s", pluginName, version)
+	pl := NewPluginWithVersion(pluginName, version)
+
+	logrus.Infof("Adding new plugin to pluginManager %s:%s", pl.Name, pl.Version)
+	if _, found := pm.Plugins[pl.Name]; found {
+		logrus.Warnf("Found copy of plugin in pluginsfile. Plugin name: '%s'\n", pl.Name)
+	}
+
+	pm.preloadPluginData(pl)
+	// TODO: sync with DB
+
+	pm.Plugins[pl.Name] = pl
+	pm.generateRequiredBy()
 }
 
 // Load plugins warnings into PluginManager struct
@@ -179,10 +242,14 @@ func (pm *PluginManager) FixWarnings() {
 func (p *PluginManager) LoadPluginTypes() {}
 
 // will try to delete plugin from list if no one rely as dep on this plugin
-func (p *PluginManager) DeletePlugin(pluginName string) error {
+func (p *PluginManager) DeletePlugin(pluginName string) {
 	// check if we can delete plugin and no one rely on it
 	// if some one use it print
-	return nil
+	logrus.Infof("[DeletePlugin] %s\n", pluginName)
+	// clean removed plugin from plugins requiredBy fields
+	p.cleanRequiredBy(pluginName)
+
+	delete(p.Plugins, pluginName)
 }
 
 // TODO: add tests

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/emelianrus/jenkins-release-notes-parser/pkg/pluginManager"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -43,7 +42,22 @@ func (s *ProjectService) AddNewPlugin(c *gin.Context) {
 		return
 	}
 
-	s.PluginManager.AddPlugin(pluginManager.NewPluginWithVersion(body["name"], body["version"]))
+	s.PluginManager.AddPluginWithVersion(body["name"], body["version"])
 
 	c.String(http.StatusOK, fmt.Sprintf("AddNewPlugin %s:%s", body["name"], body["version"]))
+}
+
+func (s *ProjectService) DeletePlugin(c *gin.Context) {
+	logrus.Infoln("DeletePlugin route reached")
+
+	var body map[string]string
+	if err := c.BindJSON(&body); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	logrus.Infof("Received request body: %+v\n", body)
+
+	s.PluginManager.DeletePlugin(body["name"])
+
+	c.String(http.StatusOK, fmt.Sprintf("DeletePlugin %s", body["name"]))
 }

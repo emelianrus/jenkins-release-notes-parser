@@ -14,7 +14,8 @@ func preloadPluginManager(pm *pluginManager.PluginManager, redis *redisStorage.R
 
 	watcherData, _ := redis.GetWatcherData()
 	for name, version := range watcherData {
-		pm.AddPlugin(pluginManager.NewPluginWithVersion(name, version))
+		pm.AddPluginWithVersion(name, version)
+		// pm.AddPlugin(pluginManager.NewPluginWithVersion(name, version))
 	}
 }
 
@@ -80,16 +81,9 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 	})
 
 	router.POST("/plugin-manager/add-new-plugin", handler.AddNewPlugin)
-	// {
-	// 	pm.AddPlugin(pluginManager.NewPluginWithVersion("blueocean", "1.25.5"))
-	// })
+	router.DELETE("/plugin-manager/delete-plugin", handler.DeletePlugin)
 
 	router.POST("/plugin-manager/rescan", handler.RescanProjectNow)
-	//  {
-	// 	pm.AddPlugin(pluginManager.NewPluginWithVersion("blueocean", "1.25.5"))
-	// })
-
-	router.DELETE("/plugin-manager/delete-plugin", func(ctx *gin.Context) {})
 	router.PUT("/plugin-manager/edit-core-version", func(ctx *gin.Context) {})
 
 	router.POST("/plugin-manager/check-versions", func(ctx *gin.Context) {})
