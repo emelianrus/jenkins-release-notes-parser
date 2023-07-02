@@ -182,3 +182,16 @@ func TestPluginManager_AddPlugin(t *testing.T) {
 		})
 	}
 }
+
+func TestPluginManager_SetCoreVersion(t *testing.T) {
+	pm := NewPluginManager()
+	newVer := "1.1.1"
+	pm.SetCoreVersion(newVer)
+
+	t.Run("test set new version", func(t *testing.T) {
+		ver := pm.GetCoreVersion()
+		if ver != newVer {
+			t.Errorf("SetCoreVersion() = %v, want %v", ver, newVer)
+		}
+	})
+}

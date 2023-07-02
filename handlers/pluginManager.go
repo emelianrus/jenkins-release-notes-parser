@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// TODO: need to know what we need to rescan :)
 func (s *ProjectService) RescanProjectNow(c *gin.Context) {
 	logrus.Infoln("RescanProjectNow route reached")
 
@@ -18,9 +19,8 @@ func (s *ProjectService) RescanProjectNow(c *gin.Context) {
 	}
 	logrus.Infof("Received request body: %+v\n", body)
 
-	res := s.PluginManager.GetPlugins() //[body["name"]].Download()
-
-	res[body["name"]].Download()
+	// res := s.PluginManager.GetPlugins() //[body["name"]].Download()
+	// res[body["name"]].Download()
 
 	c.String(http.StatusOK, "RescanProjectNow")
 }
