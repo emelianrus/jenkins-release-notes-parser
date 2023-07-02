@@ -61,3 +61,24 @@ func (s *ProjectService) DeletePlugin(c *gin.Context) {
 
 	c.String(http.StatusOK, fmt.Sprintf("DeletePlugin %s", body["name"]))
 }
+
+func (s *ProjectService) EditCoreVersion(c *gin.Context) {
+	logrus.Infoln("EditCoreVersion route reached")
+
+	var body map[string]string
+	if err := c.BindJSON(&body); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	logrus.Infof("Received request body: %+v\n", body)
+
+	s.PluginManager.SetCoreVersion(body["name"])
+
+	logrus.Infof("set new coreVersion: %s\n", body["name"])
+	c.String(http.StatusOK, fmt.Sprintf("EditCoreVersion %s", body["name"]))
+}
+
+func (s *ProjectService) GetCoreVersion(c *gin.Context) {
+	logrus.Infoln("GetCoreVersion route reached")
+	c.String(http.StatusOK, s.PluginManager.GetCoreVersion())
+}

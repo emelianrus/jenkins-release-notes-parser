@@ -55,7 +55,7 @@ function PluginManager() {
 
   const [coreVersion, setCoreVersion] = useState("2.222.2");
 
-  const handleClose = () => setShowCoreVersion(false);
+  const handleCloseCoreVersion = () => setShowCoreVersion(false);
   const handleEditCoreVersion = () => setShowCoreVersion(true);
 
   const handleCloseAddNewPlugin = () => setAddNewPlugin(false);
@@ -72,7 +72,11 @@ function PluginManager() {
       const data = await response.json();
 
       setPlugins(data.Plugins);
-      setCoreVersion(data.CoreVersion);
+
+      const responseCoreVersion = await fetch(`http://localhost:8080/plugin-manager/get-core-version`);
+      const dataCoreVersion = await responseCoreVersion.text();
+      setCoreVersion(dataCoreVersion);
+
     } catch (error) {
       console.error(error);
     }
@@ -105,13 +109,20 @@ function PluginManager() {
   };
 
 
-
-
-
   const handleEditCoreSubmit = (event) => {
     event.preventDefault();
     const newCoreVersion = event.target.elements.coreVersion.value;
+
+    fetch('http://localhost:8080/plugin-manager/edit-core-version', {
+      method: 'POST',
+      // mode: 'cors',
+      body: JSON.stringify({
+        name: newCoreVersion
+      })
+    })
+
     setCoreVersion(newCoreVersion);
+    handleCloseCoreVersion();
   };
 
 
@@ -181,7 +192,7 @@ function PluginManager() {
 
 
       {/* EDIT CORE VERSION MODAL WINDOW */}
-      <Modal show={showCoreVersion} onHide={handleClose}>
+      <Modal show={showCoreVersion} onHide={handleCloseCoreVersion}>
         <Modal.Header closeButton>
           <Modal.Title>Edit Jenkins core version</Modal.Title>
         </Modal.Header>
@@ -196,7 +207,7 @@ function PluginManager() {
               />
             </Form.Group>
             <Modal.Footer>
-              <Button variant="secondary" onClick={handleClose}>
+              <Button variant="secondary" onClick={handleCloseCoreVersion}>
                 Close
               </Button>
               <Button variant="primary" type="submit">

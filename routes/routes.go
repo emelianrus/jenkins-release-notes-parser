@@ -84,7 +84,9 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 	router.DELETE("/plugin-manager/delete-plugin", handler.DeletePlugin)
 
 	router.POST("/plugin-manager/rescan", handler.RescanProjectNow)
-	router.PUT("/plugin-manager/edit-core-version", func(ctx *gin.Context) {})
+
+	router.POST("/plugin-manager/edit-core-version", handler.EditCoreVersion)
+	router.GET("/plugin-manager/get-core-version", handler.GetCoreVersion)
 
 	router.POST("/plugin-manager/check-versions", func(ctx *gin.Context) {})
 	router.POST("/plugin-manager/resolve-deps", func(ctx *gin.Context) {})

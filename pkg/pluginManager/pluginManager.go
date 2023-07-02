@@ -103,6 +103,9 @@ func (pm *PluginManager) GetPlugins() map[string]*Plugin {
 func (pm *PluginManager) GetCoreVersion() string {
 	return pm.coreVersion
 }
+func (pm *PluginManager) SetCoreVersion(newCoreVersion string) {
+	pm.coreVersion = newCoreVersion
+}
 
 // TODO: return error?
 func (pm *PluginManager) AddPlugin(pl *Plugin) {
