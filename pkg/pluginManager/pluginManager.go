@@ -3,6 +3,7 @@ package pluginManager
 import (
 	"fmt"
 
+	"github.com/emelianrus/jenkins-release-notes-parser/parsers"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/pluginVersions"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/updateCenter"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/utils"
@@ -26,6 +27,8 @@ type PluginManager struct {
 	UpdateCenter   *updateCenter.UpdateCenter     // external. from jenkins api
 	PluginVersions *pluginVersions.PluginVersions // external. from jenkins api
 	PluginSite     jenkins.PluginSite
+
+	FileParser parsers.InputParser
 }
 
 func NewPluginManager() PluginManager {
@@ -39,8 +42,12 @@ func NewPluginManager() PluginManager {
 		PluginVersions: pv,
 		coreVersion:    "2.235.2", // TODO: should not be hardcoded
 		PluginSite:     jenkins.NewPluginSite(),
+		FileParser:     parsers.TXTFileParser{},
 	}
 }
+
+// TODO:
+func (pm *PluginManager) SetFileParser(parser parsers.InputParser) {}
 
 func (pm *PluginManager) generateRequiredBy() {
 	logrus.Infoln("[generateRequiredBy]")

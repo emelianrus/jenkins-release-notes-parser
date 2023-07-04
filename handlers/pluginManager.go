@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,10 +20,25 @@ func (s *ProjectService) RescanProjectNow(c *gin.Context) {
 	}
 	logrus.Infof("Received request body: %+v\n", body)
 
-	// res := s.PluginManager.GetPlugins() //[body["name"]].Download()
-	// res[body["name"]].Download()
-
 	c.String(http.StatusOK, "RescanProjectNow")
+}
+
+func (s *ProjectService) AddPluginsFile(c *gin.Context) {
+	logrus.Infoln("AddPluginsFile route reached")
+
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	plugins := s.PluginManager.FileParser.Parse(body)
+
+	for pluginName, version := range plugins {
+		s.PluginManager.AddPluginWithVersion(pluginName, version)
+	}
+
+	c.String(http.StatusOK, "AddPluginsFile")
 }
 
 // Plugin-manager handler to add new plugin to plugin-manager

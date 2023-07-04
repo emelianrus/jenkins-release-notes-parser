@@ -35,10 +35,10 @@ func IsFileExist(filePath string) bool {
 
 func IsUrl(line string) bool {
 	if strings.HasPrefix(line, "http://") || strings.HasPrefix(line, "https://") {
-		logrus.Debugf("Line: '%s' is URL", line)
+		// logrus.Debugf("Line: '%s' is URL", line)
 		return true
 	} else {
-		logrus.Debugf("Line: '%s' is not URL", line)
+		// logrus.Debugf("Line: '%s' is not URL", line)
 		return false
 	}
 }
