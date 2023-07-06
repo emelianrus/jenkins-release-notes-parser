@@ -4,6 +4,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState, useEffect } from "react";
 import PluginChangesCard from '../components/PluginChangesCard';
 import PotentialUpdatesList from '../components/PotentialUpdatesList';
+
+// TODO: add loading status during long check-deps call
 function PluginChanges() {
 
   const [pluginsDiff, setPluginsDiff] = useState([]);
@@ -15,13 +17,13 @@ function PluginChanges() {
 
   const fetchData = async () => {
 
-    // try {
-    //   const response = await fetch(`http://localhost:8080/plugin-manager/check-deps`);
-    //   const data = await response.json();
-    //   console.log(data)
-    // } catch (error) {
-    //   console.error(error);
-    // }
+    try {
+      const response = await fetch(`http://localhost:8080/plugin-manager/check-deps`);
+      const data = await response.json();
+      console.log(data)
+    } catch (error) {
+      console.error(error);
+    }
 
     try {
       const response = await fetch(`http://localhost:8080/plugin-manager/get-fixed-deps-diff`);
