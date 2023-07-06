@@ -53,6 +53,7 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 	// =================== routes ===================
 
 	router.POST("/watcher-list", handler.EditWatcherList)
+
 	router.GET("/watcher-list", handler.GetWatcherList)
 
 	router.GET("/potential-updates", handler.GetPotentialUpdates)
@@ -82,6 +83,9 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 
 	router.POST("/plugin-manager/add-new-plugin", handler.AddNewPlugin)
 	router.DELETE("/plugin-manager/delete-plugin", handler.DeletePlugin)
+	router.GET("/plugin-manager/check-deps", handler.CheckDeps)
+	router.GET("/plugin-manager/get-fixed-deps-diff", handler.GetFixedDepsDiff)
+	router.GET("/plugin-manager/potential-updates", handler.GetPotentialUpdates)
 
 	router.POST("/plugin-manager/rescan", handler.RescanProjectNow)
 	router.POST("/plugin-manager/add-plugins", handler.AddPluginsFile)

@@ -41,11 +41,6 @@ func (s *ProjectService) GetAllProjects(c *gin.Context) {
 
 	c.JSON(http.StatusOK, result)
 }
-func (s *ProjectService) GetPotentialUpdates(c *gin.Context) {
-	logrus.Infoln("GetWatcherProjects route reached")
-	potentialUpdates, _ := s.Redis.GetPotentialUpdates()
-	c.JSON(http.StatusOK, potentialUpdates)
-}
 
 // TODO: https://api.github.com/repos/OWNER/REPO/releases
 func (s *ProjectService) GetProjectReleaseNotes(c *gin.Context) {

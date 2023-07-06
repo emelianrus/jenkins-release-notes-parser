@@ -46,7 +46,7 @@ function ProjectCard({ project }) {
           <ul>
             <li>
               {/* from plugin site */}
-              <span>PLUGIN VERSION latest</span>
+              <span>{ project.LatestVersion}</span>
             </li>
           </ul>
         </td>

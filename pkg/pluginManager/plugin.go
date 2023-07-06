@@ -64,12 +64,13 @@ func NewPluginWithVersion(name string, version string) *Plugin {
 	logrus.Debugf("Creating new plugin: '%s' with version: '%s'\n", name, version)
 
 	pl := &Plugin{
-		Name:         name,
-		Version:      version,
-		Url:          "default-value-for-url",
-		Type:         UNKNOWN,
-		Dependencies: make(map[string]Plugin),
-		RequiredBy:   make(map[string]string),
+		Name:          name,
+		Version:       version,
+		Url:           "default-value-for-url",
+		LatestVersion: "0.0.0",
+		Type:          UNKNOWN,
+		Dependencies:  make(map[string]Plugin),
+		RequiredBy:    make(map[string]string),
 	}
 	return pl
 }
@@ -78,12 +79,13 @@ func NewPluginWithVersion(name string, version string) *Plugin {
 func NewPluginWithUrl(name string, url string) *Plugin {
 	logrus.Debugf("Creating new plugin: '%s' with url: '%s'\n", name, url)
 	pl := &Plugin{
-		Name:         name,
-		Version:      "",
-		Url:          url,
-		Type:         UNKNOWN,
-		Dependencies: make(map[string]Plugin),
-		RequiredBy:   make(map[string]string),
+		Name:          name,
+		Version:       "",
+		Url:           url,
+		LatestVersion: "0.0.0",
+		Type:          UNKNOWN,
+		Dependencies:  make(map[string]Plugin),
+		RequiredBy:    make(map[string]string),
 	}
 	return pl
 }

@@ -11,18 +11,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-/* TODO:
-* fix URL
-* fix TYPE
-* add func to find plugins without dep
-* add remove plugin func
-* add logic to add plugin
-* make dump to file flexible
- */
-
 type PluginManager struct {
-	Plugins     map[string]*Plugin // we use map to speedup get set find
-	coreVersion string             // TODO: set core version, currently we use latest
+	Plugins map[string]*Plugin // we use map to speedup get set find
+
+	UpdatedPlugins map[string]*Plugin // Temp storage. will set this after update/fixdeps
+
+	coreVersion string // TODO: set core version, currently we use latest
 
 	UpdateCenter   *updateCenter.UpdateCenter     // external. from jenkins api
 	PluginVersions *pluginVersions.PluginVersions // external. from jenkins api
@@ -36,7 +30,8 @@ func NewPluginManager() PluginManager {
 	pv, _ := pluginVersions.Get()
 
 	return PluginManager{
-		Plugins: make(map[string]*Plugin),
+		Plugins:        make(map[string]*Plugin),
+		UpdatedPlugins: make(map[string]*Plugin),
 
 		UpdateCenter:   uc,
 		PluginVersions: pv,
@@ -91,13 +86,15 @@ func (pm *PluginManager) preloadPluginData(p *Plugin) {
 	// Load required core version
 	p.RequiredCoreVersion = pm.PluginVersions.Plugins[p.Name][p.Version].RequiredCore
 
-	// var versions []string
+	// get plugin latest version, doesnt have endpoint with latest version so need to detect
+	latestVersion := "0.0.0" // set lowest version possible
+	for version := range pm.PluginVersions.Plugins[p.Name] {
+		if utils.IsNewerThan(version, latestVersion) {
+			latestVersion = version
+		}
+	}
 
-	// for version := range pm.PluginVersions.Plugins[p.Name] {
-	// 	versions = append(versions, version)
-	// }
-
-	// p.LatestVersion = versions[len(versions)-1]
+	p.LatestVersion = latestVersion
 
 	// releaseNotes, _ := sources.DownloadProject(&pm.PluginSite, p.Name)
 	// p.ReleaseNotes = releaseNotes
@@ -117,20 +114,20 @@ func (pm *PluginManager) SetCoreVersion(newCoreVersion string) {
 	pm.UpdateCenter = uc
 }
 
-// TODO: return error?
-func (pm *PluginManager) AddPlugin(pl *Plugin) {
-	logrus.Infof("Adding new plugin to pluginManager %s:%s", pl.Name, pl.Version)
-	if _, found := pm.Plugins[pl.Name]; found {
-		logrus.Warnf("Found copy of plugin in pluginsfile. Plugin name: '%s'\n", pl.Name)
-	}
+// TODO: deprecate, use AddPluginWithVersion()
+// func (pm *PluginManager) AddPlugin(pl *Plugin) {
+// 	logrus.Infof("Adding new plugin to pluginManager %s:%s", pl.Name, pl.Version)
+// 	if _, found := pm.Plugins[pl.Name]; found {
+// 		logrus.Warnf("Found copy of plugin in pluginsfile. Plugin name: '%s'\n", pl.Name)
+// 	}
 
-	pm.preloadPluginData(pl)
+// 	pm.preloadPluginData(pl)
 
-	// TODO: sync with DB
-	pm.Plugins[pl.Name] = pl
-	// reload for each plugin in plugin manager
-	pm.generateRequiredBy()
-}
+// 	// TODO: sync with DB
+// 	pm.Plugins[pl.Name] = pl
+// 	// reload for each plugin in plugin manager
+// 	pm.generateRequiredBy()
+// }
 
 func (pm *PluginManager) AddPluginWithVersion(pluginName string, version string) {
 	logrus.Infof("[AddPluginWithVersion] Adding new plugin to pluginManager %s:%s", pluginName, version)
@@ -279,26 +276,26 @@ func (pm *PluginManager) GetStandalonePlugins() []*Plugin {
 	return plugins
 }
 
-func (pm *PluginManager) GetDependencies(p Plugin) map[string]Plugin {
-	// pv, _ := pluginVersions.Get()
-	for _, dep := range pm.PluginVersions.Plugins[p.Name][p.Version].Dependencies {
-		if !dep.Optional {
+// func (pm *PluginManager) GetDependencies(p Plugin) map[string]Plugin {
+// 	return p.LoadDependenciesFromUpdateCenter()
+// for _, dep := range pm.PluginVersions.Plugins[p.Name][p.Version].Dependencies {
+// 	if !dep.Optional {
 
-			p.Dependencies[dep.Name] = Plugin{
-				Name:    dep.Name,
-				Version: dep.Version,
-			}
+// 		p.Dependencies[dep.Name] = Plugin{
+// 			Name:    dep.Name,
+// 			Version: dep.Version,
+// 		}
 
-		}
-	}
-	return p.Dependencies
-}
+// 	}
+// }
+// return p.Dependencies
+// }
 
 // TODO: this function might add new version or new plugin and we dont have data like url + deps etc for it
 // Will get plugin dependencies for plugin list and return result back to PluginManager struct
 // Will replace version of plugin if dep version > current version
 // Used LoadDependenciesFromManifest function as source of versions/plugin so will download hpi files
-func (pm *PluginManager) FixPluginDependencies() {
+func (pm *PluginManager) FixPluginDependencies() map[string]Plugin {
 
 	pluginsToCheck := make(map[string]Plugin) // plugins has recently updated version or new dependency to check
 	pluginsChecked := make(map[string]Plugin) // already checked plugins
@@ -319,8 +316,8 @@ func (pm *PluginManager) FixPluginDependencies() {
 		for _, plugin := range pluginsToCheck {
 			logrus.Infof("[FixPluginDependencies] checking plugin: %s:%s\n", plugin.Name, plugin.Version)
 
-			for _, dep := range pm.GetDependencies(plugin) {
-				plugin.Dependencies[dep.Name] = *NewPluginWithVersion(dep.Name, dep.Version)
+			for _, dep := range plugin.LoadDependenciesFromUpdateCenter() {
+				// plugin.Dependencies[dep.Name] = *NewPluginWithVersion(dep.Name, dep.Version)
 
 				logrus.Infof("[FixPluginDependencies] checking dep: %s:%s for plugin %s:%s\n", dep.Name, dep.Version, plugin.Name, plugin.Version)
 
@@ -331,7 +328,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 						logrus.Infof("[FixPluginDependencies] Upgrading pluginsChecked bundled dependency %s:%s -> %s:%s\n", pluginsChecked[dep.Name].Name, pluginsChecked[dep.Name].Version, dep.Name, dep.Version)
 						// if dependency exist in plugin checked and dep version higher than we have
 
-						pluginsChecked[dep.Name].RequiredBy[plugin.Name] = plugin.Version
+						// pluginsChecked[dep.Name].RequiredBy[plugin.Name] = plugin.Version
 
 						pluginsToCheck[dep.Name] = Plugin{
 							Name:         dep.Name,
@@ -339,14 +336,14 @@ func (pm *PluginManager) FixPluginDependencies() {
 							Url:          pm.PluginVersions.Plugins[dep.Name][dep.Version].Url,
 							Type:         pluginsChecked[dep.Name].Type,
 							Dependencies: pluginsChecked[dep.Name].Dependencies,
-							RequiredBy:   pluginsChecked[dep.Name].RequiredBy,
+							// RequiredBy:   pluginsChecked[dep.Name].RequiredBy,
 						}
 						delete(pluginsChecked, dep.Name)
 					} else {
 						logrus.Infof("[FixPluginDependencies] Skipping pluginsChecked already installed dependency %s:%s (%s <= %s) \n", dep.Name, pluginsChecked[dep.Name].Version, dep.Version, pluginsChecked[dep.Name].Version)
 						// if dependency exist in plugin checked and dep version lower than we have
 
-						pluginsChecked[dep.Name].RequiredBy[plugin.Name] = plugin.Version
+						// pluginsChecked[dep.Name].RequiredBy[plugin.Name] = plugin.Version
 
 						// TODO: why we need this?
 						pluginsChecked[dep.Name] = Plugin{
@@ -355,7 +352,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 							Type:         pluginsChecked[dep.Name].Type,
 							Url:          pluginsChecked[dep.Name].Url,
 							Dependencies: pluginsChecked[dep.Name].Dependencies,
-							RequiredBy:   pluginsChecked[dep.Name].RequiredBy,
+							// RequiredBy:   pluginsChecked[dep.Name].RequiredBy,
 						}
 
 					}
@@ -365,21 +362,21 @@ func (pm *PluginManager) FixPluginDependencies() {
 					if utils.IsNewerThan(dep.Version, pluginsToCheck[dep.Name].Version) {
 						logrus.Infof("[FixPluginDependencies] Upgrading pluginsToCheck bundled dependency %s:%s -> %s:%s\n", pluginsToCheck[dep.Name].Name, pluginsToCheck[dep.Name].Version, dep.Name, dep.Version)
 
-						pluginsToCheck[dep.Name].RequiredBy[plugin.Name] = plugin.Version
+						// pluginsToCheck[dep.Name].RequiredBy[plugin.Name] = plugin.Version
 
 						pluginsToCheck[dep.Name] = Plugin{
-							Name:         dep.Name,
-							Version:      dep.Version,
-							Type:         plugin.Type,
-							Url:          pm.PluginVersions.Plugins[dep.Name][dep.Version].Url,
-							Dependencies: pluginsToCheck[dep.Name].Dependencies,
-							RequiredBy:   pluginsToCheck[dep.Name].RequiredBy,
+							Name:    dep.Name,
+							Version: dep.Version,
+							// Type:         plugin.Type,
+							Url: pm.PluginVersions.Plugins[dep.Name][dep.Version].Url,
+							// Dependencies: pluginsToCheck[dep.Name].Dependencies,
+							// RequiredBy:   pluginsToCheck[dep.Name].RequiredBy,
 						}
 					} else {
 						logrus.Infof("[FixPluginDependencies] Skipping pluginsToCheck already installed dependency %s:%s (%s <= %s) \n", dep.Name, pluginsToCheck[dep.Name].Version, dep.Version, pluginsToCheck[dep.Name].Version)
 						// move plugin from tocheck list to checked list
 
-						pluginsToCheck[dep.Name].RequiredBy[plugin.Name] = plugin.Version
+						// pluginsToCheck[dep.Name].RequiredBy[plugin.Name] = plugin.Version
 						// TODO: what that part does? and why we need it?
 						// remove already checked plugin
 						// NOTE: if found in pluginToCheck and version lower than we have
@@ -391,7 +388,7 @@ func (pm *PluginManager) FixPluginDependencies() {
 								Type:         plugin.Type,
 								Url:          "4444",
 								Dependencies: pluginsToCheck[dep.Name].Dependencies,
-								RequiredBy:   pluginsToCheck[dep.Name].RequiredBy,
+								// RequiredBy:   pluginsToCheck[dep.Name].RequiredBy,
 							}
 							logrus.Infoln("[FixPluginDependencies] DELETE PLUGIN FROM pluginsToCheck" + dep.Name)
 							delete(pluginsToCheck, dep.Name)
@@ -422,12 +419,12 @@ func (pm *PluginManager) FixPluginDependencies() {
 
 			logrus.Infof("[FixPluginDependencies] added current to pluginsChecked %s:%s\n", plugin.Name, plugin.Version)
 			pluginsChecked[plugin.Name] = Plugin{
-				Name:         plugin.Name,
-				Version:      plugin.Version,
-				Type:         plugin.Type,
-				Dependencies: plugin.Dependencies,
-				Url:          plugin.Url,
-				RequiredBy:   plugin.RequiredBy,
+				Name:    plugin.Name,
+				Version: plugin.Version,
+				Type:    plugin.Type,
+				// Dependencies: plugin.Dependencies,
+				Url: plugin.Url,
+				// RequiredBy:   plugin.RequiredBy,
 			}
 
 			delete(pluginsToCheck, plugin.Name)
@@ -435,13 +432,12 @@ func (pm *PluginManager) FixPluginDependencies() {
 	}
 
 	// clean what we have in slice
-	for k := range pm.Plugins {
-		delete(pm.Plugins, k)
+	for k := range pm.UpdatedPlugins {
+		delete(pm.UpdatedPlugins, k)
 	}
 
-	// write back to PluginManager struct
 	for _, pl := range pluginsChecked {
-		pm.Plugins[pl.Name] = &Plugin{
+		pm.UpdatedPlugins[pl.Name] = &Plugin{
 			Name:         pl.Name,
 			Version:      pl.Version,
 			Url:          pl.Url,
@@ -452,4 +448,58 @@ func (pm *PluginManager) FixPluginDependencies() {
 			Type:         pl.Type,
 		}
 	}
+
+	return pluginsChecked
+}
+
+type diffPlugins struct {
+	Name           string
+	CurrentVersion string
+	NewVersion     string
+	// TODO: make enum
+	// 1 new 2 update 3 the same
+	Type int
+}
+
+func (pm *PluginManager) GetFixedDepsDiff() []diffPlugins {
+
+	var resultDiff []diffPlugins
+
+	for _, changedPlugin := range pm.UpdatedPlugins {
+		if _, exists := pm.Plugins[changedPlugin.Name]; exists {
+			// if we already have this plugin and version updated
+			if utils.IsNewerThan(changedPlugin.Version, pm.Plugins[changedPlugin.Name].Version) {
+				resultDiff = append(resultDiff, diffPlugins{
+					Name:           changedPlugin.Name,
+					CurrentVersion: pm.Plugins[changedPlugin.Name].Version,
+					NewVersion:     changedPlugin.Version,
+					Type:           2, // update
+				})
+				continue
+			}
+			if pm.Plugins[changedPlugin.Name].Version == changedPlugin.Version {
+				// if version the same
+				resultDiff = append(resultDiff, diffPlugins{
+					Name:           changedPlugin.Name,
+					CurrentVersion: pm.Plugins[changedPlugin.Name].Version,
+					NewVersion:     pm.Plugins[changedPlugin.Name].Version,
+					Type:           3, // version the same
+				})
+				continue
+			}
+
+		} else {
+			// new dep
+			resultDiff = append(resultDiff, diffPlugins{
+				Name:           changedPlugin.Name,
+				CurrentVersion: "",
+				NewVersion:     changedPlugin.Version,
+				Type:           1, // new plugin
+			})
+			continue
+		}
+		logrus.Errorln("[GetFixedDepsDiff] SHOULD NOT REACH HERE")
+	}
+
+	return resultDiff
 }

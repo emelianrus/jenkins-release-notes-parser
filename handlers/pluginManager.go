@@ -98,3 +98,24 @@ func (s *ProjectService) GetCoreVersion(c *gin.Context) {
 	logrus.Infoln("GetCoreVersion route reached")
 	c.String(http.StatusOK, s.PluginManager.GetCoreVersion())
 }
+
+func (s *ProjectService) GetPotentialUpdates(c *gin.Context) {
+	logrus.Infoln("GetWatcherProjects route reached")
+	potentialUpdates, _ := s.Redis.GetPotentialUpdates()
+	c.JSON(http.StatusOK, potentialUpdates)
+}
+
+func (s *ProjectService) CheckDeps(c *gin.Context) {
+	logrus.Infoln("CheckDeps route reached")
+
+	c.JSON(http.StatusOK, s.PluginManager.FixPluginDependencies())
+
+	// c.String(http.StatusOK, "CheckDeps")
+}
+func (s *ProjectService) GetFixedDepsDiff(c *gin.Context) {
+	logrus.Infoln("CheckDeps route reached")
+
+	c.JSON(http.StatusOK, s.PluginManager.GetFixedDepsDiff())
+
+	// c.String(http.StatusOK, "CheckDeps")
+}

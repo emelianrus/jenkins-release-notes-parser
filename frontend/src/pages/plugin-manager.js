@@ -11,41 +11,41 @@ function PluginManager() {
   const [plugins, setPlugins] = useState([]);
   const [jenkinsCoreVersion, setJenkinsCoreVersion] = useState("");
 
-  let data = [
-    {
-      IsInWatcherList: true,
-      Project: {
-        Name: "kubernetes",
-        Owner: "jenkinsci",
-        Error: "",
-        IsDownloaded: true,
-        LastUpdated: '"18 April 2023 17:08:04"',
-        ReleaseNotes: null,
-      },
-    },
-    {
-      IsInWatcherList: true,
-      Project: {
-        Name: "antisamy-markup-formatter",
-        Owner: "jenkinsci",
-        Error: "",
-        IsDownloaded: true,
-        LastUpdated: '"18 April 2023 17:08:04"',
-        ReleaseNotes: null,
-      },
-    },
-    {
-      IsInWatcherList: true,
-      Project: {
-        Name: "ant",
-        Owner: "jenkinsci",
-        Error: "",
-        IsDownloaded: true,
-        LastUpdated: '"18 April 2023 17:08:04"',
-        ReleaseNotes: null,
-      },
-    },
-  ];
+  // let data = [
+  //   {
+  //     IsInWatcherList: true,
+  //     Project: {
+  //       Name: "kubernetes",
+  //       Owner: "jenkinsci",
+  //       Error: "",
+  //       IsDownloaded: true,
+  //       LastUpdated: '"18 April 2023 17:08:04"',
+  //       ReleaseNotes: null,
+  //     },
+  //   },
+  //   {
+  //     IsInWatcherList: true,
+  //     Project: {
+  //       Name: "antisamy-markup-formatter",
+  //       Owner: "jenkinsci",
+  //       Error: "",
+  //       IsDownloaded: true,
+  //       LastUpdated: '"18 April 2023 17:08:04"',
+  //       ReleaseNotes: null,
+  //     },
+  //   },
+  //   {
+  //     IsInWatcherList: true,
+  //     Project: {
+  //       Name: "ant",
+  //       Owner: "jenkinsci",
+  //       Error: "",
+  //       IsDownloaded: true,
+  //       LastUpdated: '"18 April 2023 17:08:04"',
+  //       ReleaseNotes: null,
+  //     },
+  //   },
+  // ];
 
   const [showCoreVersion, setShowCoreVersion] = useState(false);
   const [showAddNewPlugin, setAddNewPlugin] = useState(false);
@@ -109,6 +109,16 @@ function PluginManager() {
   };
 
 
+  async function handleCheckDepsClick() {
+    try {
+      const response = await fetch(`http://localhost:8080/plugin-manager/check-deps`);
+      const data = await response.json();
+      console.log(data)
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   const handleEditCoreSubmit = (event) => {
     event.preventDefault();
     const newCoreVersion = event.target.elements.coreVersion.value;
@@ -137,14 +147,14 @@ function PluginManager() {
               Jenkins core version: {coreVersion}
             </div>
             <div className="col-auto">
-              <Button variant="primary" onClick={handleEditCoreVersion}>Change version</Button>
+              <Button variant="primary" onClick={handleEditCoreVersion}>Change version</Button><br />
+              <Button variant="primary" onClick={handleCheckDepsClick}>check deps</Button><br />
               <div>
                 Status: {showSyncStatus}
               </div>
             </div>
           </div>
         </div>
-
       </div>
 {/* buttons menu end */}
 
