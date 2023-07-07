@@ -5,11 +5,9 @@ import (
 	"runtime"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/routes"
-	jenkins "github.com/emelianrus/jenkins-release-notes-parser/sources/jenkinsPluginSite"
 	"github.com/emelianrus/jenkins-release-notes-parser/storage"
 	"github.com/emelianrus/jenkins-release-notes-parser/storage/db"
 	rs "github.com/emelianrus/jenkins-release-notes-parser/storage/redisStorage"
-	"github.com/emelianrus/jenkins-release-notes-parser/worker"
 	"github.com/sirupsen/logrus"
 )
 
@@ -41,7 +39,7 @@ func Start() {
 	// githubClient := github.NewGitHubClient()
 
 	// TODO: should be update plugin function executed once per day
-	go worker.StartWorkerPluginSite(redisStorage, jenkins.NewPluginSite())
+	// go worker.StartWorkerPluginSite(redisStorage, jenkins.NewPluginSite())
 
 	// GIN
 	router := routes.SetupRouter(redisStorage)

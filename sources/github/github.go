@@ -91,6 +91,7 @@ func (g *GitHub) waitUntilNextSlotAvailable() {
 }
 
 func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
+	logrus.Infof("[GITHUB][Download] project %s\n", projectName)
 	releaseNotes := []types.ReleaseNote{}
 
 	if g.Initialized {

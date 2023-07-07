@@ -23,6 +23,7 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 	router := gin.Default()
 
 	pm := pluginManager.NewPluginManager()
+	// TODO: for testing remove in prod
 	preloadPluginManager(&pm, redis)
 
 	// pm.FixPluginDependencies()
@@ -68,18 +69,7 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 	// TODO: ============== plugin-manager routes ==============
 
 	// should return plugins + versions + core version
-	router.GET("/plugin-manager/get-data", func(c *gin.Context) {
-		type pluginManagerData struct {
-			Plugins     map[string]*pluginManager.Plugin
-			CoreVersion string
-		}
-
-		data := pluginManagerData{
-			Plugins:     pm.GetPlugins(),
-			CoreVersion: pm.GetCoreVersion(),
-		}
-		c.JSON(http.StatusOK, data)
-	})
+	router.GET("/plugin-manager/get-data", handler.GetPluginsData)
 
 	router.POST("/plugin-manager/add-new-plugin", handler.AddNewPlugin)
 	router.DELETE("/plugin-manager/delete-plugin", handler.DeletePlugin)

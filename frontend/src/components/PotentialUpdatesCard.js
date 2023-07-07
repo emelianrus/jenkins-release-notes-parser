@@ -1,6 +1,8 @@
 
 
 function ReleaseNoteCard({ project, projectName }) {
+
+  console.log(project)
     return (
       // TODO: fix class name
       <div className="cardd">

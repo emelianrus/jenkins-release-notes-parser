@@ -22,7 +22,7 @@ func StartWorkerPluginSite(redisclient *redisStorage.RedisStorage, ps jenkins.Pl
 	for {
 		for projectName := range projects {
 
-			releaseNotes, err := sources.DownloadProject(&ps, projectName)
+			releaseNotes, err := sources.DownloadProjectReleaseNotes(&ps, projectName)
 			if err != nil {
 				releaseNotes = []types.ReleaseNote{}
 				redisclient.SetProjectError(projectName, err.Error())

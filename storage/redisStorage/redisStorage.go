@@ -18,7 +18,8 @@ func (r *RedisStorage) AddDebugData() {
 	plugins := `
 	ant:475.vf34069fef73c
 	antisamy-markup-formatter:159.v25b_c67cd35fb_
-	kubernetes:3622.va_9dc5592b_10c`
+	kubernetes:3622.va_9dc5592b_10c
+	kubernetes-client-api:5.4.2`
 
 	lines := strings.Split(plugins, "\n")
 

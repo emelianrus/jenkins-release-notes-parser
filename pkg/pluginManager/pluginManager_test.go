@@ -21,9 +21,9 @@ func init() {
 
 func TestPluginManager_FixPluginDependencies(t *testing.T) {
 	havepm := NewPluginManager()
-	havepm.AddPlugin(NewPluginWithVersion("workflow-step-api", "625.vd896b_f445a_f8"))
-	havepm.AddPlugin(NewPluginWithVersion("scm-api", "602.v6a_81757a_31d2"))
-	havepm.AddPlugin(NewPluginWithVersion("structs", "1.22"))
+	havepm.AddPluginWithVersion("workflow-step-api", "625.vd896b_f445a_f8")
+	havepm.AddPluginWithVersion("scm-api", "602.v6a_81757a_31d2")
+	havepm.AddPluginWithVersion("structs", "1.22")
 
 	wantpm := NewPluginManager()
 	wantpm.Plugins = map[string]*Plugin{
@@ -121,7 +121,7 @@ func TestPluginManager_LoadWarnings(t *testing.T) {
 func TestPluginManager_FixWarnings(t *testing.T) {
 	pm := NewPluginManager()
 
-	pm.AddPlugin(NewPluginWithVersion("blueocean", "1.23.2"))
+	pm.AddPluginWithVersion("blueocean", "1.23.2")
 	tests := []struct {
 		name string
 		p    *PluginManager
@@ -162,22 +162,22 @@ func TestPluginManager_AddPlugin(t *testing.T) {
 	tests := []struct {
 		name string
 		pm   *PluginManager
-		args []Plugin
+		args map[string]string
 	}{
 		{
 			name: "test add plugins",
 			pm:   &pm,
-			args: []Plugin{
-				*NewPluginWithVersion("blueocean", "1.23.3"),
-				*NewPluginWithVersion("configuration-as-code", "1616.v11393eccf675"),
-				*NewPluginWithVersion("hashicorp-vault-plugin", "3.8.0"),
+			args: map[string]string{
+				"blueocean":              "1.23.3",
+				"configuration-as-code":  "1616.v11393eccf675",
+				"hashicorp-vault-plugin": "3.8.0",
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			for _, pluginName := range tt.args {
-				tt.pm.AddPlugin(&pluginName)
+			for name, ver := range tt.args {
+				tt.pm.AddPluginWithVersion(name, ver)
 			}
 		})
 	}

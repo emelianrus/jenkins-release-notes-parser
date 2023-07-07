@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/emelianrus/jenkins-release-notes-parser/pkg/pluginManager"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -79,18 +80,18 @@ func (s *ProjectService) DeletePlugin(c *gin.Context) {
 }
 
 func (s *ProjectService) EditCoreVersion(c *gin.Context) {
-	logrus.Infoln("EditCoreVersion route reached")
+	logrus.Infoln("[EditCoreVersion] route reached")
 
 	var body map[string]string
 	if err := c.BindJSON(&body); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	logrus.Infof("Received request body: %+v\n", body)
+	logrus.Infof("[EditCoreVersion] Received request body: %+v\n", body)
 
 	s.PluginManager.SetCoreVersion(body["name"])
 
-	logrus.Infof("set new coreVersion: %s\n", body["name"])
+	logrus.Infof("[EditCoreVersion] set new coreVersion: %s\n", body["name"])
 	c.String(http.StatusOK, fmt.Sprintf("EditCoreVersion %s", body["name"]))
 }
 
@@ -100,7 +101,7 @@ func (s *ProjectService) GetCoreVersion(c *gin.Context) {
 }
 
 func (s *ProjectService) GetPotentialUpdates(c *gin.Context) {
-	logrus.Infoln("GetWatcherProjects route reached")
+	logrus.Infoln("GetPotentialUpdates route reached")
 	potentialUpdates, _ := s.Redis.GetPotentialUpdates()
 	c.JSON(http.StatusOK, potentialUpdates)
 }
@@ -109,13 +110,24 @@ func (s *ProjectService) CheckDeps(c *gin.Context) {
 	logrus.Infoln("CheckDeps route reached")
 
 	c.JSON(http.StatusOK, s.PluginManager.FixPluginDependencies())
+}
+func (s *ProjectService) GetPluginsData(c *gin.Context) {
+	logrus.Infoln("GetPluginsData route reached")
 
-	// c.String(http.StatusOK, "CheckDeps")
+	type pluginManagerData struct {
+		Plugins     map[string]*pluginManager.Plugin
+		CoreVersion string
+	}
+
+	data := pluginManagerData{
+		Plugins:     s.PluginManager.GetPlugins(),
+		CoreVersion: s.PluginManager.GetCoreVersion(),
+	}
+	c.JSON(http.StatusOK, data)
+
 }
 func (s *ProjectService) GetFixedDepsDiff(c *gin.Context) {
-	logrus.Infoln("CheckDeps route reached")
+	logrus.Infoln("GetFixedDepsDiff route reached")
 
 	c.JSON(http.StatusOK, s.PluginManager.GetFixedDepsDiff())
-
-	// c.String(http.StatusOK, "CheckDeps")
 }
