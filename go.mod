@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/gomarkdown/markdown v0.0.0-20230312174038-279c45774906
 	github.com/google/go-cmp v0.5.9
+	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.0.3
 	github.com/sirupsen/logrus v1.9.0
 )

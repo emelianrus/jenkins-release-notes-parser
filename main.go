@@ -8,6 +8,7 @@ import (
 	"github.com/emelianrus/jenkins-release-notes-parser/storage"
 	"github.com/emelianrus/jenkins-release-notes-parser/storage/db"
 	rs "github.com/emelianrus/jenkins-release-notes-parser/storage/redisStorage"
+	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,6 +23,12 @@ func init() {
 }
 
 func Start() {
+
+	// read env vars
+	err := godotenv.Load()
+	if err != nil {
+		logrus.Errorln("Error loading .env file")
+	}
 
 	redis := db.NewRedisClient()
 
@@ -43,7 +50,7 @@ func Start() {
 
 	// GIN
 	router := routes.SetupRouter(redisStorage)
-	err := router.Run(":8080")
+	err = router.Run(":8080")
 	if err != nil {
 		logrus.Errorln("Failed to create gin server")
 		logrus.Errorln(err)

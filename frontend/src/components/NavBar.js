@@ -7,12 +7,7 @@ function NavBar() {
     <Navbar bg="light" expand="lg">
       <Container>
       <Nav className="mr-auto">
-        {/* <Navbar.Brand href="/" className="mr-auto">TITLE</Navbar.Brand> */}
-        {/* <Nav.Link href="/release-notes">Releases</Nav.Link> */}
-        <Nav.Link href="/projects">Projects</Nav.Link>
-        {/* <Nav.Link href="/notifications">Notifications</Nav.Link> */}
-        <Nav.Link href="/potential-updates">Potential Updates</Nav.Link>
-        <Nav.Link href="/watcher-list">Watcher Projects</Nav.Link>
+        <Nav.Link href="/watcher-list">Add plugins list</Nav.Link>
         <Nav.Link href="/plugin-manager">Plugin Manager</Nav.Link>
         <Nav.Link href="/api-stats">API stats</Nav.Link>
       </Nav>

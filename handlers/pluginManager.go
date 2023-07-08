@@ -108,7 +108,6 @@ func (s *ProjectService) GetPotentialUpdates(c *gin.Context) {
 
 func (s *ProjectService) CheckDeps(c *gin.Context) {
 	logrus.Infoln("CheckDeps route reached")
-
 	c.JSON(http.StatusOK, s.PluginManager.FixPluginDependencies())
 }
 func (s *ProjectService) GetPluginsData(c *gin.Context) {
@@ -119,11 +118,10 @@ func (s *ProjectService) GetPluginsData(c *gin.Context) {
 		CoreVersion string
 	}
 
-	data := pluginManagerData{
+	c.JSON(http.StatusOK, pluginManagerData{
 		Plugins:     s.PluginManager.GetPlugins(),
 		CoreVersion: s.PluginManager.GetCoreVersion(),
-	}
-	c.JSON(http.StatusOK, data)
+	})
 
 }
 func (s *ProjectService) GetFixedDepsDiff(c *gin.Context) {

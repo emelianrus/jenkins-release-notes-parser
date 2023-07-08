@@ -1,4 +1,3 @@
-import Button from 'react-bootstrap/Button';
 
 function PluginChangesCard({ project }) {
 

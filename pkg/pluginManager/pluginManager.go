@@ -35,12 +35,13 @@ func NewPluginManager() PluginManager {
 	pv, _ := pluginVersions.Get()
 
 	return PluginManager{
+		coreVersion: "2.235.2", // TODO: should not be hardcoded
+
 		Plugins:        make(map[string]*Plugin),
 		UpdatedPlugins: make(map[string]*Plugin),
 
 		UpdateCenter:   uc,
 		PluginVersions: pv,
-		coreVersion:    "2.235.2", // TODO: should not be hardcoded
 
 		PluginSite:   jenkins.NewPluginSite(),
 		GitHubClient: github.NewGitHubClient(),
@@ -243,47 +244,6 @@ func (pm *PluginManager) FixWarnings() {
 	}
 }
 
-/*
-	PluginA has dep PluginB
-	PluginC has no deps
-	PluginD has dep PluginA
-
-	PluginC - doesnt have deps so we can easily delete this plugin
-	PluginD - Primary type because no one rely on it
-
-*/
-// find plugins plugins which no one rely on
-func (p *PluginManager) LoadPluginTypes() {}
-
-// TODO: add tests
-// get plugins which no one rely on
-func (pm *PluginManager) GetStandalonePlugins() []*Plugin {
-	var plugins []*Plugin
-	for _, plugin := range pm.Plugins {
-		if len(plugin.RequiredBy) == 0 {
-
-			plugins = append(plugins, plugin)
-		}
-	}
-
-	return plugins
-}
-
-// func (pm *PluginManager) GetDependencies(p Plugin) map[string]Plugin {
-// 	return p.LoadDependenciesFromUpdateCenter()
-// for _, dep := range pm.PluginVersions.Plugins[p.Name][p.Version].Dependencies {
-// 	if !dep.Optional {
-
-// 		p.Dependencies[dep.Name] = Plugin{
-// 			Name:    dep.Name,
-// 			Version: dep.Version,
-// 		}
-
-// 	}
-// }
-// return p.Dependencies
-// }
-
 // TODO: this function might add new version or new plugin and we dont have data like url + deps etc for it
 // Will get plugin dependencies for plugin list and return result back to PluginManager struct
 // Will replace version of plugin if dep version > current version
@@ -295,6 +255,7 @@ func (pm *PluginManager) FixPluginDependencies() map[string]Plugin {
 
 	// convert all plugins to pluginToCheck
 	for _, pluginPrimary := range pm.Plugins {
+		// TODO: SRP
 		if pluginPrimary.Url == "" {
 			pluginPrimary.Url = pm.PluginVersions.Plugins[pluginPrimary.Name][pluginPrimary.Version].Url
 		}
@@ -466,7 +427,8 @@ func (pm *PluginManager) GetFixedDepsDiff() []diffPlugins {
 				// Get release notes
 
 				// releaseNotes, _ := sources.DownloadProjectReleaseNotes(&pm.PluginSite, changedPlugin.Name)
-				releaseNotes, _ := sources.DownloadProjectReleaseNotes(&github.GitHub{}, changedPlugin.Name)
+				gh := github.NewGitHubClient()
+				releaseNotes, _ := sources.DownloadProjectReleaseNotes(&gh, changedPlugin.Name)
 
 				var resultRelaseNotes []types.ReleaseNote
 				foundVersion := false

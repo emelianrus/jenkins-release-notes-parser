@@ -159,14 +159,7 @@ workflow-cps-global-lib:588.v576c103a_ff86`
   const [editorValue, setEditorValue] = useState(dummyValue);
 
   const handleSave = () => {
-    // try {
-    //   // JSON.parse(editorValue);
-    //   // setErrorMessage("");
     handleClick()
-    // } catch (e) {
-    //   setErrorMessage(e.message);
-    // }
-
     setIsModified(false);
   }
 

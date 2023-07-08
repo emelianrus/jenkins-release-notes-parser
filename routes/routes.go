@@ -54,15 +54,7 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 	// =================== routes ===================
 
 	router.POST("/watcher-list", handler.EditWatcherList)
-
 	router.GET("/watcher-list", handler.GetWatcherList)
-
-	router.GET("/potential-updates", handler.GetPotentialUpdates)
-
-	// GET all projects
-	router.GET("/projects", handler.GetAllProjects)
-	// https://api.github.com/repos/OWNER/REPO/releases
-	router.GET("/project/:owner/:repo/releases", handler.GetProjectReleaseNotes)
 
 	router.GET("/api/stats", handler.GetApiStats)
 
