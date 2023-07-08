@@ -1,51 +1,13 @@
-import './releases.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import PluginManagerList from '../components/PluginManagerList';
 import Form from 'react-bootstrap/Form';
 import React, { useState, useEffect } from "react";
-
+import { Link } from 'react-router-dom';
 function PluginManager() {
 
   const [plugins, setPlugins] = useState([]);
-  const [jenkinsCoreVersion, setJenkinsCoreVersion] = useState("");
-
-  // let data = [
-  //   {
-  //     IsInWatcherList: true,
-  //     Project: {
-  //       Name: "kubernetes",
-  //       Owner: "jenkinsci",
-  //       Error: "",
-  //       IsDownloaded: true,
-  //       LastUpdated: '"18 April 2023 17:08:04"',
-  //       ReleaseNotes: null,
-  //     },
-  //   },
-  //   {
-  //     IsInWatcherList: true,
-  //     Project: {
-  //       Name: "antisamy-markup-formatter",
-  //       Owner: "jenkinsci",
-  //       Error: "",
-  //       IsDownloaded: true,
-  //       LastUpdated: '"18 April 2023 17:08:04"',
-  //       ReleaseNotes: null,
-  //     },
-  //   },
-  //   {
-  //     IsInWatcherList: true,
-  //     Project: {
-  //       Name: "ant",
-  //       Owner: "jenkinsci",
-  //       Error: "",
-  //       IsDownloaded: true,
-  //       LastUpdated: '"18 April 2023 17:08:04"',
-  //       ReleaseNotes: null,
-  //     },
-  //   },
-  // ];
 
   const [showCoreVersion, setShowCoreVersion] = useState(false);
   const [showAddNewPlugin, setAddNewPlugin] = useState(false);
@@ -108,17 +70,6 @@ function PluginManager() {
     });
   };
 
-
-  async function handleCheckDepsClick() {
-    try {
-      const response = await fetch(`http://localhost:8080/plugin-manager/check-deps`);
-      const data = await response.json();
-      console.log(data)
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
   const handleEditCoreSubmit = (event) => {
     event.preventDefault();
     const newCoreVersion = event.target.elements.coreVersion.value;
@@ -147,8 +98,7 @@ function PluginManager() {
               Jenkins core version: {coreVersion}
             </div>
             <div className="col-auto">
-              <Button variant="primary" onClick={handleEditCoreVersion}>Change version</Button><br />
-              <Button variant="primary" onClick={handleCheckDepsClick}>check deps</Button><br />
+              <Button variant="primary" onClick={handleEditCoreVersion}>Change version</Button>
               <div>
                 Status: {showSyncStatus}
               </div>
@@ -162,10 +112,17 @@ function PluginManager() {
 
       <div className="container-sm mt-5 ml-5 d-flex">
         <div className="mr-2">
-          <Button variant="outline-primary" onClick={handleAddNewPlugin}>Add new plugin</Button>
+          <Link to="/add-plugin-list">
+            <Button variant="outline-primary">Add several plugins</Button>
+          </Link>
+        </div>
+        <div className="mr-2">
+          <Button variant="outline-primary" onClick={handleAddNewPlugin}>Add one plugin</Button>
         </div>
         <div className="ml-2">
-          <Button variant="outline-primary" >Check deps</Button>
+          <Link to="/plugin-changes">
+            <Button variant="outline-primary" >Check plugin dependencies</Button>
+          </Link>
         </div>
       </div>
       {/* ADD NEW PLUGIN MODAL WINDOW */}

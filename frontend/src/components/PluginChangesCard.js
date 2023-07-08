@@ -4,9 +4,9 @@ function PluginChangesCard({ project }) {
   let changeType = "unknown"
   if (project.Type === 1) {
     changeType = "new"
-  } else if (project.Type == 2) {
+  } else if (project.Type === 2) {
     changeType = "update"
-  } else if (project.Type == 3) {
+  } else if (project.Type === 3) {
     changeType = "the same"
   }
 

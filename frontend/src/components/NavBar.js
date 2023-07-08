@@ -7,7 +7,6 @@ function NavBar() {
     <Navbar bg="light" expand="lg">
       <Container>
       <Nav className="mr-auto">
-        <Nav.Link href="/watcher-list">Add plugins list</Nav.Link>
         <Nav.Link href="/plugin-manager">Plugin Manager</Nav.Link>
         <Nav.Link href="/api-stats">API stats</Nav.Link>
       </Nav>

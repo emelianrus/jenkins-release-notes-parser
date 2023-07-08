@@ -7,7 +7,8 @@ import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 
 import PluginManager from './pages/plugin-manager';
 import PluginChanges from './pages/plugin-changes';
-import WatcherList from './pages/watcherList';
+import AddPluginList from './pages/AddPluginList';
+import ApiStats from './pages/apiStats';
 
 function App() {
 
@@ -17,8 +18,9 @@ function App() {
       <div>
         <NavBar />
         <Routes>
-          <Route path='/watcher-list' element={<WatcherList/>} />
+          <Route path='/api-stats' element={<ApiStats/>} />
           <Route path="/plugin-manager" element={<PluginManager/>} />
+          <Route path="/add-plugin-list" element={<AddPluginList/>} />
           <Route path="/plugin-changes" element={<PluginChanges/>} />
         </Routes>
       </div>

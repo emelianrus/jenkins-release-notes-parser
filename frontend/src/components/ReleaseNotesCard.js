@@ -1,11 +1,10 @@
 
 
-function ReleaseNoteCard({ project, projectName }) {
+function ReleaseNotesCard({ project, projectName }) {
 
-  console.log(project)
     return (
       // TODO: fix class name
-      <div className="cardd">
+      <div className="card">
         <section aria-labelledby="hd-0de31afa">
             <div className="d-flex flex-column flex-md-row my-5 flex-justify-center">
               {/* left menu */}
@@ -52,6 +51,6 @@ function ReleaseNoteCard({ project, projectName }) {
     );
 }
 
-export default ReleaseNoteCard;
+export default ReleaseNotesCard;
 
 
