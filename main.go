@@ -5,15 +5,15 @@ import (
 	"runtime"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/routes"
-	jenkins "github.com/emelianrus/jenkins-release-notes-parser/sources/jenkinsPluginSite"
 	"github.com/emelianrus/jenkins-release-notes-parser/storage"
 	"github.com/emelianrus/jenkins-release-notes-parser/storage/db"
 	rs "github.com/emelianrus/jenkins-release-notes-parser/storage/redisStorage"
-	"github.com/emelianrus/jenkins-release-notes-parser/worker"
+	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 )
 
 func init() {
+	// Initial configuration for logger
 	logrus.SetLevel(logrus.DebugLevel)
 	if runtime.GOOS == "windows" {
 		logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
@@ -23,6 +23,12 @@ func init() {
 }
 
 func Start() {
+
+	// read env vars
+	err := godotenv.Load()
+	if err != nil {
+		logrus.Errorln("Error loading .env file")
+	}
 
 	redis := db.NewRedisClient()
 
@@ -38,14 +44,17 @@ func Start() {
 	}
 
 	// githubClient := github.NewGitHubClient()
-	pluginSiteClient := jenkins.NewPluginSite()
 
 	// TODO: should be update plugin function executed once per day
-	go worker.StartQueuePluginSite(redisStorage, pluginSiteClient)
+	// go worker.StartWorkerPluginSite(redisStorage, jenkins.NewPluginSite())
 
 	// GIN
 	router := routes.SetupRouter(redisStorage)
-	router.Run(":8080")
+	err = router.Run(":8080")
+	if err != nil {
+		logrus.Errorln("Failed to create gin server")
+		logrus.Errorln(err)
+	}
 }
 
 func main() {

@@ -23,7 +23,7 @@ func RemoveDuplicates(slice []string) []string {
 	return result
 }
 
-func ConvertMarkDownToHtml(s string) string {
+func ConvertMarkdownToHtml(s string) string {
 	md := []byte(s)
 	// always normalize newlines, this library only supports Unix LF newlines
 	md = markdown.NormalizeNewlines(md)
@@ -38,8 +38,8 @@ func ConvertMarkDownToHtml(s string) string {
 	opts := html.RendererOptions{Flags: htmlFlags}
 	renderer := html.NewRenderer(opts)
 
-	html := string(markdown.Render(doc, renderer))
-	return html
+	resultHTML := string(markdown.Render(doc, renderer))
+	return resultHTML
 }
 
 func ReplaceGitHubLinks(s string) string {

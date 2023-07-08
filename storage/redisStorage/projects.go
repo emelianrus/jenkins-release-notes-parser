@@ -2,8 +2,8 @@ package redisStorage
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
@@ -43,37 +43,26 @@ func (r *RedisStorage) GetAllProjects() ([]types.Project, error) {
 	return projects, nil
 }
 
-// get one project with release notes
-func (r *RedisStorage) GetProjectReleaseNotes(projectOwner string, projectName string) ([]types.ReleaseNote, error) {
+func (r *RedisStorage) GetLatestVersion(projectOwner string, projectName string) (string, error) {
+	latestVersionJson, err := r.DB.Get(fmt.Sprintf("github:%s:%s:latestVersion", projectOwner, projectName))
 
-	releaseNotes := []types.ReleaseNote{}
+	return string(latestVersionJson), err
+}
 
-	// get all versions for specific project
-	projectVersionsJson, err := r.DB.Get(fmt.Sprintf("github:%s:%s:versions", projectOwner, projectName))
+func (r *RedisStorage) GetProjectReleaseNotes(_ string, projectName string) ([]types.ReleaseNote, error) {
+	key := fmt.Sprintf("github:%s:%s:%s", "jenkinsci", projectName, "releaseNotes")
+
+	releaseNotesJson, err := r.DB.Get(key)
 	if err != nil {
-		return releaseNotes, errors.New("error in getPlugins " + projectName)
+		log.Println(err)
+		return nil, fmt.Errorf("error %v", err)
 	}
-	// convert json versions to []string
-	var versions []string
-	err = json.Unmarshal(projectVersionsJson, &versions)
+
+	var releaseNotes []types.ReleaseNote
+	err = json.Unmarshal(releaseNotesJson, &releaseNotes)
 	if err != nil {
 		logrus.Errorln(err)
-	}
-
-	for _, version := range versions {
-		// get release notes of specific release
-		pluginJson, _ := r.DB.Get(fmt.Sprintf("github:%s:%s:%s", projectOwner, projectName, version))
-		var releaseNote types.ReleaseNote
-		err := json.Unmarshal(pluginJson, &releaseNote)
-		if err != nil {
-			logrus.Errorln(err)
-			// http.Error(w, "Failed to unmarshal releases from cache", http.StatusInternalServerError)
-			return releaseNotes, errors.New("failed to unmarshal ReleaseNote")
-		}
-		// append release version note to list
-		// releaseNote.Body = releaseNote.BodyHTML
-		releaseNotes = append(releaseNotes, releaseNote)
-
+		return nil, fmt.Errorf("error %v", err)
 	}
 
 	return releaseNotes, nil

@@ -1,6 +1,8 @@
 
 
 function ReleaseNoteCard({ project, projectName }) {
+
+  console.log(project)
     return (
       // TODO: fix class name
       <div className="cardd">
@@ -16,6 +18,9 @@ function ReleaseNoteCard({ project, projectName }) {
                 </div>
                 <div className="mr-3 mr-md-0 d-flex" data-pjax="#repo-content-pjax-container" data-turbo-frame="repo-content-turbo-frame">
                   {project.Tag}
+                </div>
+                <div className="mr-3 mr-md-0 d-flex" data-pjax="#repo-content-pjax-container" data-turbo-frame="repo-content-turbo-frame">
+                  <a href={project.HTMLURL} target="_blank" rel="noreferrer">github release page</a>
                 </div>
               </div>
               {/* left menu end */}

@@ -2,6 +2,7 @@ package jenkins
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -28,6 +29,7 @@ type PluginSiteReleases struct {
 }
 
 func (ps *PluginSite) Download(projectName string) ([]types.ReleaseNote, error) {
+	logrus.Infoln("[PluginSiteReleases][Download]")
 	releaseNotes := []types.ReleaseNote{}
 
 	url := fmt.Sprintf("https://plugin-site-issues.jenkins.io/api/plugin/%s/releases", projectName)
@@ -42,6 +44,7 @@ func (ps *PluginSite) Download(projectName string) ([]types.ReleaseNote, error) 
 	resp, err := client.Do(req)
 	if err != nil {
 		logrus.Errorln("Error making request:", err)
+		return nil, errors.New("Error making request")
 	}
 
 	var releases PluginSiteReleases
@@ -56,6 +59,7 @@ func (ps *PluginSite) Download(projectName string) ([]types.ReleaseNote, error) 
 			Name:      release.Name,
 			Tag:       release.TagName,
 			BodyHTML:  release.BodyHTML,
+			HTMLURL:   release.HTMLURL,
 			CreatedAt: release.PublishedAt,
 		})
 	}

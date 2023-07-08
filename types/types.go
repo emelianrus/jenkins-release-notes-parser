@@ -1,25 +1,22 @@
 package types
 
-// main type of downloaded project
+// Represent one release/release note in project
 type ReleaseNote struct {
 	Name      string
 	Tag       string
 	BodyHTML  string
+	HTMLURL   string
 	CreatedAt string
 }
 
 type Project struct {
-	Name         string
-	Owner        string
-	Version      string
+	Name  string
+	Owner string
+
 	Error        string
 	IsDownloaded bool
 	LastUpdated  string
-}
 
-// watch point like group with watched project
-type JenkinsServer struct {
-	Name    string
-	Core    string
-	Plugins []Project
+	// TODO: should be here
+	ReleaseNotes []ReleaseNote
 }

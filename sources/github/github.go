@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -16,9 +17,10 @@ import (
 )
 
 type GitHub struct {
-	Initialized bool // first call to github will get all stats by quotes and rate limits
-	Client      http.Client
-	GitHubStats GitHubStats
+	Initialized   bool // first call to github will get all stats by quotes and rate limits
+	Client        http.Client
+	GitHubStats   GitHubStats
+	PersonalToken string
 }
 
 type GitHubStats struct {
@@ -32,14 +34,26 @@ type GitHubStats struct {
 
 // response from github getted from release path
 type gitHubReleaseNote struct {
-	Name      string `json:"name"`     // Version
-	TagName   string `json:"tag_name"` // Version
-	Body      string `json:"body"`     // this is markdown formated text of release note
-	CreatedAt string `json:"created_at"`
+	Name      string `json:"name"`       // Version
+	TagName   string `json:"tag_name"`   // tag name
+	Body      string `json:"body"`       // this is markdown formated text of release note
+	CreatedAt string `json:"created_at"` //
 }
 
 func NewGitHubClient() GitHub {
-	return GitHub{}
+	gh := GitHub{}
+
+	personalToken := os.Getenv("GITHUB_PERSONAL_TOKEN")
+
+	if personalToken != "" {
+		gh.SetPersonalToken(personalToken)
+		logrus.Infoln("Using personal token for github connection")
+	}
+	return gh
+}
+
+func (g *GitHub) SetPersonalToken(token string) {
+	g.PersonalToken = token
 }
 
 func (g *GitHub) HasRequestSlot() bool {
@@ -70,9 +84,7 @@ func (g *GitHub) SyncStats(resp *http.Response) {
 	nowEpoch := time.Now().Unix()
 	timeToWait := resetTimestampInt - nowEpoch
 
-	waitInt := int(timeToWait)
-
-	g.GitHubStats.WaitSlotSeconds = waitInt
+	g.GitHubStats.WaitSlotSeconds = int(timeToWait)
 
 }
 
@@ -91,6 +103,7 @@ func (g *GitHub) waitUntilNextSlotAvailable() {
 }
 
 func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
+	logrus.Infof("[GITHUB][Download] project %s\n", projectName)
 	releaseNotes := []types.ReleaseNote{}
 
 	if g.Initialized {
@@ -105,29 +118,41 @@ func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
 	// TODO: how to handle this with no rely on jenkins specific projects
 	// we need to add suffix to plugins it differs plugin name and github project
 	if !strings.HasSuffix(projectName, "-plugin") {
-		logrus.Warnf("project %s doesn't have 'Name'\n", projectName)
+		logrus.Warnf("[GITHUB][Download] project %s doesn't have 'Name'\n", projectName)
 		projectName = projectName + "-plugin"
 	}
 
-	logrus.Infoln("executed download goroutine " + projectName)
+	logrus.Infoln("[GITHUB][Download] executed download goroutine " + projectName)
 
 	// Make a request to the API to get the release notes
 	url := fmt.Sprintf("https://api.github.com/repos/jenkinsci/%s/releases", projectName)
 	logrus.Infoln(url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		logrus.Errorln("Error creating request:", err)
+		logrus.Errorln("[GITHUB][Download] Error creating request:", err)
 		return nil, errors.New("error making request")
+	}
+
+	if g.PersonalToken != "" {
+		// Set the request headers
+		req.Header.Set("Accept", "application/vnd.github.v3+json")
+		req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+		req.Header.Set("Authorization", "Bearer "+g.PersonalToken)
 	}
 
 	// Loop until we get a successful response or hit the rate limit
 	for {
 		resp, err := g.Client.Do(req)
 		g.SyncStats(resp)
-		logrus.Infof("RateLimitUsed: %d\n", g.GitHubStats.RateLimitUsed)
+		logrus.Infof("%+v\n", g.GitHubStats)
+		logrus.Infof("RateLimitUsed: %d from %d\n", g.GitHubStats.RateLimitUsed, g.GitHubStats.RateLimit)
 		if err != nil {
 			logrus.Errorln("Error making request:", err)
 			continue // Try again
+		}
+
+		if resp.StatusCode == http.StatusUnauthorized {
+			logrus.Errorln("GITHUB_PERSONAL_TOKEN is not corrent or expired, will use public api")
 		}
 
 		if resp.StatusCode == http.StatusForbidden {
@@ -159,7 +184,7 @@ func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
 				Tag:  release.TagName,
 				BodyHTML: string(template.HTML(
 					utils.ReplaceGitHubLinks(
-						utils.ConvertMarkDownToHtml(release.Body)))),
+						utils.ConvertMarkdownToHtml(release.Body)))),
 				CreatedAt: release.CreatedAt,
 			})
 		}
