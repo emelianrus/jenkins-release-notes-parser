@@ -10,7 +10,7 @@ div {
     background-color: var(--color-canvas-default);
     border-color: #acb5bf;
     border-radius: var(--primer-borderRadius-medium, 6px);
-    border-style: solid;
+    border-style:hidden;
     border-width: var(--primer-borderWidth-thin, 1px);
 }
 

@@ -2,7 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import React, { useState, useEffect } from "react";
 import PluginChangesCard from '../components/PluginChangesCard';
-import PotentialUpdatesList from '../components/PotentialUpdatesList';
+import ReleaseNotesList from '../components/ReleaseNotesList';
 
 function PluginChanges() {
   const [pluginsDiff, setPluginsDiff] = useState([]);
@@ -16,9 +16,7 @@ function PluginChanges() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/plugin-manager/check-deps`);
-      const data = await response.json();
-      console.log(data);
+      await fetch(`http://localhost:8080/plugin-manager/check-deps`);
     } catch (error) {
       console.error(error);
       setBackendStatus(error.message);
@@ -75,7 +73,7 @@ function PluginChanges() {
 
               </table>
               <b>RELEASE NOTES</b>
-              <PotentialUpdatesList projects={projects}/>
+              <ReleaseNotesList projects={projects}/>
             </>
           )}
         </div>

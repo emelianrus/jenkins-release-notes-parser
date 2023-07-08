@@ -38,6 +38,7 @@ type gitHubReleaseNote struct {
 	TagName   string `json:"tag_name"`   // tag name
 	Body      string `json:"body"`       // this is markdown formated text of release note
 	CreatedAt string `json:"created_at"` //
+	HtmlUrl   string `json:"html_url"`
 }
 
 func NewGitHubClient() GitHub {
@@ -180,8 +181,9 @@ func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
 
 		for _, release := range releases {
 			releaseNotes = append(releaseNotes, types.ReleaseNote{
-				Name: release.Name,
-				Tag:  release.TagName,
+				Name:    release.Name,
+				Tag:     release.TagName,
+				HTMLURL: release.HtmlUrl,
 				BodyHTML: string(template.HTML(
 					utils.ReplaceGitHubLinks(
 						utils.ConvertMarkdownToHtml(release.Body)))),
