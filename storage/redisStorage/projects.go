@@ -64,17 +64,3 @@ func (r *RedisStorage) SetProjectError(projectName string, value string) error {
 	}
 	return nil
 }
-
-// func (r *RedisStorage) GetProjectError(projectOwner string, projectName string) string {
-// 	serverJson, _ := r.DB.Get(fmt.Sprintf("github:%s:%s:%s", projectOwner, projectName, "error"))
-// 	return string(serverJson)
-// }
-
-// func (r *RedisStorage) IsProjectDownloaded(projectOwner string, projectName string) bool {
-// 	_, err := r.DB.Get(fmt.Sprintf("github:%s:%s:%s", projectOwner, projectName, "versions"))
-// 	if err == nil {
-// 		return true
-// 	} else {
-// 		return false
-// 	}
-// }
