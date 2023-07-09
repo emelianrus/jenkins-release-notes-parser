@@ -4,13 +4,13 @@ import (
 	"fmt"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/outputGenerators"
-	"github.com/emelianrus/jenkins-release-notes-parser/parsers"
+	"github.com/emelianrus/jenkins-release-notes-parser/pkg/parsers"
+	"github.com/emelianrus/jenkins-release-notes-parser/pkg/sources"
+	"github.com/emelianrus/jenkins-release-notes-parser/pkg/sources/github"
+	jenkins "github.com/emelianrus/jenkins-release-notes-parser/pkg/sources/jenkinsPluginSite"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/pluginVersions"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/updateCenter"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/utils"
-	"github.com/emelianrus/jenkins-release-notes-parser/sources"
-	"github.com/emelianrus/jenkins-release-notes-parser/sources/github"
-	jenkins "github.com/emelianrus/jenkins-release-notes-parser/sources/jenkinsPluginSite"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/sirupsen/logrus"
 )
