@@ -1,12 +1,20 @@
-version: '3'
+version: '2.2'
 services:
   # DB layer
   redis:
     container_name: redis
     hostname: redis
     image: redis:bullseye
-    ports:
-    - "6379:6379"
+    expose:
+    - "6379"
+    networks:
+    - default-net
+    healthcheck:
+      test: redis-cli ping || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # helper for DB
   redis-commander:
     container_name: redis-commander
@@ -17,8 +25,62 @@ services:
     - REDIS_HOSTS=local:redis:6379
     ports:
     - "8081:8081"
+    depends_on:
+    - "redis"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8081/ || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+    - default-net
 
-  # controller:
-  #   todo
-  # web:
-  #   todo
+# i use windows to develop this app and by some reason "build" section in docker compose works very slow (10 min to build 2 images)
+# but it works much faster when i use "make build-images"(see Makefile) ~30sec
+# some bug in windows/docker-desktop/docker-compose(build section)
+  controller:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile.app
+    image: jenkins-release-notes-parser-controller:latest
+    hostname: controller
+    container_name: controller
+    expose:
+    - "8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8080/ping || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    #   GITHUB_PERSONAL_TOKEN: "blabla"
+    networks:
+    - default-net
+
+  web:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile.web
+    image: jenkins-release-notes-parser-web:latest
+    hostname: web
+    container_name: web
+    ports:
+    - "3000:3000"
+    depends_on:
+    - "controller"
+
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+    - default-net
+
+networks:
+  default-net:

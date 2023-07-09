@@ -29,3 +29,8 @@ go-install:
 
 run:
 	docker-compose up -d
+
+
+build-images:
+	docker build -t jenkins-release-notes-parser-web:latest -f Dockerfile.web .
+	docker build -t jenkins-release-notes-parser-controller:latest -f Dockerfile.app .

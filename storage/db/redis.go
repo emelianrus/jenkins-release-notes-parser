@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"os"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
@@ -15,8 +16,18 @@ var ctx = context.Background()
 
 func NewRedisClient() *Redis {
 	logrus.Infoln("Creating redis connection")
+
+	redisHost := os.Getenv("REDIS_HOST")
+	if redisHost == "" {
+		redisHost = "127.0.0.1"
+	}
+	redisPort := os.Getenv("REDIS_PORT")
+	if redisPort == "" {
+		redisPort = "6379"
+	}
+
 	client := redis.NewClient(&redis.Options{
-		Addr: "127.0.0.1:6379",
+		Addr: redisHost + ":" + redisPort,
 		// Password: "",
 		DB: 0,
 	})
