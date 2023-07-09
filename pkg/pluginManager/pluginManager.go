@@ -3,6 +3,7 @@ package pluginManager
 import (
 	"fmt"
 
+	"github.com/emelianrus/jenkins-release-notes-parser/outputGenerators"
 	"github.com/emelianrus/jenkins-release-notes-parser/parsers"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/pluginVersions"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/updateCenter"
@@ -28,6 +29,7 @@ type PluginManager struct {
 	GitHubClient github.GitHub
 
 	FileParser parsers.InputParser
+	FileOutput outputGenerators.FileGenerator
 }
 
 func NewPluginManager() PluginManager {
@@ -46,12 +48,28 @@ func NewPluginManager() PluginManager {
 		PluginSite:   jenkins.NewPluginSite(),
 		GitHubClient: github.NewGitHubClient(),
 
+		// in/out from plugin manager to file
 		FileParser: parsers.TXTFileParser{},
+		FileOutput: outputGenerators.TxtOutput{},
 	}
 }
 
 // TODO:
 func (pm *PluginManager) SetFileParser(parser parsers.InputParser) {}
+
+func (pm *PluginManager) SetFileOutput(og outputGenerators.FileGenerator) {
+	outputGenerators.SetOutputGenerator(og)
+}
+
+func (pm *PluginManager) GenerateFileOutput() []byte {
+	result := make(map[string]string)
+
+	for _, pl := range pm.UpdatedPlugins {
+		result[pl.Name] = pl.Version
+	}
+	return pm.FileOutput.Generate(result)
+
+}
 
 func (pm *PluginManager) generateRequiredBy() {
 	logrus.Infoln("[generateRequiredBy]")

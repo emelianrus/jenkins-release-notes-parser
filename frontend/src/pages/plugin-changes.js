@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState, useEffect } from "react";
 import PluginChangesCard from '../components/PluginChangesCard';
 import ReleaseNotesList from '../components/ReleaseNotesList';
+import Button from 'react-bootstrap/Button';
 
 function PluginChanges() {
   const [pluginsDiff, setPluginsDiff] = useState([]);
@@ -13,6 +14,32 @@ function PluginChanges() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleGetTxtFile = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/plugin-manager/download-file', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'file.txt'; // Set the desired file name
+        link.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Failed to download file:', response.status);
+      }
+    } catch (error) {
+      console.error('Error while downloading file:', error);
+    }
+  };
+
 
   const fetchData = async () => {
     try {
@@ -25,14 +52,32 @@ function PluginChanges() {
     try {
       const response = await fetch(`http://localhost:8080/plugin-manager/get-fixed-deps-diff`);
       const data = await response.json();
-      setPluginsDiff(data);
-      setProjects(data);
+
+      const sortedData = data.sort((a, b) => {
+        const nameA = a.Name.toLowerCase();
+        const nameB = b.Name.toLowerCase();
+
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+
+        return 0;
+      });
+
+      setPluginsDiff(sortedData);
+      setProjects(sortedData);
       setIsLoading(false);
     } catch (error) {
       console.error(error);
       setBackendStatus(error.message);
     }
   };
+
+
+
 
   const pluginsArray = [];
   for (const key in pluginsDiff) {
@@ -72,6 +117,9 @@ function PluginChanges() {
                 }
 
               </table>
+
+              <Button variant="primary" onClick={handleGetTxtFile}>Get Txt File</Button><br/>
+
               <b>RELEASE NOTES</b>
               <ReleaseNotesList projects={projects}/>
             </>
