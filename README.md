@@ -1,17 +1,23 @@
 # Relase notes parser
 
+This tool was created to cover my personal pain points
 
-## Run locally
+1) Plugin dependency management
 
+its hard to track plugin dependencies. you install one plugin and it requires 2nd plugin and 2nd plugin requires 5 more and so on
+each plugin has required version of each dep.
+during upgrade of 1 plugin you can miss to upgrade dependent plugin
 
-```
-docker-compose up -d - create DB
-cd frontend && npm install && npm start - run WEB
-go run . - run main app
-```
+2) Release notes
 
-later would be moved to compose
+each time when i upgrade 1 plugin jenkins i might have to upgrade all deps of this plugin to satisfied versions
+and sometimes those versions have braking changes or just important features and i have to manually go and scroll 50 repos release notes in github
 
+I DON'T WANT TO SCROLL 50+ PROJECTS/ 10+ RELEASE NOTES in each project. WANT EVERYTHING ON ONE PAGE :)
+
+## Deploy
+
+TODO: should be docker-compose or k8s. currently only local deployment see Local development
 
 ## Github personal token
 
