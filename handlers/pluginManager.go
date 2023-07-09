@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 
@@ -23,24 +22,6 @@ func (s *ProjectService) RescanProjectNow(c *gin.Context) {
 	logrus.Infof("Received request body: %+v\n", body)
 
 	c.String(http.StatusOK, "RescanProjectNow")
-}
-
-func (s *ProjectService) AddPluginsFile(c *gin.Context) {
-	logrus.Infoln("AddPluginsFile route reached")
-
-	body, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	plugins := s.PluginManager.FileParser.Parse(body)
-
-	for pluginName, version := range plugins {
-		s.PluginManager.AddPluginWithVersion(pluginName, version)
-	}
-
-	c.String(http.StatusOK, "AddPluginsFile")
 }
 
 // Plugin-manager handler to add new plugin to plugin-manager
@@ -126,6 +107,7 @@ func (s *ProjectService) GetFixedDepsDiff(c *gin.Context) {
 }
 
 func (s *ProjectService) DownloadFile(c *gin.Context) {
+	// TODO: payload txt file or yaml file or any other type
 	logrus.Infoln("DownloadFile route reached")
 
 	// Create a temporary file

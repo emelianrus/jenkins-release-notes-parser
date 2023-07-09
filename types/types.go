@@ -8,15 +8,3 @@ type ReleaseNote struct {
 	HTMLURL   string
 	CreatedAt string
 }
-
-type Project struct {
-	Name  string
-	Owner string
-
-	Error        string
-	IsDownloaded bool
-	LastUpdated  string
-
-	// TODO: should be here
-	ReleaseNotes []ReleaseNote
-}

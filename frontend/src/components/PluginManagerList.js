@@ -21,7 +21,7 @@ function PluginManagerList({ projects }) {
   return (
     <div className="project-list">
       <div className="container-sm mt-5 ml-5 mr-5">
-        <h3>Title</h3>
+        <h3>Plugin manager</h3>
         <div className="table-responsive">
           <table className="table">
             <thead className="thead-light">
@@ -29,8 +29,8 @@ function PluginManagerList({ projects }) {
                 <th>Project name</th>
                 <th>Installed version</th>
                 <th>Latest version</th>
-                <th>Download status</th>
-                <th>Deps</th>
+                <th>Required Core Version</th>
+                <th>Plugin information</th>
                 <th>Force Download</th>
                 <th>Delete</th>
               </tr>

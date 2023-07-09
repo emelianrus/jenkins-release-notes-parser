@@ -1,4 +1,5 @@
 import Button from 'react-bootstrap/Button';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
 
 function ProjectCard({ project }) {
 
@@ -26,6 +27,38 @@ function ProjectCard({ project }) {
     window.location.reload(false);
   }
 
+  const requiredByPopover = (
+    <Popover id="popover-basic">
+      <Popover.Body>
+        {Object.keys(project.RequiredBy).length === 0 ? (
+          <div>don't have any</div>
+        ) : (
+          Object.keys(project.RequiredBy).map((key) => (
+            <div key={key}>{key}</div>
+          ))
+        )}
+      </Popover.Body>
+    </Popover>
+  );
+
+  const dependsOnPopover = (
+    <Popover id="popover-basic">
+      <Popover.Body>
+        {Object.keys(project.Dependencies).length === 0 ? (
+          <div>don't have any</div>
+        ) : (
+          Object.keys(project.Dependencies).map((key) => (
+            <div key={key}>{key}</div>
+          ))
+        )}
+      </Popover.Body>
+    </Popover>
+  );
+
+
+
+
+
   return (
     // TODO: fix class name
     <tbody>
@@ -51,18 +84,19 @@ function ProjectCard({ project }) {
           </ul>
         </td>
         <td>
-          <ul>
-            latestUpdateTimePH
-          </ul>
+          { project.RequiredCoreVersion }
         </td>
         <td>
           <ul>
-            <li>
-              <span>Is dependency of:</span> <span>BUTTON</span>
-            </li>
-            <li>
-              <span>Depends on:</span> <span>BUTTON</span>
-            </li>
+            <div style={{ textAlign: "center"}}>
+              <OverlayTrigger trigger="focus" placement="right" overlay={requiredByPopover}>
+                <Button variant="outline-primary">Required by</Button>
+              </OverlayTrigger>
+              <OverlayTrigger trigger="focus" placement="right" overlay={dependsOnPopover}>
+                <Button variant="outline-primary">Depends on</Button>
+              </OverlayTrigger>
+            </div>
+
           </ul>
         </td>
         <td>

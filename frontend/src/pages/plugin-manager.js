@@ -5,6 +5,7 @@ import PluginManagerList from '../components/PluginManagerList';
 import Form from 'react-bootstrap/Form';
 import React, { useState, useEffect } from "react";
 import { Link } from 'react-router-dom';
+
 function PluginManager() {
 
   const [plugins, setPlugins] = useState([]);
