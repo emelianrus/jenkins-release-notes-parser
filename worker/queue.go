@@ -18,7 +18,7 @@ import (
 func StartWorkerPluginSite(redisclient *redisStorage.RedisStorage, ps jenkins.PluginSite) {
 	logrus.Infoln("StartQueue...")
 
-	projects, _ := redisclient.GetWatcherData()
+	projects, _ := redisclient.GetPluginListData()
 	for {
 		for projectName := range projects {
 

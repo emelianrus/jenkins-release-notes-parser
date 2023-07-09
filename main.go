@@ -36,6 +36,7 @@ func Start() {
 		DB: storage.SetStorage(redis),
 	}
 
+	// values for debug
 	if redis.Status() != nil {
 		logrus.Errorln("failed to connect to redis")
 	} else {

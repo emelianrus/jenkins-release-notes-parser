@@ -6,7 +6,6 @@ import ReleaseNotesList from '../components/ReleaseNotesList';
 import Button from 'react-bootstrap/Button';
 
 function PluginChanges() {
-  const [pluginsDiff, setPluginsDiff] = useState([]);
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [backendStatus, setBackendStatus] = useState("Loading...");
@@ -40,6 +39,16 @@ function PluginChanges() {
     }
   };
 
+  function handleDoApply() {
+    const result = projects.map(project => `${project.Name}:${project.NewVersion}`).join('\n');
+    fetch('http://localhost:8080/add-plugin-list/add-plugins', {
+      method: 'POST',
+      mode: 'cors',
+      body: result
+    })
+
+    window.location.replace('/plugin-manager');
+  }
 
   const fetchData = async () => {
     try {
@@ -67,7 +76,6 @@ function PluginChanges() {
         return 0;
       });
 
-      setPluginsDiff(sortedData);
       setProjects(sortedData);
       setIsLoading(false);
     } catch (error) {
@@ -76,14 +84,11 @@ function PluginChanges() {
     }
   };
 
-
-
-
   const pluginsArray = [];
-  for (const key in pluginsDiff) {
+  for (const key in projects) {
     pluginsArray.push({
       key,
-      project: pluginsDiff[key]
+      project: projects[key]
     });
   }
 
@@ -111,14 +116,18 @@ function PluginChanges() {
                   </tr>
                 </thead>
 
-                {pluginsDiff === undefined
+                {projects === undefined
                   ? <tbody><tr><td>No projects to display</td></tr></tbody>
                   : pluginCards
                 }
 
               </table>
 
-              <Button variant="primary" onClick={handleGetTxtFile}>Get Txt File</Button><br/>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Button variant="primary" onClick={handleGetTxtFile}>Get Txt File</Button>
+                <div style={{ width: '10px' }}></div> {/* Margin */}
+                <Button variant="primary" onClick={handleDoApply}>Apply to plugin manager list</Button>
+              </div>
 
               <b>RELEASE NOTES</b>
               <ReleaseNotesList projects={projects}/>
