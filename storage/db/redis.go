@@ -14,23 +14,27 @@ type Redis struct {
 
 var ctx = context.Background()
 
+func getEnvOrDefault(envName string, defaultValue string) string {
+	value := os.Getenv(envName)
+	if value == "" {
+		return defaultValue
+	} else {
+		return value
+	}
+}
+
 func NewRedisClient() *Redis {
 	logrus.Infoln("Creating redis connection")
 
-	redisHost := os.Getenv("REDIS_HOST")
-	if redisHost == "" {
-		redisHost = "127.0.0.1"
-	}
-	redisPort := os.Getenv("REDIS_PORT")
-	if redisPort == "" {
-		redisPort = "6379"
-	}
+	redisHost := getEnvOrDefault("REDIS_HOST", "127.0.0.1")
+	redisPort := getEnvOrDefault("REDIS_PORT", "6379")
 
 	client := redis.NewClient(&redis.Options{
 		Addr: redisHost + ":" + redisPort,
 		// Password: "",
 		DB: 0,
 	})
+
 	return &Redis{client: client}
 }
 
