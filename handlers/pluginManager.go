@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/pluginManager"
 	"github.com/gin-gonic/gin"
@@ -55,7 +56,7 @@ func (s *ProjectService) AddNewPlugin(c *gin.Context) {
 
 	// check if plugin is not exist you can not add it to list
 	if _, exists := s.PluginManager.PluginVersions.Plugins[body["name"]]; !exists {
-		c.String(http.StatusBadRequest, fmt.Sprintf("AddNewPlugin %s:%s is not exist in plugins", body["name"], body["version"]))
+		c.String(http.StatusBadRequest, fmt.Sprintf("AddNewPlugin %s:%s is not exist in public plugins", body["name"], body["version"]))
 		return
 	}
 
@@ -100,12 +101,6 @@ func (s *ProjectService) GetCoreVersion(c *gin.Context) {
 	c.String(http.StatusOK, s.PluginManager.GetCoreVersion())
 }
 
-func (s *ProjectService) GetPotentialUpdates(c *gin.Context) {
-	logrus.Infoln("GetPotentialUpdates route reached")
-	potentialUpdates, _ := s.Redis.GetPotentialUpdates()
-	c.JSON(http.StatusOK, potentialUpdates)
-}
-
 func (s *ProjectService) CheckDeps(c *gin.Context) {
 	logrus.Infoln("CheckDeps route reached")
 	c.JSON(http.StatusOK, s.PluginManager.FixPluginDependencies())
@@ -128,4 +123,32 @@ func (s *ProjectService) GetFixedDepsDiff(c *gin.Context) {
 	logrus.Infoln("GetFixedDepsDiff route reached")
 
 	c.JSON(http.StatusOK, s.PluginManager.GetFixedDepsDiff())
+}
+
+func (s *ProjectService) DownloadFile(c *gin.Context) {
+	logrus.Infoln("DownloadFile route reached")
+
+	// Create a temporary file
+	tmpFile, err := os.CreateTemp("", "file*.txt")
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Failed to create temp file")
+		return
+	}
+	defer tmpFile.Close()
+
+	// Write the contents to the file
+	_, err = tmpFile.Write(s.PluginManager.GenerateFileOutput())
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Failed to write to temp file")
+		return
+	}
+
+	// Set the appropriate headers
+	c.Header("Content-Disposition", "attachment; filename=file.txt")
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.Header("Cache-Control", "no-cache")
+
+	// Serve the file
+	c.File(tmpFile.Name())
 }

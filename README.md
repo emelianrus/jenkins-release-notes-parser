@@ -62,6 +62,11 @@ i use windows and it has issues with "build" section in docker-compose which bui
 
 #### main services without docker-compose
 
+run compose
+```
+docker-compose -f docker-compose-limited.yml up
+```
+
 1st terminal
 
 ```
