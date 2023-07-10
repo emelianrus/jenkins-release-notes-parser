@@ -3,8 +3,8 @@ package worker
 import (
 	"time"
 
-	"github.com/emelianrus/jenkins-release-notes-parser/sources"
-	jenkins "github.com/emelianrus/jenkins-release-notes-parser/sources/jenkinsPluginSite"
+	"github.com/emelianrus/jenkins-release-notes-parser/pkg/sources"
+	jenkins "github.com/emelianrus/jenkins-release-notes-parser/pkg/sources/jenkinsPluginSite"
 	"github.com/emelianrus/jenkins-release-notes-parser/storage/redisStorage"
 	"github.com/emelianrus/jenkins-release-notes-parser/types"
 	"github.com/sirupsen/logrus"

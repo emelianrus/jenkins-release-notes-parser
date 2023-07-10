@@ -3,6 +3,7 @@ package utils
 // module compares package versions in different formats
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -63,22 +64,6 @@ func compareByIter(newVersion string, oldVersion string) bool {
 	isNewSemVer, _ := regexp.MatchString(".*-.*", newVersion)
 	isOldSemVer, _ := regexp.MatchString(".*-.*", oldVersion)
 
-	if isNewSemVer && isOldSemVer {
-		logrus.Debugln("checking semver")
-
-		if len(strings.Split(newVersion, "-")[0]) > len(strings.Split(oldVersion, "-")[0]) {
-			return true
-
-		} else if strings.Split(newVersion, "-")[0] == strings.Split(oldVersion, "-")[0] {
-			if compareByIter(strings.Split(newVersion, "-")[0], strings.Split(oldVersion, "-")[0]) {
-				return true
-			} else {
-				return compareByIter(strings.Split(newVersion, "-")[1], strings.Split(oldVersion, "-")[1])
-			}
-		} else {
-			return compareByIter(strings.Split(newVersion, "-")[0], strings.Split(oldVersion, "-")[0])
-		}
-	}
 	newVersionSplit := strings.Split(newVersion, ".")
 	oldVersionSplit := strings.Split(oldVersion, ".")
 
@@ -104,6 +89,32 @@ func compareByIter(newVersion string, oldVersion string) bool {
 		}
 
 	}
+
+	if isNewSemVer && isOldSemVer {
+		logrus.Debugln("checking semver")
+
+		firstPartNewVersion := strings.Split(newVersion, "-")[0]
+		firstPartOldVersion := strings.Split(oldVersion, "-")[0]
+
+		t1 := len(firstPartNewVersion)
+		t2 := len(firstPartOldVersion)
+		t3 := len(firstPartNewVersion) > len(firstPartOldVersion)
+		fmt.Println(t1, t2, t3)
+
+		if len(firstPartNewVersion) > len(firstPartOldVersion) {
+			return true
+
+		} else if firstPartNewVersion == firstPartOldVersion {
+			if compareByIter(firstPartNewVersion, firstPartOldVersion) {
+				return true
+			} else {
+				return compareByIter(strings.Split(newVersion, "-")[1], strings.Split(oldVersion, "-")[1])
+			}
+		} else {
+			return compareByIter(firstPartNewVersion, firstPartOldVersion)
+		}
+	}
+
 	// new 1.1.1
 	// old 1.1.1.1
 	// if len new > len old and all number the same rely on lenght
