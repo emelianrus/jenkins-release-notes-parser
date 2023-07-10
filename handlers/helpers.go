@@ -13,7 +13,7 @@ func Ping(c *gin.Context) {
 }
 
 func RedirectToRoot(c *gin.Context) {
-	c.Redirect(http.StatusMovedPermanently, "/servers")
+	c.Redirect(http.StatusMovedPermanently, "/plugin-manager")
 }
 
 func (s *ProjectService) RedisStatus(c *gin.Context) {

@@ -2,6 +2,7 @@ package pluginManager
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/outputGenerators"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/parsers"
@@ -16,20 +17,22 @@ import (
 )
 
 type PluginManager struct {
-	Plugins map[string]*Plugin // we use map to speedup get set find
+	Plugins map[string]*Plugin // Main list where we have plugins. We use map to speedup get set find
 
-	UpdatedPlugins map[string]*Plugin // Temp storage. will set this after update/fixdeps
+	UpdatedPlugins map[string]*Plugin // Temp storage. will set this after update/fix deps
 
-	coreVersion string // TODO: set core version, currently we use latest
+	coreVersion string // jenkins core version
 
-	UpdateCenter   *updateCenter.UpdateCenter     // external. from jenkins api
-	PluginVersions *pluginVersions.PluginVersions // external. from jenkins api
+	UpdateCenter   *updateCenter.UpdateCenter     // external. from jenkins api. plugin latest version + deprecations + deps for plugin
+	PluginVersions *pluginVersions.PluginVersions // external. from jenkins api. plugins data with versions
 
-	PluginSite   jenkins.PluginSite
-	GitHubClient github.GitHub
+	// release notes sources
+	PluginSite   jenkins.PluginSite // jenkins site which has release notes (last 10)
+	GitHubClient github.GitHub      // github client to get release notes
 
-	FileParser parsers.InputParser
-	FileOutput outputGenerators.FileGenerator
+	// file read/write logic
+	FileParser parsers.InputParser            // parses txt file into plugin-manager plugins
+	FileOutput outputGenerators.FileGenerator // plugin-manager plugins into file content
 }
 
 func NewPluginManager() PluginManager {
@@ -54,11 +57,12 @@ func NewPluginManager() PluginManager {
 	}
 }
 
-// TODO:
-func (pm *PluginManager) SetFileParser(parser parsers.InputParser) {}
+func (pm *PluginManager) SetFileParser(parser parsers.InputParser) {
+	pm.FileParser = parser
+}
 
 func (pm *PluginManager) SetFileOutput(og outputGenerators.FileGenerator) {
-	outputGenerators.SetOutputGenerator(og)
+	pm.FileOutput = outputGenerators.SetOutputGenerator(og)
 }
 
 func (pm *PluginManager) GenerateFileOutput() []byte {
@@ -122,9 +126,6 @@ func (pm *PluginManager) preloadPluginData(p *Plugin) {
 	}
 
 	p.LatestVersion = latestVersion
-
-	// releaseNotes, _ := sources.DownloadProject(&pm.PluginSite, p.Name)
-	// p.ReleaseNotes = releaseNotes
 }
 
 func (pm *PluginManager) GetPlugins() map[string]*Plugin {
@@ -449,16 +450,32 @@ func (pm *PluginManager) GetFixedDepsDiff() []diffPlugins {
 				releaseNotes, _ := sources.DownloadProjectReleaseNotes(&gh, changedPlugin.Name)
 
 				var resultRelaseNotes []types.ReleaseNote
-				foundVersion := false
+
+				sort.Slice(releaseNotes, func(i, j int) bool {
+					return utils.IsNewerThan(releaseNotes[i].Name, releaseNotes[j].Name)
+				})
+
+				foundNewVersion := false
+				foundOldVersion := false
 				for _, releaseNote := range releaseNotes {
+					if releaseNote.Name == pm.Plugins[changedPlugin.Name].Version {
+						foundOldVersion = true
+						continue
+					}
 					if releaseNote.Name == changedPlugin.Version {
-						foundVersion = true
+						foundNewVersion = true
+					}
+
+					if foundNewVersion || foundOldVersion {
+						resultRelaseNotes = append(resultRelaseNotes, releaseNote)
+					}
+
+					if foundNewVersion && foundOldVersion {
 						break
 					}
-					// if not reached
-					resultRelaseNotes = append(resultRelaseNotes, releaseNote)
+
 				}
-				if !foundVersion {
+				if !foundNewVersion {
 					logrus.Warnf("haven't found version %s:%s\n", changedPlugin.Name, changedPlugin.Version)
 					// TODO: try to download from github
 					// add feed
