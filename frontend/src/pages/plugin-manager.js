@@ -87,6 +87,32 @@ function PluginManager() {
     handleCloseCoreVersion();
   };
 
+  const handleGetTxtFile = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/plugin-manager/download-file', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'file.txt'; // Set the desired file name
+        link.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Failed to download file:', response.status);
+      }
+    } catch (error) {
+      console.error('Error while downloading file:', error);
+    }
+  };
+
+
 
   return (
     <div>
@@ -114,16 +140,12 @@ function PluginManager() {
       <div className="container-sm mt-5 ml-5 d-flex">
         <div className="mr-2">
           <Link to="/add-plugin-list">
-            <Button variant="outline-primary">Add several plugins</Button>
+            <Button variant="outline-primary">Edit plugin manager list</Button>
           </Link>
         </div>
         <div className="mr-2">
           <Button variant="outline-primary" onClick={handleAddNewPlugin}>Add one plugin</Button>
-        </div>
-        <div className="ml-2">
-          <Link to="/plugin-changes">
-            <Button variant="outline-primary" >Check plugin dependencies</Button>
-          </Link>
+          <Button variant="outline-primary" onClick={handleGetTxtFile}>Get Txt File</Button>
         </div>
       </div>
       {/* ADD NEW PLUGIN MODAL WINDOW */}

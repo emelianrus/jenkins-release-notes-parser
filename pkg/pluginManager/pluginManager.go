@@ -65,14 +65,21 @@ func (pm *PluginManager) SetFileOutput(og outputGenerators.FileGenerator) {
 	pm.FileOutput = outputGenerators.SetOutputGenerator(og)
 }
 
-func (pm *PluginManager) GenerateFileOutput() []byte {
+func (pm *PluginManager) GenerateFileOutputUpdatedPlugins() []byte {
 	result := make(map[string]string)
 
 	for _, pl := range pm.UpdatedPlugins {
 		result[pl.Name] = pl.Version
 	}
 	return pm.FileOutput.Generate(result)
+}
+func (pm *PluginManager) GenerateFileOutputPluginManager() []byte {
+	result := make(map[string]string)
 
+	for _, pl := range pm.Plugins {
+		result[pl.Name] = pl.Version
+	}
+	return pm.FileOutput.Generate(result)
 }
 
 func (pm *PluginManager) generateRequiredBy() {
@@ -529,4 +536,18 @@ func (pm *PluginManager) GetFixedDepsDiff() []diffPlugins {
 	}
 
 	return resultDiff
+}
+
+func (pm *PluginManager) CleanPlugins() {
+	// clean what we have in slice
+	for k := range pm.Plugins {
+		delete(pm.Plugins, k)
+	}
+}
+
+func (pm *PluginManager) CleanUpdatedPlugins() {
+	// clean what we have in slice
+	for k := range pm.UpdatedPlugins {
+		delete(pm.UpdatedPlugins, k)
+	}
 }

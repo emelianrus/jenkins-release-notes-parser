@@ -59,7 +59,7 @@ function PluginChanges() {
 
   const handleGetTxtFile = async () => {
     try {
-      const response = await fetch('http://localhost:8080/plugin-manager/download-file', {
+      const response = await fetch('http://localhost:8080/plugin-changes/download-file', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/octet-stream',
@@ -92,8 +92,14 @@ function PluginChanges() {
 
     window.location.replace('/plugin-manager');
   }
-
-
+  async function forceRescan() {
+    try {
+      await fetch(`http://localhost:8080/plugin-manager/check-deps`);
+      window.location.reload(false);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   const pluginsArray = [];
   for (const key in projects) {
@@ -138,6 +144,8 @@ function PluginChanges() {
                   <Button variant="primary" onClick={handleGetTxtFile}>Get Txt File</Button>
                   <div style={{ width: '10px' }}></div> {/* Margin */}
                   <Button variant="primary" onClick={handleDoApply}>Apply to plugin manager list</Button>
+                  <div style={{ width: '10px' }}></div> {/* Margin */}
+                  <Button variant="warning" onClick={forceRescan}>Force rescan</Button>
                 </div>
 
                 <b>RELEASE NOTES</b>

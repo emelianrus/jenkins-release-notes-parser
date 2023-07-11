@@ -29,10 +29,7 @@ func (s *ProjectService) AddUpdatedPluginList(c *gin.Context) {
 
 	plugins := s.PluginManager.FileParser.Parse(body)
 
-	// clean what we have
-	for k := range s.PluginManager.UpdatedPlugins {
-		delete(s.PluginManager.UpdatedPlugins, k)
-	}
+	s.PluginManager.CleanUpdatedPlugins()
 
 	for pluginName, version := range plugins {
 		s.PluginManager.SetUpdatedPluginWithVersion(pluginName, version)

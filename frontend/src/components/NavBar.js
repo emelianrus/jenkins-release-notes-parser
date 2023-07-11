@@ -8,8 +8,9 @@ function NavBar() {
       <Container>
       <Nav className="mr-auto">
         <Nav.Link href="/plugin-manager">Plugin Manager</Nav.Link>
-        <Nav.Link href="/add-updated-plugins">Add updated plugins</Nav.Link>
-        <Nav.Link href="/api-stats">API stats</Nav.Link>
+        <Nav.Link href="/add-updated-plugins">Updated Plugins</Nav.Link>
+        <Nav.Link href="/plugin-changes">Plugin Dependencies</Nav.Link>
+        {/* <Nav.Link href="/api-stats">API stats</Nav.Link> */}
       </Nav>
       </Container>
     </Navbar>

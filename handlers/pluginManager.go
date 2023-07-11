@@ -106,7 +106,7 @@ func (s *ProjectService) GetFixedDepsDiff(c *gin.Context) {
 	c.JSON(http.StatusOK, s.PluginManager.GetFixedDepsDiff())
 }
 
-func (s *ProjectService) DownloadFile(c *gin.Context) {
+func (s *ProjectService) DownloadFilePluginManager(c *gin.Context) {
 	// TODO: payload txt file or yaml file or any other type
 	logrus.Infoln("DownloadFile route reached")
 
@@ -119,7 +119,37 @@ func (s *ProjectService) DownloadFile(c *gin.Context) {
 	defer tmpFile.Close()
 
 	// Write the contents to the file
-	_, err = tmpFile.Write(s.PluginManager.GenerateFileOutput())
+	_, err = tmpFile.Write(s.PluginManager.GenerateFileOutputPluginManager())
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Failed to write to temp file")
+		return
+	}
+
+	// Set the appropriate headers
+	c.Header("Content-Disposition", "attachment; filename=file.txt")
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.Header("Cache-Control", "no-cache")
+
+	// Serve the file
+	c.File(tmpFile.Name())
+}
+
+// TODO: DRY
+func (s *ProjectService) DownloadFilePluginChanges(c *gin.Context) {
+	// TODO: payload txt file or yaml file or any other type
+	logrus.Infoln("DownloadFile route reached")
+
+	// Create a temporary file
+	tmpFile, err := os.CreateTemp("", "file*.txt")
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Failed to create temp file")
+		return
+	}
+	defer tmpFile.Close()
+
+	// Write the contents to the file
+	_, err = tmpFile.Write(s.PluginManager.GenerateFileOutputUpdatedPlugins())
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Failed to write to temp file")
 		return
