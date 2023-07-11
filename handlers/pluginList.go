@@ -9,12 +9,11 @@ import (
 )
 
 func (s *ProjectService) GetPluginList(c *gin.Context) {
-	watcherList, err := s.Redis.GetPluginListData()
-	if err != nil {
-		logrus.Errorln("can not get watcher list")
-		logrus.Errorln(err)
+	resp := make(map[string]string)
+	for _, pl := range s.PluginManager.Plugins {
+		resp[pl.Name] = pl.Version
 	}
-	c.JSON(http.StatusOK, watcherList)
+	c.JSON(http.StatusOK, resp)
 }
 
 func (s *ProjectService) AddPluginsFile(c *gin.Context) {
@@ -28,11 +27,11 @@ func (s *ProjectService) AddPluginsFile(c *gin.Context) {
 
 	plugins := s.PluginManager.FileParser.Parse(body)
 
+	s.PluginManager.CleanPlugins()
+
 	for pluginName, version := range plugins {
 		s.PluginManager.AddPluginWithVersion(pluginName, version)
 	}
-
-	s.Redis.SetPluginListData(plugins)
 
 	c.String(http.StatusOK, "AddPluginsFile")
 }
@@ -46,6 +45,12 @@ func (s *ProjectService) EditWatcherList(c *gin.Context) {
 		return
 	}
 	logrus.Infof("Received request body: %+v\n", body)
+
+	s.PluginManager.CleanPlugins()
+
+	for k, v := range body {
+		s.PluginManager.AddPluginWithVersion(k, v)
+	}
 
 	err := s.Redis.SetPluginListData(body)
 	if err != nil {

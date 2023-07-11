@@ -61,7 +61,8 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 	router.GET("/plugin-manager/check-deps", handler.CheckDeps)
 	router.GET("/plugin-manager/get-fixed-deps-diff", handler.GetFixedDepsDiff)
 
-	router.GET("/plugin-manager/download-file", handler.DownloadFile)
+	router.GET("/plugin-changes/download-file", handler.DownloadFilePluginChanges)
+	router.GET("/plugin-manager/download-file", handler.DownloadFilePluginManager)
 
 	router.POST("/plugin-manager/rescan", handler.RescanProjectNow)
 
