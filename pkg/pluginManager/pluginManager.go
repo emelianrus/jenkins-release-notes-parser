@@ -425,6 +425,14 @@ func (pm *PluginManager) FixPluginDependencies() map[string]Plugin {
 	return pluginsChecked
 }
 
+func (pm *PluginManager) SetUpdatedPluginWithVersion(pluginName string, pluginVersion string) {
+	pm.UpdatedPlugins[pluginName] = NewPluginWithVersion(pluginName, pluginVersion)
+}
+
+func (pm *PluginManager) GetUpdatedPlugins() map[string]*Plugin {
+	return pm.UpdatedPlugins
+}
+
 type diffPlugins struct {
 	Name           string
 	CurrentVersion string
@@ -435,6 +443,7 @@ type diffPlugins struct {
 	Type int
 }
 
+// Get diff current plugins and updatedPlugins
 func (pm *PluginManager) GetFixedDepsDiff() []diffPlugins {
 	logrus.Infoln("[GetFixedDepsDiff]")
 	var resultDiff []diffPlugins
