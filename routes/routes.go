@@ -73,6 +73,10 @@ func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
 
 	router.GET("/add-plugin-list/get-data", handler.GetPluginList)
 	router.POST("/add-plugin-list/add-plugins", handler.AddPluginsFile)
+
+	router.GET("/add-updated-plugins/get-data", handler.GetUpdatedPluginList)
+	router.POST("/add-updated-plugins/edit-data", handler.AddUpdatedPluginList)
+
 	// ==========================================================
 
 	return router
