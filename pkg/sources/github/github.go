@@ -126,7 +126,10 @@ func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
 	logrus.Infoln("[GITHUB][Download] executed download goroutine " + projectName)
 
 	// Make a request to the API to get the release notes
-	url := fmt.Sprintf("https://api.github.com/repos/jenkinsci/%s/releases", projectName)
+	// TODO: github can return only 1000 release notes
+	// need to add 'page=1' to 'page=10'
+	// currently can not return more then 100 releases from latest version
+	url := fmt.Sprintf("https://api.github.com/repos/jenkinsci/%s/releases?per_page=100", projectName)
 	logrus.Infoln(url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
