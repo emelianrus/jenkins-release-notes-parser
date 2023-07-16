@@ -35,10 +35,7 @@ function PluginManager() {
       const data = await response.json();
 
       setPlugins(data.Plugins);
-
-      const responseCoreVersion = await fetch(`http://localhost:8080/plugin-manager/get-core-version`);
-      const dataCoreVersion = await responseCoreVersion.text();
-      setCoreVersion(dataCoreVersion);
+      setCoreVersion(data.CoreVersion);
 
     } catch (error) {
       console.error(error);

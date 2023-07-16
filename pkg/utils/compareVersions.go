@@ -3,7 +3,6 @@ package utils
 // module compares package versions in different formats
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -95,11 +94,6 @@ func compareByIter(newVersion string, oldVersion string) bool {
 
 		firstPartNewVersion := strings.Split(newVersion, "-")[0]
 		firstPartOldVersion := strings.Split(oldVersion, "-")[0]
-
-		t1 := len(firstPartNewVersion)
-		t2 := len(firstPartOldVersion)
-		t3 := len(firstPartNewVersion) > len(firstPartOldVersion)
-		fmt.Println(t1, t2, t3)
 
 		if len(firstPartNewVersion) > len(firstPartOldVersion) {
 			return true
