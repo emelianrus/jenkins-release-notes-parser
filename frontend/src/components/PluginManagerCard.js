@@ -1,7 +1,7 @@
 import Button from 'react-bootstrap/Button';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 
-function ProjectCard({ project }) {
+function ProjecManagerCard({ project }) {
 
   function handleDoRescan(name, version){
     fetch('http://localhost:8080/plugin-manager/rescan', {
@@ -54,10 +54,25 @@ function ProjectCard({ project }) {
       </Popover.Body>
     </Popover>
   );
-
-
-
-
+  const warningsPopover = (
+    <Popover id="popover-basic">
+      <Popover.Body>
+        {!project.Warnings || project.Warnings.length === 0 ? (
+          <div>Don't have any warnings.</div>
+        ) : (
+          <ul>
+            {project.Warnings.map((warning) => (
+              <li key={warning.Id}>
+                <div>
+                  <strong>{warning.Message}</strong><br /> Affects version {warning.Versions[0].LastVersion} and earlier <br />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Popover.Body>
+    </Popover>
+  );
 
   return (
     // TODO: fix class name
@@ -95,6 +110,9 @@ function ProjectCard({ project }) {
               <OverlayTrigger trigger="focus" placement="right" overlay={dependsOnPopover}>
                 <Button variant="outline-primary">Depends on</Button>
               </OverlayTrigger>
+              <OverlayTrigger trigger="focus" placement="right" overlay={warningsPopover}>
+                <Button variant="outline-primary">Warnings</Button>
+              </OverlayTrigger>
             </div>
 
           </ul>
@@ -114,6 +132,6 @@ function ProjectCard({ project }) {
   );
 }
 
-export default ProjectCard;
+export default ProjecManagerCard;
 
 

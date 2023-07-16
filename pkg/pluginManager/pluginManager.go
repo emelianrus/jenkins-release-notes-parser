@@ -108,8 +108,8 @@ func (pm *PluginManager) cleanRequiredBy(removedProjectName string) {
 	}
 }
 
-func (pm *PluginManager) preloadPluginData(p *Plugin) {
-	logrus.Infof("preloadPluginData %s:%s", p.Name, p.Version)
+func (pm *PluginManager) reloadPluginsData(p *Plugin) {
+	logrus.Infof("reloadPluginsData %s:%s", p.Name, p.Version)
 	// NOTE: if version is incorrect will not get any data
 	for _, dep := range pm.PluginVersions.Plugins[p.Name][p.Version].Dependencies {
 		if !dep.Optional {
@@ -133,6 +133,7 @@ func (pm *PluginManager) preloadPluginData(p *Plugin) {
 	}
 
 	p.LatestVersion = latestVersion
+
 }
 
 func (pm *PluginManager) GetPlugins() map[string]*Plugin {
@@ -158,11 +159,14 @@ func (pm *PluginManager) AddPluginWithVersion(pluginName string, version string)
 		logrus.Warnf("Found copy of plugin in pluginsfile. Plugin name: '%s'\n", pl.Name)
 	}
 
-	pm.preloadPluginData(pl)
+	pm.reloadPluginsData(pl)
 	// TODO: sync with DB
 
 	pm.Plugins[pl.Name] = pl
+
+	// requires plugin exist in pm.Plugins[pl.Name]
 	pm.generateRequiredBy()
+	pm.LoadWarnings()
 }
 
 // will try to delete plugin from list if no one rely as dep on this plugin
