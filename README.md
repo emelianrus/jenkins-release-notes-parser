@@ -15,6 +15,25 @@ and sometimes those versions have braking changes or just important features and
 
 I DON'T WANT TO SCROLL 50+ PROJECTS/ 10+ RELEASE NOTES in each project. WANT EVERYTHING ON ONE PAGE :)
 
+
+# Instructions
+
+
+Plugin Manager - main page. you can add plugins which you have to it
+
+supports add one plugin or list of plugins
+
+Plugin Dependencies - get all plugins dependencies for plugin manager list,
+will update plugin if needed and will show release notes for it
+
+Updated Plugins - plugins from "Plugin Dependencies" tab, but you can edit it for use caseses like
+
+* you want to check release notes between plugin version A and B, so you will add version A to Plugin Manager and version B to Updated Plugins
+
+as result you will see diff in Updated Plugins
+
+`Get Txt file` - option button will give you file with list of plugin manager plugins/updated plugins
+
 ## Deploy
 
 TODO: should be docker-compose or k8s. currently only local deployment see Local development
@@ -84,3 +103,6 @@ TODO: use skaffold+k8s in future?
 https://skaffold.dev/
 
 https://kubernetes.io/
+
+
+
