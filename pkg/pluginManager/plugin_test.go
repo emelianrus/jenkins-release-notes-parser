@@ -87,69 +87,6 @@ func TestPlugin_LoadDependenciesFromManifest(t *testing.T) {
 	}
 }
 
-func TestPlugin_LoadDependenciesFromUpdateCenter(t *testing.T) {
-	pl := NewPluginWithVersion("scm-api", "602.v6a_81757a_31d2")
-	tests := []struct {
-		name string
-		p    *Plugin
-		want map[string]string
-	}{
-		{
-			name: "scm-api",
-			p:    pl,
-			want: map[string]string{
-				"structs": "308.v852b473a2b8c",
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.p.LoadDependenciesFromUpdateCenter()
-
-			fmt.Println(tt.p.Dependencies)
-
-			for _, dep := range tt.p.Dependencies {
-				if _, found := tt.want[dep.Name]; !found {
-					t.Errorf("%s should not be here we have %v", dep.Name, tt.want)
-				} else {
-					if dep.Version != tt.want[dep.Name] {
-						t.Errorf("%s Dependenc version should be %v", dep.Version, tt.want[dep.Name])
-					}
-				}
-			}
-
-			if len(tt.p.Dependencies) != len(tt.want) {
-				t.Errorf("Dependencies len %d != want len %d", len(tt.p.Warnings), len(tt.want))
-			}
-		})
-	}
-}
-
-func TestPlugin_LoadRequiredCoreVersion(t *testing.T) {
-	tests := []struct {
-		name string
-		p    *Plugin
-		want string
-	}{
-		{
-			name: "blueocean",
-			p: &Plugin{
-				Name:    "blueocean",
-				Version: "1.23.2",
-			},
-			want: "2.150.3",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// tt.p.LoadRequiredCoreVersion()
-			if tt.p.RequiredCoreVersion != tt.want {
-				t.Errorf("Want version %s differs to have %s", tt.want, tt.p.RequiredCoreVersion)
-			}
-		})
-	}
-}
-
 func TestPlugin_GetManifestAttrs(t *testing.T) {
 	tests := []struct {
 		name string

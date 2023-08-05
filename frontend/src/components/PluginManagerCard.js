@@ -27,14 +27,21 @@ function ProjecManagerCard({ project }) {
     window.location.reload(false);
   }
 
+  const popoverStyle = {
+    width: 'auto',
+    maxWidth: 'none',
+    whiteSpace: 'nowrap',
+  };
+
   const requiredByPopover = (
-    <Popover id="popover-basic">
+
+    <Popover id="popover-basic" style={popoverStyle}>
       <Popover.Body>
         {Object.keys(project.RequiredBy).length === 0 ? (
           <div>don't have any</div>
         ) : (
-          Object.keys(project.RequiredBy).map((key) => (
-            <div key={key}>{key}</div>
+          Object.keys(project.RequiredBy).map((key,value) => (
+            <div key={key}>{key}:{project.RequiredBy[key]}</div>
           ))
         )}
       </Popover.Body>
@@ -48,7 +55,7 @@ function ProjecManagerCard({ project }) {
           <div>don't have any</div>
         ) : (
           Object.keys(project.Dependencies).map((key) => (
-            <div key={key}>{key}</div>
+            <div key={key}>{key}:{project.Dependencies[key].Version}</div>
           ))
         )}
       </Popover.Body>
@@ -80,7 +87,9 @@ function ProjecManagerCard({ project }) {
       <tr id="server-plugins">
         <td>
           <span id="plugin-name-ranged">
-            { project.Name }
+            <a href={ project.GITUrl } style={{ color: 'inherit' }}>
+              { project.Name }
+            </a>
           </span>
         </td>
         <td>
@@ -104,13 +113,13 @@ function ProjecManagerCard({ project }) {
         <td>
           <ul>
             <div style={{ textAlign: "center"}}>
-              <OverlayTrigger trigger="focus" placement="right" overlay={requiredByPopover}>
+              <OverlayTrigger trigger="click" placement="right" overlay={requiredByPopover} rootClose>
                 <Button variant="outline-primary">Required by</Button>
               </OverlayTrigger>
-              <OverlayTrigger trigger="focus" placement="right" overlay={dependsOnPopover}>
+              <OverlayTrigger trigger="click" placement="right" overlay={dependsOnPopover} rootClose>
                 <Button variant="outline-primary">Depends on</Button>
               </OverlayTrigger>
-              <OverlayTrigger trigger="focus" placement="right" overlay={warningsPopover}>
+              <OverlayTrigger trigger="click" placement="right" overlay={warningsPopover} rootClose>
                 <Button variant="outline-primary">Warnings</Button>
               </OverlayTrigger>
             </div>

@@ -7,27 +7,9 @@ import (
 	"os"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/manifest"
-	"github.com/emelianrus/jenkins-release-notes-parser/pkg/updateCenter/pluginVersions"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
-
-type PluginType int
-
-const (
-	UNKNOWN PluginType = iota
-	EXTERNAL
-	TRANSITIVE // used as dependency for some plugins
-	PRIMARY    // no one rely on it as dep
-)
-
-func (pt PluginType) String() string {
-	return []string{"Unknown", "External", "Transitive", "Primary"}[pt]
-}
-
-// func NewDependency(name string, version string, optional bool) Dependency {
-// 	return Dependency{Name: name, Version: version, Optional: optional}
-// }
 
 // https://github.com/emelianrus/jenkins-update-center/blob/master/pkg/updateCenter/updateCenter.go#L97
 type Warnings struct {
@@ -46,13 +28,14 @@ type Plugin struct {
 	Name    string
 	Version string
 
-	Url                 string
-	Type                PluginType
+	Url string
+	// Type                PluginType
 	RequiredCoreVersion string
 	Dependencies        map[string]Plugin
 	RequiredBy          map[string]string
 	Optional            bool // rely on parent plugin
 	Warnings            []Warnings
+	GITUrl              string
 
 	// ReleaseNotes     []types.ReleaseNote
 	LatestVersion    string
@@ -67,8 +50,8 @@ func NewPluginWithVersion(name string, version string) *Plugin {
 		Name:          name,
 		Version:       version,
 		Url:           "default-value-for-url",
+		GITUrl:        "",
 		LatestVersion: "0.0.0",
-		Type:          UNKNOWN,
 		Dependencies:  make(map[string]Plugin),
 		RequiredBy:    make(map[string]string),
 	}
@@ -83,7 +66,6 @@ func NewPluginWithUrl(name string, url string) *Plugin {
 		Version:       "",
 		Url:           url,
 		LatestVersion: "0.0.0",
-		Type:          UNKNOWN,
 		Dependencies:  make(map[string]Plugin),
 		RequiredBy:    make(map[string]string),
 	}
@@ -161,22 +143,6 @@ func (p *Plugin) Download() (string, error) {
 	logrus.Infof("Downloaded Plugin name: %s, Plugin version: %s, Plugin URL: %s", p.Name, p.Version, p.Url)
 
 	return fileLocation, nil
-}
-
-// Loads dependencies from jenkins update center into Plugin struct
-func (p *Plugin) LoadDependenciesFromUpdateCenter() map[string]Plugin {
-	pv, _ := pluginVersions.Get()
-	for _, dep := range pv.Plugins[p.Name][p.Version].Dependencies {
-		if !dep.Optional {
-
-			p.Dependencies[dep.Name] = Plugin{
-				Name:    dep.Name,
-				Version: dep.Version,
-			}
-
-		}
-	}
-	return p.Dependencies
 }
 
 // Loads dependencies from hpi file manifest into Plugin struct

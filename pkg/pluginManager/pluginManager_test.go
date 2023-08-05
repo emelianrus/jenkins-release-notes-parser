@@ -28,41 +28,37 @@ func TestPluginManager_FixPluginDependencies(t *testing.T) {
 	wantpm := NewPluginManager()
 	wantpm.Plugins = map[string]*Plugin{
 		"workflow-step-api": {
-			Name:    "workflow-step-api",
-			Version: "625.vd896b_f445a_f8",
-			Url:     "https://updates.jenkins.io/download/plugins/workflow-step-api/625.vd896b_f445a_f8/workflow-step-api.hpi",
-			Type:    UNKNOWN,
-			Dependencies: map[string]Plugin{
-				"structs": *NewPluginWithVersion("structs", "308.v852b473a2b8c"),
-			},
-			RequiredBy: make(map[string]string),
+			Name:                "workflow-step-api",
+			Version:             "625.vd896b_f445a_f8",
+			RequiredCoreVersion: "2.289.1",
+			Url:                 "https://updates.jenkins.io/download/plugins/workflow-step-api/625.vd896b_f445a_f8/workflow-step-api.hpi",
+			Dependencies:        map[string]Plugin{"structs": {Name: "structs", Version: "308.v852b473a2b8c"}},
+			RequiredBy:          make(map[string]string),
 		},
 		"scm-api": {
-			Name:    "scm-api",
-			Version: "602.v6a_81757a_31d2",
-			Url:     "https://updates.jenkins.io/download/plugins/scm-api/602.v6a_81757a_31d2/scm-api.hpi",
-			Type:    UNKNOWN,
-			Dependencies: map[string]Plugin{
-				"structs": *NewPluginWithVersion("structs", "308.v852b473a2b8c"),
-			},
-			RequiredBy: make(map[string]string),
+			Name:                "scm-api",
+			Version:             "602.v6a_81757a_31d2",
+			RequiredCoreVersion: "2.289.1",
+			Url:                 "https://updates.jenkins.io/download/plugins/scm-api/602.v6a_81757a_31d2/scm-api.hpi",
+			Dependencies:        map[string]Plugin{"structs": {Name: "structs", Version: "308.v852b473a2b8c"}},
+			RequiredBy:          make(map[string]string),
 		},
 		"structs": {
-			Name:         "structs",
-			Version:      "308.v852b473a2b8c",
-			Url:          "https://updates.jenkins.io/download/plugins/structs/308.v852b473a2b8c/structs.hpi",
-			Type:         UNKNOWN,
-			Dependencies: make(map[string]Plugin),
-			RequiredBy: map[string]string{
-				"scm-api":           "602.v6a_81757a_31d2",
-				"workflow-step-api": "625.vd896b_f445a_f8",
-			},
+			Name:                "structs",
+			Version:             "308.v852b473a2b8c",
+			RequiredCoreVersion: "2.222.4",
+			Url:                 "https://updates.jenkins.io/download/plugins/structs/308.v852b473a2b8c/structs.hpi",
+			Dependencies:        make(map[string]Plugin),
+			RequiredBy:          map[string]string{},
 		},
 	}
 
 	havepm.FixPluginDependencies()
-
-	diff := cmp.Diff(&havepm.Plugins, &wantpm.Plugins)
+	for _, v := range havepm.UpdatedPlugins {
+		v.LatestVersion = ""
+		v.GITUrl = ""
+	}
+	diff := cmp.Diff(&wantpm.Plugins, &havepm.UpdatedPlugins)
 	if diff != "" {
 		t.Errorf("Not expected result")
 		fmt.Println(diff)
@@ -92,6 +88,7 @@ func TestPluginManager_LoadWarnings(t *testing.T) {
 					"Agent-to-controller security bypass":                         "3.8.0",
 					"Path traversal vulnerability allows reading arbitrary files": "336.v182c0fbaaeb7",
 					"Missing permission checks allow capturing credentials":       "354.vdb_858fd6b_f48",
+					"Improper masking of credentials":                             "360.v0a_1c04cf807d",
 				},
 			},
 		},
@@ -194,4 +191,43 @@ func TestPluginManager_SetCoreVersion(t *testing.T) {
 			t.Errorf("SetCoreVersion() = %v, want %v", ver, newVer)
 		}
 	})
+}
+
+func TestPluginManager_AddPluginWithVersion(t *testing.T) {
+	type args struct {
+		pluginName string
+		version    string
+	}
+	pm := NewPluginManager()
+
+	tests := []struct {
+		name string
+		pm   *PluginManager
+		args args
+	}{
+		{
+			name: "check add new plugin",
+			pm:   &pm,
+			args: args{
+				pluginName: "blueocean",
+				version:    "1.23.2",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pm.AddPluginWithVersion(tt.args.pluginName, tt.args.version)
+			plugins := pm.GetPlugins()
+
+			if _, found := plugins[tt.args.pluginName]; !found {
+				t.Error("added plugin is not in plugin manager list")
+			}
+
+			if plugins[tt.args.pluginName].Version != tt.args.version {
+				t.Error("added plugin version is not correct")
+			}
+
+		})
+	}
 }

@@ -37,13 +37,19 @@ func (s *ProjectService) AddNewPlugin(c *gin.Context) {
 
 	// check if plugin is not exist you can not add it to list
 	if _, exists := s.PluginManager.PluginVersions.Plugins[body["name"]]; !exists {
-		c.String(http.StatusBadRequest, fmt.Sprintf("AddNewPlugin %s:%s is not exist in public plugins", body["name"], body["version"]))
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": fmt.Sprintf("AddNewPlugin %s:%s is not exist in public plugins", body["name"], body["version"]),
+			"status":  "error",
+		})
 		return
 	}
 
 	s.PluginManager.AddPluginWithVersion(body["name"], body["version"])
 
-	c.String(http.StatusOK, fmt.Sprintf("AddNewPlugin %s:%s", body["name"], body["version"]))
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("AddNewPlugin %s:%s", body["name"], body["version"]),
+		"status":  "ok",
+	})
 }
 
 func (s *ProjectService) DeletePlugin(c *gin.Context) {

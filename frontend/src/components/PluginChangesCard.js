@@ -16,7 +16,9 @@ function PluginChangesCard({ project }) {
       <tr id="server-plugins">
         <td>
           <span id="plugin-name-ranged">
-            { project.Name }
+            <a href={ project.HTMLURL } style={{ color: 'inherit' }}>
+              { project.Name }
+            </a>
           </span>
         </td>
         <td>
