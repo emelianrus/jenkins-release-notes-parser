@@ -7,11 +7,7 @@ import React, { useState, useEffect } from "react";
 function JsonEditor() {
 
   const [isModified, setIsModified] = useState(false);
-
-  // TODO: remove me
-  const dummyValue = ``
-
-  const [editorValue, setEditorValue] = useState(dummyValue);
+  const [editorValue, setEditorValue] = useState("");
 
   useEffect(() => {
     fetchData();
