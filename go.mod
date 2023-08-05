@@ -3,6 +3,7 @@ module github.com/emelianrus/jenkins-release-notes-parser
 go 1.19
 
 require (
+	github.com/emelianrus/jenkins-update-center v0.1.1
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/gomarkdown/markdown v0.0.0-20230312174038-279c45774906

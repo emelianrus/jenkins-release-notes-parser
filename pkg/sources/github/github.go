@@ -119,7 +119,7 @@ func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
 	// TODO: how to handle this with no rely on jenkins specific projects
 	// we need to add suffix to plugins it differs plugin name and github project
 	if !strings.HasSuffix(projectName, "-plugin") {
-		logrus.Warnf("[GITHUB][Download] project %s doesn't have 'Name'\n", projectName)
+		// logrus.Warnf("[GITHUB][Download] project %s doesn't have 'Name'\n in release notes json", projectName)
 		projectName = projectName + "-plugin"
 	}
 
