@@ -127,11 +127,6 @@ function ProjecManagerCard({ project }) {
           </ul>
         </td>
         <td>
-          <span id="plugin-name-ranged">
-            <Button variant="primary" onClick={() => handleDoRescan(project.Name, project.Version)}>scan now</Button>
-          </span>
-        </td>
-        <td>
           <ul>
               <Button variant="danger" onClick={() => handleDelete(project.Name)}>Delete</Button>
           </ul>
