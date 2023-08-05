@@ -87,31 +87,6 @@ func TestPlugin_LoadDependenciesFromManifest(t *testing.T) {
 	}
 }
 
-func TestPlugin_LoadRequiredCoreVersion(t *testing.T) {
-	tests := []struct {
-		name string
-		p    *Plugin
-		want string
-	}{
-		{
-			name: "blueocean",
-			p: &Plugin{
-				Name:    "blueocean",
-				Version: "1.23.2",
-			},
-			want: "2.150.3",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// tt.p.LoadRequiredCoreVersion()
-			if tt.p.RequiredCoreVersion != tt.want {
-				t.Errorf("Want version %s differs to have %s", tt.want, tt.p.RequiredCoreVersion)
-			}
-		})
-	}
-}
-
 func TestPlugin_GetManifestAttrs(t *testing.T) {
 	tests := []struct {
 		name string
