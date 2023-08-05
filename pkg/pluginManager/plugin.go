@@ -145,24 +145,6 @@ func (p *Plugin) Download() (string, error) {
 	return fileLocation, nil
 }
 
-// // Loads dependencies from jenkins update center into Plugin struct
-// func (p *Plugin) LoadDependenciesFromUpdateCenter() map[string]Plugin {
-// 	js := jenkinsSite.NewJenkinsSite()
-// 	pv, _ := js.PluginVersions.Get()
-
-// 	for _, dep := range pv.Plugins[p.Name][p.Version].Dependencies {
-// 		if !dep.Optional {
-
-// 			p.Dependencies[dep.Name] = Plugin{
-// 				Name:    dep.Name,
-// 				Version: dep.Version,
-// 			}
-
-// 		}
-// 	}
-// 	return p.Dependencies
-// }
-
 // Loads dependencies from hpi file manifest into Plugin struct
 func (p *Plugin) LoadDependenciesFromManifest() map[string]Plugin {
 	p.Download()
