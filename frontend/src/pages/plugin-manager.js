@@ -21,9 +21,13 @@ function PluginManager() {
   const handleCloseCoreVersion = () => setShowCoreVersion(false);
   const handleEditCoreVersion = () => setShowCoreVersion(true);
 
-  const handleCloseAddNewPlugin = () => setAddNewPlugin(false);
+  const handleCloseAddNewPlugin = () => {
+    setAddNewPlugin(false);
+    setAddPluginError('');
+  };
   const handleAddNewPlugin = () => setAddNewPlugin(true);
 
+  const [addPluginError, setAddPluginError] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -36,36 +40,43 @@ function PluginManager() {
 
       setPlugins(data.Plugins);
       setCoreVersion(data.CoreVersion);
-
     } catch (error) {
       console.error(error);
     }
   };
 
-  const handleSaveAddNewPlugin = () => {
-    const pluginName = document.querySelector('input[type="pluginName"]').value;
-    const pluginVersion = document.querySelector('input[type="pluginVersion"]').value;
+  const handleSaveAddNewPlugin = async () => {
+    try {
+      const pluginName = document.querySelector('input[type="pluginName"]').value;
+      const pluginVersion = document.querySelector('input[type="pluginVersion"]').value;
 
-    const requestData = {
-      name: pluginName,
-      version: pluginVersion
-    };
+      const requestData = {
+        name: pluginName,
+        version: pluginVersion
+      };
 
-    fetch('http://localhost:8080/plugin-manager/add-new-plugin', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestData)
-    })
-    .then(() => {
+      const response = await fetch('http://localhost:8080/plugin-manager/add-new-plugin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        setAddPluginError(responseData.message);
+        throw new Error(responseData.message);
+      }
+
       // Reload plugins after adding a new plugin
+      setAddPluginError("");
       fetchData();
       handleCloseAddNewPlugin(false);
-    })
-    .catch((error) => {
+    } catch (error) {
       console.error(error);
-    });
+    }
   };
 
   const handleEditCoreSubmit = (event) => {
@@ -152,6 +163,7 @@ function PluginManager() {
         </Modal.Header>
         <Modal.Body>
           <Form>
+            {addPluginError && <div style={{ color: 'red' }}>{addPluginError}</div>}
             <Form.Group className="mb-3" controlId="exampleForm.ControlInput2">
             <Form.Label>Plugin name</Form.Label>
               <Form.Control
@@ -159,6 +171,7 @@ function PluginManager() {
                 placeholder=""
                 autoFocus
               />
+
             <Form.Label>Plugin version</Form.Label>
               <Form.Control
                 type="pluginVersion"
