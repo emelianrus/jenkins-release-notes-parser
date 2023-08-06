@@ -1,17 +1,39 @@
 import Button from 'react-bootstrap/Button';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
+import React, { useState } from "react";
+import Modal from 'react-bootstrap/Modal';
+
 
 function ProjecManagerCard({ project }) {
 
-  function handleDoRescan(name, version){
-    fetch('http://localhost:8080/plugin-manager/rescan', {
-      method: 'POST',
-      // mode: 'cors',
-      body: JSON.stringify({
-        name: name,
-        version: version
+  const [manifestAttrs, setManifestAttrs] = useState({});
+  const [showGetManifestAttrs, setShowGetManifestAttrs] = useState(false);
+
+  const handleShowGetManifestAttrs = () => {
+    fetchManifestData()
+    setShowGetManifestAttrs(true);
+  }
+  const handleCloseShowGetManifestAttrs = () => {
+    setShowGetManifestAttrs(false);
+  };
+
+  async function fetchManifestData() {
+    try {
+      const response = await fetch('http://localhost:8080/plugin-manager/get-manifest-attrs', {
+        method: 'POST',
+        // mode: 'cors',
+        body: JSON.stringify({
+          name: project.Name
+        })
       })
-    })
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setManifestAttrs(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   }
 
   function handleDelete(name){
@@ -61,6 +83,7 @@ function ProjecManagerCard({ project }) {
       </Popover.Body>
     </Popover>
   );
+
   const warningsPopover = (
     <Popover id="popover-basic">
       <Popover.Body>
@@ -82,7 +105,6 @@ function ProjecManagerCard({ project }) {
   );
 
   return (
-    // TODO: fix class name
     <tbody>
       <tr id="server-plugins">
         <td>
@@ -122,6 +144,7 @@ function ProjecManagerCard({ project }) {
               <OverlayTrigger trigger="click" placement="right" overlay={warningsPopover} rootClose>
                 <Button variant="outline-primary">Warnings</Button>
               </OverlayTrigger>
+              <Button variant="outline-primary" onClick={handleShowGetManifestAttrs} >ShowManifest</Button>
             </div>
 
           </ul>
@@ -132,6 +155,20 @@ function ProjecManagerCard({ project }) {
           </ul>
         </td>
       </tr>
+      <Modal show={showGetManifestAttrs} size="lg" onHide={handleCloseShowGetManifestAttrs}>
+          <Modal.Header closeButton>
+            <Modal.Title>Modal heading</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+          {Object.entries(manifestAttrs).map(([key, value]) => (
+            <li key={key}><b>{key}</b>: {value}</li>
+          ))}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={handleCloseShowGetManifestAttrs}>Close</Button>
+          </Modal.Footer>
+        </Modal>
+
     </tbody>
   );
 }

@@ -28,8 +28,7 @@ type Plugin struct {
 	Name    string
 	Version string
 
-	Url string
-	// Type                PluginType
+	Url                 string
 	RequiredCoreVersion string
 	Dependencies        map[string]Plugin
 	RequiredBy          map[string]string
@@ -37,7 +36,6 @@ type Plugin struct {
 	Warnings            []Warnings
 	GITUrl              string
 
-	// ReleaseNotes     []types.ReleaseNote
 	LatestVersion    string
 	InstalledVersion string
 }
