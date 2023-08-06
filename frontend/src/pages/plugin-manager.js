@@ -14,7 +14,7 @@ function PluginManager() {
   const [showAddNewPlugin, setAddNewPlugin] = useState(false);
   // status should represent status of all plugins
   // are deps were resolved, are all deps added, are all plugins downloaded
-  const [showSyncStatus, setSyncStatus] = useState("Not in sync");
+  // const [showSyncStatus, setSyncStatus] = useState("Not in sync");
 
   const [coreVersion, setCoreVersion] = useState("2.222.2");
 
@@ -134,9 +134,9 @@ function PluginManager() {
             </div>
             <div className="col-auto">
               <Button variant="primary" onClick={handleEditCoreVersion}>Change version</Button>
-              <div>
+              {/* <div>
                 Status: {showSyncStatus}
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
