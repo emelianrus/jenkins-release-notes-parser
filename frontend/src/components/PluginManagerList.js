@@ -31,7 +31,6 @@ function PluginManagerList({ projects }) {
                 <th>Latest version</th>
                 <th>Required Core Version</th>
                 <th>Plugin information</th>
-                <th>Force Download</th>
                 <th>Delete</th>
               </tr>
             </thead>

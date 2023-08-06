@@ -153,6 +153,9 @@ func (pm *PluginManager) reloadPluginsData(p *Plugin) {
 func (pm *PluginManager) GetPlugins() map[string]*Plugin {
 	return pm.Plugins
 }
+func (pm *PluginManager) GetPlugin(name string) *Plugin {
+	return pm.Plugins[name]
+}
 
 func (pm *PluginManager) GetCoreVersion() string {
 	return pm.coreVersion

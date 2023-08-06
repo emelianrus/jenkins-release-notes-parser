@@ -7,16 +7,22 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 func init() {
-	log.SetLevel(log.DebugLevel)
+	logLevel := os.Getenv("RN_DEBUG")
+	if logLevel != "" {
+		lvl, _ := logrus.ParseLevel(logLevel)
+		logrus.SetLevel(lvl)
+	} else {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
 	// TODO: enable for windows only
-	log.SetFormatter(&log.TextFormatter{ForceColors: true})
+	logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
 	// Output to stdout instead of the default stderr
 	// Can be any io.Writer, see below for File example
-	log.SetOutput(os.Stdout)
+	logrus.SetOutput(os.Stdout)
 }
 
 func TestPluginManager_FixPluginDependencies(t *testing.T) {

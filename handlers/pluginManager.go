@@ -52,6 +52,20 @@ func (s *ProjectService) AddNewPlugin(c *gin.Context) {
 	})
 }
 
+func (s *ProjectService) GetManifestAttrs(c *gin.Context) {
+	logrus.Infoln("GetManifestAttrs route reached")
+
+	var body map[string]string
+	if err := c.BindJSON(&body); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	logrus.Infof("Received request body: %+v\n", body)
+
+	attrs := s.PluginManager.GetPlugin(body["name"]).GetManifestAttrs()
+	c.JSON(http.StatusOK, attrs)
+}
+
 func (s *ProjectService) DeletePlugin(c *gin.Context) {
 	logrus.Infoln("DeletePlugin route reached")
 
