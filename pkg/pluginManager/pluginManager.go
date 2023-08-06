@@ -2,7 +2,6 @@ package pluginManager
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/outputGenerators"
@@ -475,8 +474,8 @@ func (pm *PluginManager) GetFixedDepsDiff() []diffPlugins {
 				for _, releaseNote := range releaseNotes {
 
 					// Thank you blueocean that you only one(not only) which has string in version like "Blueocean 1.23.3" instead of just "1.23.3"
-					versionRegex := regexp.MustCompile(`\d+\.\d+\.\d+`)
-					releaseNote.Name = versionRegex.FindString(releaseNote.Name)
+					// versionRegex := regexp.MustCompile(`\d+\.\d+\.\d+`)
+					// releaseNote.Name = versionRegex.FindString(releaseNote.Name)
 
 					if releaseNote.Name == pm.Plugins[changedPlugin.Name].Version {
 						foundOldVersion = true

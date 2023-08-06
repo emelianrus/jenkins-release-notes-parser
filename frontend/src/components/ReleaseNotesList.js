@@ -5,24 +5,38 @@ import React from "react";
 
 
 function ReleaseNotesList({ projects }) {
-  if (projects.length === 0) {
-    return <p><b>No updates found.</b></p>;
-  }
+
+
   let projectList = [];
 
 
+  let releaseNotes = []
+
   for (let project of projects) {
-    if (project.ReleaseNotes == null) {
+    if (project === undefined  || project.ReleaseNotes == null) {
       continue
     } else if (project.ReleaseNotes.length === 0){
-      project.ReleaseNotes = {
-        "notusedname": {
-          BodyHTML:"<b>RELEASES NOT FOUND</b>"
-        }
-      }
-    }
-    for (const [key, value] of Object.entries(project.ReleaseNotes)) {
 
+      releaseNotes.push({
+        ReleaseNotes: {
+          "notusedname": {
+            BodyHTML:"<b>RELEASES NOT FOUND</b>"
+          }
+
+        }
+      })
+      continue
+    }
+
+    releaseNotes.push(project)
+  }
+
+  if (releaseNotes.length === 0) {
+    return <p><b>No updates found.</b></p>;
+  }
+
+  for (let project of releaseNotes) {
+    for (const [key, value] of Object.entries(project.ReleaseNotes)) {
       projectList.push(
         <ReleaseNoteCard key={project.Name + value.Name} project={value} projectName={project.Name}/>
       )

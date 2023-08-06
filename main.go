@@ -5,9 +5,6 @@ import (
 	"runtime"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/routes"
-	"github.com/emelianrus/jenkins-release-notes-parser/storage"
-	"github.com/emelianrus/jenkins-release-notes-parser/storage/db"
-	rs "github.com/emelianrus/jenkins-release-notes-parser/storage/redisStorage"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 )
@@ -35,19 +32,19 @@ func init() {
 
 func Start() {
 
-	redis := db.NewRedisClient()
+	// redis := db.NewRedisClient()
 
-	redisStorage := &rs.RedisStorage{
-		DB: storage.SetStorage(redis),
-	}
+	// redisStorage := &rs.RedisStorage{
+	// 	DB: storage.SetStorage(redis),
+	// }
 
 	// values for debug
-	if redis.Status() != nil {
-		logrus.Errorln("failed to connect to redis")
-	} else {
-		// TODO: remove used during development
-		redisStorage.AddDebugData()
-	}
+	// if redis.Status() != nil {
+	// 	logrus.Errorln("failed to connect to redis")
+	// } else {
+	// 	// TODO: remove used during development
+	// 	redisStorage.AddDebugData()
+	// }
 
 	// githubClient := github.NewGitHubClient()
 
@@ -55,7 +52,7 @@ func Start() {
 	// go worker.StartWorkerPluginSite(redisStorage, jenkins.NewPluginSite())
 
 	// GIN
-	router := routes.SetupRouter(redisStorage)
+	router := routes.SetupRouter()
 	err := router.Run(":8080")
 	if err != nil {
 		logrus.Errorln("Failed to create gin server")

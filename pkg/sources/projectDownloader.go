@@ -1,6 +1,7 @@
 package sources
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/utils"
@@ -22,6 +23,9 @@ type Downloader interface {
 func DownloadProjectReleaseNotes(d Downloader, projectName string) ([]types.ReleaseNote, error) {
 	logrus.Infoln("[DownloadProjectReleaseNotes] started with")
 	releaseNotes, err := d.Download(projectName)
+	for _, v := range releaseNotes {
+		fmt.Println(v.Name)
+	}
 	sort.Slice(releaseNotes, func(i, j int) bool {
 		return utils.IsNewerThan(releaseNotes[i].Name, releaseNotes[j].Name)
 	})

@@ -183,6 +183,9 @@ func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
 		logrus.Infoln("finished download goroutine " + projectName)
 
 		for _, release := range releases {
+			if version := strings.TrimPrefix(release.Name, "BlueOcean "); version != release.Name {
+				release.Name = version
+			}
 			releaseNotes = append(releaseNotes, types.ReleaseNote{
 				Name:    release.Name,
 				Tag:     release.TagName,

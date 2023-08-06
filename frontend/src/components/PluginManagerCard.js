@@ -8,8 +8,7 @@ function PluginManagerCard({ project }) {
 
   const [manifestAttrs, setManifestAttrs] = useState({});
   const [showGetManifestAttrs, setShowGetManifestAttrs] = useState(false);
-  const [isLoadingManifest, setIsLoadingManifest] = useState(false);
-
+  const [getManifestMessage, setGetManifestMessage] = useState("");
 
   const handleShowGetManifestAttrs = () => {
     fetchManifestData()
@@ -21,7 +20,7 @@ function PluginManagerCard({ project }) {
 
   async function fetchManifestData() {
     try {
-      setIsLoadingManifest(true);
+      setGetManifestMessage("LOADING");
       const response = await fetch('http://localhost:8080/plugin-manager/get-manifest-attrs', {
         method: 'POST',
         // mode: 'cors',
@@ -29,15 +28,18 @@ function PluginManagerCard({ project }) {
           name: project.Name
         })
       })
+
       if (!response.ok) {
+        let error = await response.json()
+        console.log(error.error)
+        setGetManifestMessage("Error during download hpi file of plugin 404");
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
       setManifestAttrs(data);
+      setGetManifestMessage("")
     } catch (error) {
       console.error('Error fetching data:', error);
-    } finally {
-      setIsLoadingManifest(false);
     }
   }
 
@@ -165,8 +167,8 @@ function PluginManagerCard({ project }) {
             <Modal.Title>Modal heading</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {isLoadingManifest ? (
-              <div style={{ fontSize: "44px", fontWeight: "bold", textAlign: "center" }}>LOADING</div>
+            {getManifestMessage !== "" ? (
+              <div style={{ fontSize: "44px", fontWeight: "bold", textAlign: "center" }}>{getManifestMessage}</div>
               ) : (
                 <>
                   {Object.entries(manifestAttrs).map(([key, value]) => (

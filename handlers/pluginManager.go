@@ -36,9 +36,17 @@ func (s *ProjectService) AddNewPlugin(c *gin.Context) {
 	logrus.Infof("Received request body: %+v\n", body)
 
 	// check if plugin is not exist you can not add it to list
-	if _, exists := s.PluginManager.PluginVersions.Plugins[body["name"]]; !exists {
+	if _, pluginExists := s.PluginManager.PluginVersions.Plugins[body["name"]]; !pluginExists {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": fmt.Sprintf("AddNewPlugin %s:%s is not exist in public plugins", body["name"], body["version"]),
+			"status":  "error",
+		})
+		return
+	}
+
+	if _, ok := s.PluginManager.PluginVersions.Plugins[body["name"]][body["version"]]; !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": fmt.Sprintf("AddNewPlugin %s:%s exist in public plugins but it doesnt have version specified", body["name"], body["version"]),
 			"status":  "error",
 		})
 		return
@@ -62,7 +70,11 @@ func (s *ProjectService) GetManifestAttrs(c *gin.Context) {
 	}
 	logrus.Infof("Received request body: %+v\n", body)
 
-	attrs := s.PluginManager.GetPlugin(body["name"]).GetManifestAttrs()
+	attrs, err := s.PluginManager.GetPlugin(body["name"]).GetManifestAttrs()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, attrs)
 }
 
