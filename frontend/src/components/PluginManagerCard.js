@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Modal from 'react-bootstrap/Modal';
 
 
-function ProjecManagerCard({ project }) {
+function PluginManagerCard({ project }) {
 
   const [manifestAttrs, setManifestAttrs] = useState({});
   const [showGetManifestAttrs, setShowGetManifestAttrs] = useState(false);
@@ -185,7 +185,7 @@ function ProjecManagerCard({ project }) {
   );
 }
 
-export default ProjecManagerCard;
+export default PluginManagerCard;
 
 
 
