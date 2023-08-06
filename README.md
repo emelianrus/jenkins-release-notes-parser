@@ -34,6 +34,20 @@ as result you will see diff in Updated Plugins
 
 `Get Txt file` - option button will give you file with list of plugin manager plugins/updated plugins
 
+
+## Log levels
+
+set via `RN_DEBUG` environment variable. Can be
+
+* panic
+* fatal
+* error
+* warn or warning
+* info
+* debug
+* trace
+
+
 ## Deploy
 
 TODO: should be docker-compose or k8s. currently only local deployment see Local development
