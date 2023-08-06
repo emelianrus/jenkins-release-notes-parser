@@ -12,15 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func init() {
-	logrus.SetLevel(logrus.DebugLevel)
-	// TODO: enable for windows only
-	logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
-	// Output to stdout instead of the default stderr
-	// Can be any io.Writer, see below for File example
-	logrus.SetOutput(os.Stdout)
-}
-
 // function to check if file exists
 func IsFileExist(filePath string) bool {
 	logrus.Debugf("Checking is file exist: %s", filePath)

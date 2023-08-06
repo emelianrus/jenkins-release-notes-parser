@@ -183,6 +183,7 @@ func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
 		logrus.Infoln("finished download goroutine " + projectName)
 
 		for _, release := range releases {
+			// Thank you blueocean that you only one(not only) which has string in version like "Blueocean 1.23.3" instead of just "1.23.3"
 			if version := strings.TrimPrefix(release.Name, "BlueOcean "); version != release.Name {
 				release.Name = version
 			}
