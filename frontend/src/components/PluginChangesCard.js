@@ -16,12 +16,10 @@ function PluginChangesCard({ project }) {
   }
 
   const rowStyles = {
-    /* Add your styles here */
     backgroundColor: backgroundColor
   };
 
   return (
-    // TODO: fix class name
     <tbody>
       <tr id="server-plugins" style={rowStyles}>
         <td>
