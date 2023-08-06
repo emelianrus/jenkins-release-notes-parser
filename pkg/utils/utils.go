@@ -12,15 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func init() {
-	logrus.SetLevel(logrus.DebugLevel)
-	// TODO: enable for windows only
-	logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
-	// Output to stdout instead of the default stderr
-	// Can be any io.Writer, see below for File example
-	logrus.SetOutput(os.Stdout)
-}
-
 // function to check if file exists
 func IsFileExist(filePath string) bool {
 	logrus.Debugf("Checking is file exist: %s", filePath)
@@ -43,17 +34,23 @@ func IsUrl(line string) bool {
 	}
 }
 
-func DoRequestGet(url string) *http.Response {
+func DoRequestGet(url string) (*http.Response, error) {
 	var client = &http.Client{Timeout: 100 * time.Second}
 	// TODO: DRY
 	logrus.Debugf("Downloading: %s \n", url)
 	response, err := client.Get(url)
-	if err != nil || response.StatusCode != 200 {
-		fmt.Println("download error")
+
+	if err != nil {
+		logrus.Errorf("url: %s download error", url)
 		logrus.Error(err)
-		os.Exit(1)
+		return nil, err
 	}
-	return response
+	if response.StatusCode != 200 {
+		logrus.Errorf("url: %s response status code %d", url, int(response.StatusCode))
+
+		return nil, fmt.Errorf("url: %s response status code %d", url, int(response.StatusCode))
+	}
+	return response, nil
 }
 
 func GetNextVersion(versions []string, currentVersion string) (string, error) {

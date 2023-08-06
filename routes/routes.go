@@ -5,28 +5,26 @@ import (
 
 	"github.com/emelianrus/jenkins-release-notes-parser/handlers"
 	"github.com/emelianrus/jenkins-release-notes-parser/pkg/pluginManager"
-	"github.com/emelianrus/jenkins-release-notes-parser/storage/redisStorage"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-func preloadPluginManager(pm *pluginManager.PluginManager, redis *redisStorage.RedisStorage) {
+// func preloadPluginManager(pm *pluginManager.PluginManager, redis *redisStorage.RedisStorage) {
+// 	watcherData, _ := redis.GetPluginListData()
+// 	for name, version := range watcherData {
+// 		pm.AddPluginWithVersion(name, version)
+// 	}
+// }
 
-	watcherData, _ := redis.GetPluginListData()
-	for name, version := range watcherData {
-		pm.AddPluginWithVersion(name, version)
-	}
-}
-
-func SetupRouter(redis *redisStorage.RedisStorage) *gin.Engine {
+func SetupRouter() *gin.Engine {
 	router := gin.Default()
 
 	pm := pluginManager.NewPluginManager()
 
-	preloadPluginManager(&pm, redis)
+	// preloadPluginManager(&pm, redis)
 
 	handler := handlers.ProjectService{
-		Redis:         redis,
+		// Redis:         redis,
 		PluginManager: pm,
 	}
 

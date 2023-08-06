@@ -112,8 +112,13 @@ func (p *Plugin) Download() (string, error) {
 	if utils.IsFileExist(fileLocation) {
 		logrus.Debugf("File %s Exist. skipped download\n", fileLocation)
 	} else {
+		logrus.Debugf("Cache miss %s\n", fileLocation)
 		logrus.Infof("Downloading plugin %s\n", p.Name)
-		response := utils.DoRequestGet(p.Url)
+		response, err := utils.DoRequestGet(p.Url)
+		if err != nil {
+			logrus.Warnf("DoRequestGet has error during download %s\n", p.Url)
+			return "", err
+		}
 		// Create the file
 		file, err := os.Create(fileLocation)
 		if err != nil {
@@ -144,8 +149,12 @@ func (p *Plugin) Download() (string, error) {
 }
 
 // Loads dependencies from hpi file manifest into Plugin struct
-func (p *Plugin) LoadDependenciesFromManifest() map[string]Plugin {
-	p.Download()
+func (p *Plugin) LoadDependenciesFromManifest() (map[string]Plugin, error) {
+	path, err := p.Download()
+	fmt.Println(path)
+	if err != nil {
+		return map[string]Plugin{}, err
+	}
 	// we need manifest to get jenkins core version to get the right update center json
 	manifestFile, _ := manifest.Parse(fmt.Sprintf("plugins/%s-%s.hpi", p.Name, p.Version))
 
@@ -158,11 +167,15 @@ func (p *Plugin) LoadDependenciesFromManifest() map[string]Plugin {
 		}
 	}
 	logrus.Debugf("[GetDependenciesFromManifest] Plugin: %s has deps: %v", p.Name, p.Dependencies)
-	return p.Dependencies
+	return p.Dependencies, nil
 }
 
-func (p *Plugin) GetManifestAttrs() map[string]string {
-	p.Download()
+func (p *Plugin) GetManifestAttrs() (map[string]string, error) {
+	path, err := p.Download()
+	fmt.Println(path)
+	if err != nil {
+		return map[string]string{}, err
+	}
 	// we need manifest to get jenkins core version to get the right update center json
 	manifestFile, _ := manifest.Parse(fmt.Sprintf("plugins/%s-%s.hpi", p.Name, p.Version))
 
@@ -171,5 +184,5 @@ func (p *Plugin) GetManifestAttrs() map[string]string {
 		attrs[k] = v
 	}
 
-	return attrs
+	return attrs, nil
 }
