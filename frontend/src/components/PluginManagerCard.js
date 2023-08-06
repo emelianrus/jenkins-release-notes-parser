@@ -4,10 +4,12 @@ import React, { useState } from "react";
 import Modal from 'react-bootstrap/Modal';
 
 
-function ProjecManagerCard({ project }) {
+function PluginManagerCard({ project }) {
 
   const [manifestAttrs, setManifestAttrs] = useState({});
   const [showGetManifestAttrs, setShowGetManifestAttrs] = useState(false);
+  const [isLoadingManifest, setIsLoadingManifest] = useState(false);
+
 
   const handleShowGetManifestAttrs = () => {
     fetchManifestData()
@@ -19,6 +21,7 @@ function ProjecManagerCard({ project }) {
 
   async function fetchManifestData() {
     try {
+      setIsLoadingManifest(true);
       const response = await fetch('http://localhost:8080/plugin-manager/get-manifest-attrs', {
         method: 'POST',
         // mode: 'cors',
@@ -33,6 +36,8 @@ function ProjecManagerCard({ project }) {
       setManifestAttrs(data);
     } catch (error) {
       console.error('Error fetching data:', error);
+    } finally {
+      setIsLoadingManifest(false);
     }
   }
 
@@ -160,9 +165,16 @@ function ProjecManagerCard({ project }) {
             <Modal.Title>Modal heading</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-          {Object.entries(manifestAttrs).map(([key, value]) => (
-            <li key={key}><b>{key}</b>: {value}</li>
-          ))}
+            {isLoadingManifest ? (
+              <div style={{ fontSize: "44px", fontWeight: "bold", textAlign: "center" }}>LOADING</div>
+              ) : (
+                <>
+                  {Object.entries(manifestAttrs).map(([key, value]) => (
+                    <li key={key}><b>{key}</b>: {value}</li>
+                  ))}
+                </>
+              )
+            }
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={handleCloseShowGetManifestAttrs}>Close</Button>
@@ -173,6 +185,7 @@ function ProjecManagerCard({ project }) {
   );
 }
 
-export default ProjecManagerCard;
+export default PluginManagerCard;
+
 
 
