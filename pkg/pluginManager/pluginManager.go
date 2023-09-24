@@ -20,11 +20,11 @@ type PluginManager struct {
 
 	UpdatedPlugins map[string]*Plugin // Temp storage. will set this after update/fix deps
 
-	coreVersion string // jenkins core version
-
-	JenkinsSite    jenkinsSite.JenkinsSiteInterface // external. jenkins site main struct
-	UpdateCenter   jenkinsSite.UpdateCenter         // external. from jenkins api. plugin latest version + deprecations + deps for plugin from JenkinsSite
-	PluginVersions jenkinsSite.PluginVersions       // external. from jenkins api. plugins data with versions from JenkinsSite
+	coreVersion         string                           // jenkins core version
+	UpdateCenterVersion string                           // jenkins update center is a mess, it redirect you to nearest exising version, for sure you will get issues
+	JenkinsSite         jenkinsSite.JenkinsSiteInterface // external. jenkins site main struct
+	UpdateCenter        jenkinsSite.UpdateCenter         // external. from jenkins api. plugin latest version + deprecations + deps for plugin from JenkinsSite
+	PluginVersions      jenkinsSite.PluginVersions       // external. from jenkins api. plugins data with versions from JenkinsSite
 
 	// release notes sources
 	PluginSite   jenkins.PluginSite // jenkins site which has release notes (last 10)
@@ -43,10 +43,10 @@ func NewPluginManager() PluginManager {
 	pv, _ := js.GetPluginVersions()
 
 	return PluginManager{
-		coreVersion: stableCoreVersion,
-
-		Plugins:        make(map[string]*Plugin),
-		UpdatedPlugins: make(map[string]*Plugin),
+		coreVersion:         stableCoreVersion,
+		UpdateCenterVersion: uc.Core.Version,
+		Plugins:             make(map[string]*Plugin),
+		UpdatedPlugins:      make(map[string]*Plugin),
 
 		JenkinsSite:    js,
 		UpdateCenter:   *uc,
@@ -168,6 +168,9 @@ func (pm *PluginManager) GetPlugin(name string) *Plugin {
 
 func (pm *PluginManager) GetCoreVersion() string {
 	return pm.coreVersion
+}
+func (pm *PluginManager) GetUpdateCenterVersion() string {
+	return pm.UpdateCenterVersion
 }
 func (pm *PluginManager) SetCoreVersion(newCoreVersion string) {
 	pm.coreVersion = newCoreVersion

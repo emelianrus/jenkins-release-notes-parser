@@ -133,7 +133,7 @@ function PluginChanges() {
           <Button variant="primary" style={{ marginRight: '10px' }} onClick={forceRescan}>
             Get deps plugins (with core update)
           </Button>
-          <Button variant="primary">
+          <Button variant="primary" disabled>
             Get deps plugins (without core update)
           </Button>
           {isLoading ? (

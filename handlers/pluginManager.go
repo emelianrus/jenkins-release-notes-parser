@@ -122,13 +122,15 @@ func (s *ProjectService) GetPluginsData(c *gin.Context) {
 	logrus.Infoln("GetPluginsData route reached")
 
 	type pluginManagerData struct {
-		Plugins     map[string]*pluginManager.Plugin
-		CoreVersion string
+		Plugins             map[string]*pluginManager.Plugin
+		CoreVersion         string
+		UpdateCenterVersion string
 	}
 
 	c.JSON(http.StatusOK, pluginManagerData{
-		Plugins:     s.PluginManager.GetPlugins(),
-		CoreVersion: s.PluginManager.GetCoreVersion(),
+		Plugins:             s.PluginManager.GetPlugins(),
+		CoreVersion:         s.PluginManager.GetCoreVersion(),
+		UpdateCenterVersion: s.PluginManager.GetUpdateCenterVersion(),
 	})
 
 }
