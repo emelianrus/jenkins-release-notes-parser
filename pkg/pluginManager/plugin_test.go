@@ -36,7 +36,8 @@ func TestPlugin_Download(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run("check download file with cache", func(t *testing.T) {
+			tt.p.Download()
 			got, err := tt.p.Download()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Plugin.Download() error = %v, wantErr %v", err, tt.wantErr)
@@ -44,6 +45,39 @@ func TestPlugin_Download(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("Plugin.Download() = %v, want %v", got, tt.want)
+			}
+		})
+		t.Run("check download file without cache", func(t *testing.T) {
+			e := os.Remove("plugins/blueocean-1.23.3.hpi")
+			if e != nil {
+				log.Fatal(e)
+			}
+			got, err := tt.p.Download()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Plugin.Download() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Plugin.Download() = %v, want %v", got, tt.want)
+			}
+		})
+		t.Run("check nonexing path", func(t *testing.T) {
+			e := os.Remove("plugins/blueocean-1.23.3.hpi")
+			if e != nil {
+				log.Info(e)
+			}
+			nonExistPlugin := &Plugin{
+				Name:    "sdfasdfasdfasdf",
+				Version: "asdfasdfasdfs",
+			}
+
+			got, err := nonExistPlugin.Download()
+			if (err == nil) != tt.wantErr {
+				t.Errorf("Plugin.Download() error = %v, wantErr %v", err, true)
+				return
+			}
+			if got != "" {
+				t.Errorf("Plugin.Download() = %v, want %v", got, "''")
 			}
 		})
 	}

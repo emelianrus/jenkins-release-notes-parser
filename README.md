@@ -50,7 +50,11 @@ set via `RN_DEBUG` environment variable. Can be
 
 ## Deploy
 
-TODO: should be docker-compose or k8s. currently only local deployment see Local development
+```
+docker-compose up -d
+```
+
+TODO: should be deployment to docker/k8s
 
 ## Github personal token
 

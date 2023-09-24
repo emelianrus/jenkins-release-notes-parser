@@ -22,9 +22,9 @@ type PluginManager struct {
 
 	coreVersion string // jenkins core version
 
-	JenkinsSite    jenkinsSite.JenkinsSite    // external. jenkins site main struct
-	UpdateCenter   jenkinsSite.UpdateCenter   // external. from jenkins api. plugin latest version + deprecations + deps for plugin from JenkinsSite
-	PluginVersions jenkinsSite.PluginVersions // external. from jenkins api. plugins data with versions from JenkinsSite
+	JenkinsSite    jenkinsSite.JenkinsSiteInterface // external. jenkins site main struct
+	UpdateCenter   jenkinsSite.UpdateCenter         // external. from jenkins api. plugin latest version + deprecations + deps for plugin from JenkinsSite
+	PluginVersions jenkinsSite.PluginVersions       // external. from jenkins api. plugins data with versions from JenkinsSite
 
 	// release notes sources
 	PluginSite   jenkins.PluginSite // jenkins site which has release notes (last 10)
@@ -38,12 +38,12 @@ type PluginManager struct {
 func NewPluginManager() PluginManager {
 
 	js := jenkinsSite.NewJenkinsSite()
-	latestCoreVersion, _ := js.GetStableCoreVersion()
-	uc, _ := js.UpdateCenter.Get(latestCoreVersion)
-	pv, _ := js.PluginVersions.Get()
+	stableCoreVersion, _ := js.GetStableCoreVersion()
+	uc, _ := js.GetUpdateCenter(stableCoreVersion)
+	pv, _ := js.GetPluginVersions()
 
 	return PluginManager{
-		coreVersion: "2.235.2", // TODO: should not be hardcoded
+		coreVersion: stableCoreVersion,
 
 		Plugins:        make(map[string]*Plugin),
 		UpdatedPlugins: make(map[string]*Plugin),
@@ -63,6 +63,16 @@ func NewPluginManager() PluginManager {
 
 func (pm *PluginManager) SetFileParser(parser parsers.InputParser) {
 	pm.FileParser = parser
+}
+
+func (pm *PluginManager) SetJenkinsSite(js jenkinsSite.JenkinsSiteInterface) {
+	pm.JenkinsSite = js
+}
+func (pm *PluginManager) SetUpdateCenter(uc *jenkinsSite.UpdateCenter) {
+	pm.UpdateCenter = *uc
+}
+func (pm *PluginManager) SetPluginVersions(pv *jenkinsSite.PluginVersions) {
+	pm.PluginVersions = *pv
 }
 
 func (pm *PluginManager) SetFileOutput(og outputGenerators.FileGenerator) {
@@ -161,7 +171,7 @@ func (pm *PluginManager) GetCoreVersion() string {
 }
 func (pm *PluginManager) SetCoreVersion(newCoreVersion string) {
 	pm.coreVersion = newCoreVersion
-	uc, _ := pm.JenkinsSite.UpdateCenter.Get(newCoreVersion)
+	uc, _ := pm.JenkinsSite.GetUpdateCenter(newCoreVersion)
 
 	pm.UpdateCenter = *uc
 }
@@ -303,10 +313,15 @@ func (pm *PluginManager) FixWarnings() {
 	}
 }
 
+func (pm *PluginManager) FixPluginDependenciesMinimal() map[string]Plugin {
+	return map[string]Plugin{}
+}
+
 // TODO: this function might add new version or new plugin and we dont have data like url + deps etc for it
 // Will get plugin dependencies for plugin list and return result back to PluginManager struct
 // Will replace version of plugin if dep version > current version
 // Used LoadDependenciesFromManifest function as source of versions/plugin so will download hpi files
+// WITH CORE UPGRADE
 func (pm *PluginManager) FixPluginDependencies() map[string]Plugin {
 
 	pluginsToCheck := make(map[string]Plugin) // plugins has recently updated version or new dependency to check
@@ -458,14 +473,14 @@ func (pm *PluginManager) GetFixedDepsDiff() []diffPlugins {
 	var resultDiff []diffPlugins
 
 	for _, changedPlugin := range pm.UpdatedPlugins {
-		if _, exists := pm.Plugins[changedPlugin.Name]; exists {
-			// if we already have this plugin and version updated
-			if utils.IsNewerThan(changedPlugin.Version, pm.Plugins[changedPlugin.Name].Version) {
-				// Get release notes
+		existingPlugin, exists := pm.Plugins[changedPlugin.Name]
 
+		if exists {
+			// if we already have this plugin and version updated
+			if utils.IsNewerThan(changedPlugin.Version, existingPlugin.Version) {
+				// Get release notes
 				// releaseNotes, _ := sources.DownloadProjectReleaseNotes(&pm.PluginSite, changedPlugin.Name)
-				gh := github.NewGitHubClient()
-				releaseNotes, _ := sources.DownloadProjectReleaseNotes(&gh, changedPlugin.Name)
+				releaseNotes, _ := sources.DownloadProjectReleaseNotes(&pm.GitHubClient, changedPlugin.Name)
 
 				var resultRelaseNotes []types.ReleaseNote
 
@@ -473,7 +488,7 @@ func (pm *PluginManager) GetFixedDepsDiff() []diffPlugins {
 				foundOldVersion := false
 				for _, releaseNote := range releaseNotes {
 
-					if releaseNote.Name == pm.Plugins[changedPlugin.Name].Version {
+					if releaseNote.Name == existingPlugin.Version {
 						foundOldVersion = true
 						continue
 					}
@@ -491,14 +506,12 @@ func (pm *PluginManager) GetFixedDepsDiff() []diffPlugins {
 
 				}
 				if !foundNewVersion {
-					logrus.Warnf("haven't found version %s:%s\n", changedPlugin.Name, changedPlugin.Version)
-					// TODO: try to download from github
-					// add feed
+					logrus.Warnf("haven't found version for diff %s:%s\n", changedPlugin.Name, changedPlugin.Version)
 				}
 
 				diff := diffPlugins{
 					Name:           changedPlugin.Name,
-					CurrentVersion: pm.Plugins[changedPlugin.Name].Version,
+					CurrentVersion: existingPlugin.Version,
 					NewVersion:     changedPlugin.Version,
 					HTMLURL:        changedPlugin.GITUrl,
 					Type:           UPDATED_PLUGIN,
@@ -511,12 +524,12 @@ func (pm *PluginManager) GetFixedDepsDiff() []diffPlugins {
 				continue
 			}
 			// Get release notes end ^
-			if pm.Plugins[changedPlugin.Name].Version == changedPlugin.Version {
+			if existingPlugin.Version == changedPlugin.Version {
 				// if version the same
 				resultDiff = append(resultDiff, diffPlugins{
 					Name:           changedPlugin.Name,
-					CurrentVersion: pm.Plugins[changedPlugin.Name].Version,
-					NewVersion:     pm.Plugins[changedPlugin.Name].Version,
+					CurrentVersion: existingPlugin.Version,
+					NewVersion:     existingPlugin.Version,
 					HTMLURL:        changedPlugin.GITUrl,
 					Type:           NO_CHANGED_PLUGIN,
 				})

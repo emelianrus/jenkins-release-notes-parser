@@ -153,7 +153,7 @@ function PluginManager() {
         </div>
         <div className="mr-2">
           <Button variant="outline-primary" onClick={handleAddNewPlugin}>Add one plugin</Button>
-          <Button variant="outline-primary" onClick={handleGetTxtFile}>Get Txt File</Button>
+          <Button variant="outline-primary" onClick={handleGetTxtFile} disabled={ Object.keys(plugins).length === 0 } >Get Txt File</Button>
         </div>
       </div>
       {/* ADD NEW PLUGIN MODAL WINDOW */}

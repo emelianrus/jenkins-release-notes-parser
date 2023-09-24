@@ -8,33 +8,41 @@ import Button from 'react-bootstrap/Button';
 function PluginChanges() {
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [backendStatus, setBackendStatus] = useState("Loading...");
+  const [backendStatus, setBackendStatus] = useState("");
 
   useEffect(() => {
-    fetchData();
+    forceRescan();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const response = await fetch(`http://localhost:8080/add-updated-plugins/get-data`);
-      const data = await response.json();
-      if (Object.keys(data).length < 1) {
-        try {
-          await fetch(`http://localhost:8080/plugin-manager/check-deps`);
-        } catch (error) {
-          console.error(error);
-          setBackendStatus(error.message);
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      setBackendStatus(error.message);
-    }
+  // const fetchData = async () => {
+  //   // TODO: why needed to use this endpoint
+  //   try {
+  //     const response = await fetch(`http://localhost:8080/add-updated-plugins/get-data`);
+  //     const data = await response.json();
+  //     if (Object.keys(data).length < 1) {
+  //       try {
+  //         await fetch(`http://localhost:8080/plugin-manager/check-deps`);
+  //       } catch (error) {
+  //         console.error(error);
+  //         setBackendStatus(error.message);
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //     setBackendStatus(error.message);
+  //   }
 
+  //   handleGetChangedPlugins()
+  // };
+
+  const handleGetChangedPlugins = async () => {
     try {
       const response = await fetch(`http://localhost:8080/plugin-manager/get-fixed-deps-diff`);
       const data = await response.json();
-
+      if (data === null ) {
+        setBackendStatus("empty");
+        return
+      }
       const sortedData = data.sort((a, b) => {
         const nameA = a.Name.toLowerCase();
         const nameB = b.Name.toLowerCase();
@@ -55,7 +63,7 @@ function PluginChanges() {
       console.error(error);
       setBackendStatus(error.message);
     }
-  };
+  }
 
   const handleGetTxtFile = async () => {
     try {
@@ -71,7 +79,7 @@ function PluginChanges() {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'file.txt'; // Set the desired file name
+        link.download = 'file.txt';
         link.click();
         window.URL.revokeObjectURL(url);
       } else {
@@ -92,13 +100,16 @@ function PluginChanges() {
 
     window.location.replace('/plugin-manager');
   }
+
   async function forceRescan() {
     try {
-      await fetch(`http://localhost:8080/plugin-manager/check-deps`);
-      window.location.reload(false);
+      await fetch(`http://localhost:8080/plugin-manager/check-deps-with-update`);
+      // window.location.reload(false);
     } catch (error) {
       console.error(error);
     }
+
+    handleGetChangedPlugins()
   }
 
   const pluginsArray = [];
@@ -119,6 +130,12 @@ function PluginChanges() {
       <div className="container-sm mt-5 ml-5 mr-5">
         <h3>Plugin changes</h3>
         <div className="table-responsive">
+          <Button variant="primary" style={{ marginRight: '10px' }} onClick={forceRescan}>
+            Get deps plugins (with core update)
+          </Button>
+          <Button variant="primary">
+            Get deps plugins (without core update)
+          </Button>
           {isLoading ? (
             <div style={{ fontSize: "44px", fontWeight: "bold", textAlign: "center" }}>{backendStatus}</div>
             ) : (
@@ -152,6 +169,7 @@ function PluginChanges() {
                 <ReleaseNotesList projects={projects}/>
               </>
             )}
+
           </div>
         </div>
       </div>

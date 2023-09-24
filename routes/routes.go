@@ -56,7 +56,8 @@ func SetupRouter() *gin.Engine {
 
 	router.POST("/plugin-manager/add-new-plugin", handler.AddNewPlugin)
 	router.DELETE("/plugin-manager/delete-plugin", handler.DeletePlugin)
-	router.GET("/plugin-manager/check-deps", handler.CheckDeps)
+	router.GET("/plugin-manager/check-deps-with-update", handler.CheckDeps)
+	router.GET("/plugin-manager/check-deps-without-update", func(ctx *gin.Context) {})
 	router.GET("/plugin-manager/get-fixed-deps-diff", handler.GetFixedDepsDiff)
 
 	router.GET("/plugin-changes/download-file", handler.DownloadFilePluginChanges)

@@ -142,6 +142,14 @@ func (s *ProjectService) DownloadFilePluginManager(c *gin.Context) {
 	// TODO: payload txt file or yaml file or any other type
 	logrus.Infoln("DownloadFile route reached")
 
+	data := s.PluginManager.GenerateFileOutputPluginManager()
+	if len(data) == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "doesn't have data to create file for plugin manager",
+			"status":  "error",
+		})
+		return
+	}
 	// Create a temporary file
 	tmpFile, err := os.CreateTemp("", "file*.txt")
 	if err != nil {
@@ -151,7 +159,7 @@ func (s *ProjectService) DownloadFilePluginManager(c *gin.Context) {
 	defer tmpFile.Close()
 
 	// Write the contents to the file
-	_, err = tmpFile.Write(s.PluginManager.GenerateFileOutputPluginManager())
+	_, err = tmpFile.Write(data)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Failed to write to temp file")
 		return
@@ -171,6 +179,14 @@ func (s *ProjectService) DownloadFilePluginManager(c *gin.Context) {
 func (s *ProjectService) DownloadFilePluginChanges(c *gin.Context) {
 	// TODO: payload txt file or yaml file or any other type
 	logrus.Infoln("DownloadFile route reached")
+	data := s.PluginManager.GenerateFileOutputUpdatedPlugins()
+	if len(data) == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "doesn't have data to create file for plugin changes",
+			"status":  "error",
+		})
+		return
+	}
 
 	// Create a temporary file
 	tmpFile, err := os.CreateTemp("", "file*.txt")
@@ -181,7 +197,7 @@ func (s *ProjectService) DownloadFilePluginChanges(c *gin.Context) {
 	defer tmpFile.Close()
 
 	// Write the contents to the file
-	_, err = tmpFile.Write(s.PluginManager.GenerateFileOutputUpdatedPlugins())
+	_, err = tmpFile.Write(data)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Failed to write to temp file")
 		return
