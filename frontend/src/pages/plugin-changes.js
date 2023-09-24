@@ -14,27 +14,6 @@ function PluginChanges() {
     forceRescan();
   }, []);
 
-  // const fetchData = async () => {
-  //   // TODO: why needed to use this endpoint
-  //   try {
-  //     const response = await fetch(`http://localhost:8080/add-updated-plugins/get-data`);
-  //     const data = await response.json();
-  //     if (Object.keys(data).length < 1) {
-  //       try {
-  //         await fetch(`http://localhost:8080/plugin-manager/check-deps`);
-  //       } catch (error) {
-  //         console.error(error);
-  //         setBackendStatus(error.message);
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error(error);
-  //     setBackendStatus(error.message);
-  //   }
-
-  //   handleGetChangedPlugins()
-  // };
-
   const handleGetChangedPlugins = async () => {
     try {
       const response = await fetch(`http://localhost:8080/plugin-manager/get-fixed-deps-diff`);
