@@ -46,7 +46,7 @@ func (fp TXTFileParser) Parse(content []byte) map[string]string {
 				logrus.Errorln("Unsupported format NAME:URL use instead NAME::URL")
 
 			} else {
-				version = parsedLine[1]
+				version = strings.TrimRight(parsedLine[1], "\r")
 				resultMap[name] = version
 			}
 			continue
