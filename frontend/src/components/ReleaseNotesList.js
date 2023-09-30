@@ -17,7 +17,7 @@ function ReleaseNotesList({ projects }) {
         const controller = new AbortController();
         const signal = controller.signal;
 
-        setBackendStatus("Loading");
+        setBackendStatus("Loading, you may hit github rate limit(50 request - unauthorized, 5000 requests - authorized per hour) so need to wait 1h+");
         const response = await fetch(`http://localhost:8080/plugin-manager/get-release-notes-diff`, {
           method: 'POST',
           mode: 'cors',
@@ -28,24 +28,29 @@ function ReleaseNotesList({ projects }) {
           signal, // Pass the signal to the fetch options
         });
         const data = await response.json();
-        const uniqueData = data.filter(note => !releaseNotes.some(existingNote => existingNote.version === note.version));
-        // Update releaseNotes based on previous state
-        setReleaseNotes(prevReleaseNotes => [...prevReleaseNotes, ...uniqueData]);
+        console.log(data)
+        const isUniqueName = !releaseNotes.some(existingData => existingData.Name === data.Name);
+
+        if (isUniqueName) {
+          // Update releaseNotes based on previous state
+          setReleaseNotes(prevReleaseNotes => [...prevReleaseNotes, data]);
+        } else {
+          console.log('Data with the same name already exists in releaseNotes.');
+        }
         setBackendStatus("");
       } catch (error) {
         console.error(error);
       }
     }
   }
-
-  let projectList = [];
-
   let resultNotes = [];
   for (let project of releaseNotes) {
 
-    if (project === undefined || project.ReleaseNotes == null) {
+
+    if (project.ReleaseNotes == null) {
       continue
-    } else if (project.ReleaseNotes.length === 0){
+    }
+    else if (project.ReleaseNotes.length === 0){
 
       resultNotes.push({
         ReleaseNotes: {
@@ -65,7 +70,7 @@ function ReleaseNotesList({ projects }) {
   // if (resultNotes.length === 0) {
   //   return <p><b>No updates found.</b></p>;
   // }
-
+  let projectList = [];
   for (let project of resultNotes) {
     for (const [key, value] of Object.entries(project.ReleaseNotes)) {
       projectList.push(

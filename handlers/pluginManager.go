@@ -151,7 +151,7 @@ func (s *ProjectService) GetReleaseNotesDiff(c *gin.Context) {
 	select {
 	case <-c.Writer.CloseNotify():
 		logrus.Infoln("Client connection closed")
-		// Perform any cleanup or cancellation logic here
+		// aborted logic
 		return
 	case data := <-result:
 		c.JSON(http.StatusOK, data)

@@ -112,7 +112,7 @@ func (g *GitHub) Download(projectName string) ([]types.ReleaseNote, error) {
 	}
 
 	// use only half of the slots
-	if g.GitHubStats.RateLimitUsed > 30 {
+	if g.GitHubStats.RateLimitRemaning < 15 {
 		g.waitUntilNextSlotAvailable()
 	}
 

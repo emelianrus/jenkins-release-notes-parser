@@ -29,10 +29,7 @@ func (s *ProjectService) AddPluginsFile(c *gin.Context) {
 
 	s.PluginManager.CleanPlugins()
 
-	for pluginName, version := range plugins {
-		s.PluginManager.AddPluginWithVersion(pluginName, version)
-	}
-
+	s.PluginManager.AddPlugins(plugins)
 	c.String(http.StatusOK, "AddPluginsFile")
 }
 
