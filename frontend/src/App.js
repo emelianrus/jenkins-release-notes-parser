@@ -18,6 +18,7 @@ function App() {
     padding: '10px', // Set padding if needed
     textAlign: 'center',
   };
+  const currentYear = new Date().getFullYear();
   return (
     <>
     <Router>
@@ -33,7 +34,7 @@ function App() {
           <Route path="/plugin-changes" element={<PluginChanges/>} />
         </Routes>
         <footer style={footerStyle}>
-          © 2023 Jenkins Plugin Manager
+          © {currentYear} Jenkins Plugin Manager
         </footer>
       </div>
     </Router>
