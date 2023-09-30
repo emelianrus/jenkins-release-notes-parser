@@ -9,10 +9,13 @@ function PluginChangesCard({ project }) {
     backgroundColor = "#e7f8e5"
   } else if (project.Type === 2) {
     changeType = "update"
-    backgroundColor = "#ffe1d2"
+    backgroundColor = "#fee8a3"
   } else if (project.Type === 3) {
     changeType = "the same"
     backgroundColor = "#ffffff"
+  } else if (project.Type === 5) {
+    changeType = "removed"
+    backgroundColor = "#f77c7c"
   }
 
   const rowStyles = {

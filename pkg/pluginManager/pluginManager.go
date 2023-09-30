@@ -466,6 +466,7 @@ const (
 	UPDATED_PLUGIN
 	NO_CHANGED_PLUGIN
 	DOWNGRADE_PLUGIN
+	REMOVED_PLUGIN
 )
 
 func (pt pluginChangedType) String() string {
@@ -609,6 +610,21 @@ func (pm *PluginManager) GetFixedDepsDiff() []diffPlugins {
 				Type:           NEW_PLUGIN,
 			})
 			continue
+		}
+	}
+
+	// check if plugin was removed from plugin manager
+	// aka diff plugin manager <> changed plugins
+	for _, plugin := range pm.Plugins {
+		if _, notExists := pm.UpdatedPlugins[plugin.Name]; !notExists {
+			resultDiff = append(resultDiff, diffPlugins{
+				Name:           plugin.Name,
+				CurrentVersion: plugin.Version,
+				NewVersion:     plugin.Version,
+				HTMLURL:        plugin.GITUrl,
+				DiffVersions:   nil,
+				Type:           REMOVED_PLUGIN,
+			})
 		}
 	}
 
