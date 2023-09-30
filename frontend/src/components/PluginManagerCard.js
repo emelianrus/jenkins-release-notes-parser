@@ -111,6 +111,7 @@ function PluginManagerCard({ project }) {
     </Popover>
   );
 
+
   return (
     <tbody>
       <tr id="server-plugins">
@@ -143,13 +144,13 @@ function PluginManagerCard({ project }) {
           <ul>
             <div style={{ textAlign: "center"}}>
               <OverlayTrigger trigger="click" placement="right" overlay={requiredByPopover} rootClose>
-                <Button variant="outline-primary">Required by</Button>
+                <Button variant="outline-primary" disabled={Object.keys(project.RequiredBy).length === 0}>Required by</Button>
               </OverlayTrigger>
               <OverlayTrigger trigger="click" placement="right" overlay={dependsOnPopover} rootClose>
-                <Button variant="outline-primary">Depends on</Button>
+                <Button variant="outline-primary" disabled={Object.keys(project.Dependencies).length === 0}>Depends on</Button>
               </OverlayTrigger>
               <OverlayTrigger trigger="click" placement="right" overlay={warningsPopover} rootClose>
-                <Button variant="outline-primary">Warnings</Button>
+                <Button variant="outline-primary" disabled={!project.Warnings || project.Warnings.length === 0}>Warnings</Button>
               </OverlayTrigger>
               <Button variant="outline-primary" onClick={handleShowGetManifestAttrs} >ShowManifest</Button>
             </div>
