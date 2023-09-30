@@ -97,12 +97,7 @@ function PluginChanges() {
   const pluginCards = pluginsArray.map(plugin => (
     <PluginChangesCard key={plugin.key} project={plugin.project} />
   ));
-  const footerStyle = {
-    marginTop: '20px', // Adjust the margin as needed
-    backgroundColor: '#f0f0f0', // Set your desired background color
-    padding: '10px', // Set padding if needed
-    textAlign: 'center',
-  };
+
   return (
     <div>
       <div className="project-list">
@@ -153,10 +148,6 @@ function PluginChanges() {
             )}
           </div>
         </div>
-
-        <footer style={footerStyle}>
-          © 2023 Jenkins Plugin Manager
-        </footer>
       </div>
     </div>
   );

@@ -12,7 +12,13 @@ import AddUpdatedPlugins from './pages/add-updated-plugins';
 import ApiStats from './pages/apiStats';
 
 function App() {
-
+  const footerStyle = {
+    marginTop: '20px', // Adjust the margin as needed
+    backgroundColor: '#f0f0f0', // Set your desired background color
+    padding: '10px', // Set padding if needed
+    textAlign: 'center',
+  };
+  const currentYear = new Date().getFullYear();
   return (
     <>
     <Router>
@@ -27,6 +33,9 @@ function App() {
           <Route path="/add-updated-plugins" element={<AddUpdatedPlugins/>} />
           <Route path="/plugin-changes" element={<PluginChanges/>} />
         </Routes>
+        <footer style={footerStyle}>
+          © {currentYear} Jenkins Plugin Manager
+        </footer>
       </div>
     </Router>
     </>
