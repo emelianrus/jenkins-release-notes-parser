@@ -109,11 +109,6 @@ func (s *ProjectService) EditCoreVersion(c *gin.Context) {
 	c.String(http.StatusOK, fmt.Sprintf("EditCoreVersion %s", body["name"]))
 }
 
-func (s *ProjectService) GetCoreVersion(c *gin.Context) {
-	logrus.Infoln("GetCoreVersion route reached")
-	c.String(http.StatusOK, s.PluginManager.GetCoreVersion())
-}
-
 func (s *ProjectService) CheckDeps(c *gin.Context) {
 	logrus.Infoln("CheckDeps route reached")
 	c.JSON(http.StatusOK, s.PluginManager.FixPluginDependencies())
@@ -132,10 +127,39 @@ func (s *ProjectService) GetPluginsData(c *gin.Context) {
 		CoreVersion:         s.PluginManager.GetCoreVersion(),
 		UpdateCenterVersion: s.PluginManager.GetUpdateCenterVersion(),
 	})
-
 }
-func (s *ProjectService) GetFixedDepsDiff(c *gin.Context) {
-	logrus.Infoln("GetFixedDepsDiff route reached")
+func (s *ProjectService) GetReleaseNotesDiff(c *gin.Context) {
+	logrus.Infoln("GetReleaseNotesDiff route reached")
+
+	type ProjectData struct {
+		Name     string   `json:"name"`
+		Versions []string `json:"versions"`
+	}
+	var projectData ProjectData
+	if err := c.BindJSON(&projectData); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// Use the existing context in your function
+	result := make(chan interface{})
+	go func() {
+		defer close(result)
+		result <- s.PluginManager.GetReleaseNotesDiff(projectData.Name, projectData.Versions)
+	}()
+
+	// Listen for the client connection close signal
+	select {
+	case <-c.Writer.CloseNotify():
+		logrus.Infoln("Client connection closed")
+		// Perform any cleanup or cancellation logic here
+		return
+	case data := <-result:
+		c.JSON(http.StatusOK, data)
+	}
+}
+
+func (s *ProjectService) GetVersionsDiff(c *gin.Context) {
+	logrus.Infoln("GetVersionsDiff route reached")
 
 	c.JSON(http.StatusOK, s.PluginManager.GetFixedDepsDiff())
 }

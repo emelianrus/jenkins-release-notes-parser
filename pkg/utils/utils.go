@@ -12,6 +12,23 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func SortSlice(data []string) {
+	sort.Slice(data, func(i, j int) bool {
+		return !IsNewerThan(data[i], data[j])
+	})
+}
+
+func ReverseSlice(slice []string) {
+	// Get the length of the slice
+	length := len(slice)
+
+	// Use two pointers approach to swap elements
+	for i, j := 0, length-1; i < j; i, j = i+1, j-1 {
+		// Swap elements at positions i and j
+		slice[i], slice[j] = slice[j], slice[i]
+	}
+}
+
 // function to check if file exists
 func IsFileExist(filePath string) bool {
 	logrus.Debugf("Checking is file exist: %s", filePath)

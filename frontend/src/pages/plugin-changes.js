@@ -11,17 +11,14 @@ function PluginChanges() {
   const [backendStatus, setBackendStatus] = useState("");
 
   useEffect(() => {
-    forceRescan();
+    fetchDiffUpdated();
   }, []);
 
-  const handleGetChangedPlugins = async () => {
+  const fetchDiffUpdated = async () => {
     try {
       const response = await fetch(`http://localhost:8080/plugin-manager/get-fixed-deps-diff`);
       const data = await response.json();
-      if (data === null ) {
-        setBackendStatus("empty");
-        return
-      }
+
       const sortedData = data.sort((a, b) => {
         const nameA = a.Name.toLowerCase();
         const nameB = b.Name.toLowerCase();
@@ -42,7 +39,7 @@ function PluginChanges() {
       console.error(error);
       setBackendStatus(error.message);
     }
-  }
+  };
 
   const handleGetTxtFile = async () => {
     try {
@@ -80,15 +77,13 @@ function PluginChanges() {
     window.location.replace('/plugin-manager');
   }
 
-  async function forceRescan() {
+  async function checkDiffsWithUpgrade() {
     try {
       await fetch(`http://localhost:8080/plugin-manager/check-deps-with-update`);
-      // window.location.reload(false);
+      fetchDiffUpdated();
     } catch (error) {
       console.error(error);
     }
-
-    handleGetChangedPlugins()
   }
 
   const pluginsArray = [];
@@ -109,7 +104,10 @@ function PluginChanges() {
       <div className="container-sm mt-5 ml-5 mr-5">
         <h3>Plugin changes</h3>
         <div className="table-responsive">
-          <Button variant="primary" style={{ marginRight: '10px' }} onClick={forceRescan}>
+          <Button variant="primary" style={{ marginRight: '10px' }} onClick={fetchDiffUpdated}>
+            Show diff between updated
+          </Button>
+          <Button variant="primary" style={{ marginRight: '10px' }} onClick={checkDiffsWithUpgrade}>
             Get deps plugins (with core update)
           </Button>
           <Button variant="primary" disabled>
@@ -141,14 +139,13 @@ function PluginChanges() {
                   <div style={{ width: '10px' }}></div> {/* Margin */}
                   <Button variant="primary" onClick={handleDoApply}>Apply to plugin manager list</Button>
                   <div style={{ width: '10px' }}></div> {/* Margin */}
-                  <Button variant="warning" onClick={forceRescan}>Force rescan</Button>
+                  {/* <Button variant="warning" onClick={forceRescan}>Force rescan</Button> */}
                 </div>
 
                 <b>RELEASE NOTES</b>
                 <ReleaseNotesList projects={projects}/>
               </>
             )}
-
           </div>
         </div>
       </div>

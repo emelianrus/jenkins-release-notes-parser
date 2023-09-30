@@ -9,7 +9,7 @@ import (
 )
 
 // Unused for now
-type Downloader interface {
+type ReleaseNotesDownloader interface {
 	Download(projectName string) ([]types.ReleaseNote, error)
 }
 
@@ -19,7 +19,7 @@ type Downloader interface {
 // DownloadPlugin(github, "my-github-project")
 // DownloadPlugin(pluginSite, "my-plugin-site-project")
 // Download single plugin from source
-func DownloadProjectReleaseNotes(d Downloader, projectName string) ([]types.ReleaseNote, error) {
+func DownloadProjectReleaseNotes(d ReleaseNotesDownloader, projectName string) ([]types.ReleaseNote, error) {
 	logrus.Infoln("[DownloadProjectReleaseNotes] started with")
 	releaseNotes, err := d.Download(projectName)
 

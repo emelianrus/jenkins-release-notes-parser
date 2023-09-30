@@ -135,7 +135,7 @@ function PluginManager() {
               Update center version: {showUpdateCenterVersion}
             </div>
             <div className="col-auto">
-              Jenkins core version: {coreVersion}
+              Jenkins <Link to="https://www.jenkins.io/changelog-stable/">core</Link> version: {coreVersion}
             </div>
             <div className="col-auto">
               <Button variant="primary" onClick={handleEditCoreVersion}>Change core version</Button>

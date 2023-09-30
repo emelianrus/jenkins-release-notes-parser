@@ -41,7 +41,7 @@ type gitHubReleaseNote struct {
 	HtmlUrl   string `json:"html_url"`
 }
 
-func NewGitHubClient() GitHub {
+func NewGitHubClient() *GitHub {
 	gh := GitHub{}
 
 	personalToken := os.Getenv("GITHUB_PERSONAL_TOKEN")
@@ -50,7 +50,7 @@ func NewGitHubClient() GitHub {
 		gh.SetPersonalToken(personalToken)
 		logrus.Infoln("Using personal token for github connection")
 	}
-	return gh
+	return &gh
 }
 
 func (g *GitHub) SetPersonalToken(token string) {
