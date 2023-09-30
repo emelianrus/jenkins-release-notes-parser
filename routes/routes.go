@@ -20,8 +20,7 @@ func SetupRouter() *gin.Engine {
 	router := gin.Default()
 
 	pm := pluginManager.NewPluginManager()
-	// TODO: remove
-	pm.AddPluginWithVersion("blueocean", "1.25.5")
+
 	// preloadPluginManager(&pm, redis)
 
 	handler := handlers.ProjectService{
