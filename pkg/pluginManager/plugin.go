@@ -151,7 +151,7 @@ func (p *Plugin) Download() (string, error) {
 // Loads dependencies from hpi file manifest into Plugin struct
 func (p *Plugin) LoadDependenciesFromManifest() (map[string]Plugin, error) {
 	path, err := p.Download()
-	fmt.Println(path)
+	logrus.Debugf("[LoadDependenciesFromManifest] path %s", path)
 	if err != nil {
 		return map[string]Plugin{}, err
 	}
@@ -172,11 +172,11 @@ func (p *Plugin) LoadDependenciesFromManifest() (map[string]Plugin, error) {
 
 func (p *Plugin) GetManifestAttrs() (map[string]string, error) {
 	path, err := p.Download()
-	fmt.Println(path)
+	logrus.Debugf("[GetManifestAttrs] path %s", path)
 	if err != nil {
 		return map[string]string{}, err
 	}
-	// we need manifest to get jenkins core version to get the right update center json
+
 	manifestFile, _ := manifest.Parse(fmt.Sprintf("plugins/%s-%s.hpi", p.Name, p.Version))
 
 	attrs := make(map[string]string)

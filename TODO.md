@@ -1,9 +1,6 @@
-* set UpdatedPlugins from UI to be able get release notes for predefined plugins
-* add get txt file for main plugin manager page
-* add tests for plugin-manager
-* release notes not working
+* make UI button to control release notes downloader (git/jenkins site)
+* Add tests for plugin-manager
 
-
-* replace redis by plugin manager
-router.GET("/watcher-list", handler.GetPluginList)
-router.GET("/add-plugin-list/get-data", handler.GetPluginList)
+* get deps for plugins rely on current core version (NO UPDATE PLUGINS)
+* show warnings if plugin requires new core version
+* append to plugin file core version as first line as comment # JENKINS_CORE: 2.222.2

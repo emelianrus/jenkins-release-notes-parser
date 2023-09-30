@@ -11,6 +11,7 @@ function PluginManager() {
   const [plugins, setPlugins] = useState([]);
 
   const [showCoreVersion, setShowCoreVersion] = useState(false);
+  const [showUpdateCenterVersion, setUpdateCenterVersion] = useState("not found");
   const [showAddNewPlugin, setAddNewPlugin] = useState(false);
   // status should represent status of all plugins
   // are deps were resolved, are all deps added, are all plugins downloaded
@@ -40,6 +41,7 @@ function PluginManager() {
 
       setPlugins(data.Plugins);
       setCoreVersion(data.CoreVersion);
+      setUpdateCenterVersion(data.UpdateCenterVersion)
     } catch (error) {
       console.error(error);
     }
@@ -130,10 +132,13 @@ function PluginManager() {
         <div className="container-sm mt-5 ml-5 mr-5">
           <div className="row justify-content-end">
             <div className="col-auto">
-              Jenkins core version: {coreVersion}
+              Update center version: {showUpdateCenterVersion}
             </div>
             <div className="col-auto">
-              <Button variant="primary" onClick={handleEditCoreVersion}>Change version</Button>
+              Jenkins <Link to="https://www.jenkins.io/changelog-stable/">core</Link> version: {coreVersion}
+            </div>
+            <div className="col-auto">
+              <Button variant="primary" onClick={handleEditCoreVersion}>Change core version</Button>
               {/* <div>
                 Status: {showSyncStatus}
               </div> */}
@@ -153,7 +158,7 @@ function PluginManager() {
         </div>
         <div className="mr-2">
           <Button variant="outline-primary" onClick={handleAddNewPlugin}>Add one plugin</Button>
-          <Button variant="outline-primary" onClick={handleGetTxtFile}>Get Txt File</Button>
+          <Button variant="outline-primary" onClick={handleGetTxtFile} disabled={ Object.keys(plugins).length === 0 } >Get Txt File</Button>
         </div>
       </div>
       {/* ADD NEW PLUGIN MODAL WINDOW */}

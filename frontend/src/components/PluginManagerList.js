@@ -21,7 +21,7 @@ function PluginManagerList({ projects }) {
   return (
     <div className="project-list">
       <div className="container-sm mt-5 ml-5 mr-5">
-        <h3>Plugin manager</h3>
+        <h3>Plugin manager ({pluginCards.length} plugins)</h3>
         <div className="table-responsive">
           <table className="table">
             <thead className="thead-light">

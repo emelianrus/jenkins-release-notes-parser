@@ -19,8 +19,6 @@ func IsNewerThan(newVersion string, oldVersion string) bool {
 	isNewStandartNewVersion, _ := regexp.MatchString(".*\\.v.*", newVersion)
 	isNewStandartOldVersion, _ := regexp.MatchString(".*\\.v.*", oldVersion)
 
-	logrus.Debugf("check version compare new: %s old: %s\n", newVersion, oldVersion)
-	logrus.Debugf("isNewStandartNewVersion %t,  isNewStandartOldVersion: %t\n", isNewStandartNewVersion, isNewStandartOldVersion)
 	// equal
 	if isNewStandartNewVersion && isNewStandartOldVersion && newVersion == oldVersion {
 		return false
@@ -90,8 +88,6 @@ func compareByIter(newVersion string, oldVersion string) bool {
 	}
 
 	if isNewSemVer && isOldSemVer {
-		logrus.Debugln("checking semver")
-
 		firstPartNewVersion := strings.Split(newVersion, "-")[0]
 		firstPartOldVersion := strings.Split(oldVersion, "-")[0]
 

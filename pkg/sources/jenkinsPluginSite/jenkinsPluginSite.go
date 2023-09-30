@@ -12,8 +12,8 @@ import (
 
 type PluginSite struct{}
 
-func NewPluginSite() PluginSite {
-	return PluginSite{}
+func NewPluginSite() *PluginSite {
+	return &PluginSite{}
 }
 
 type pluginSiteRelease struct {

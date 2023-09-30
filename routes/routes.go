@@ -49,27 +49,37 @@ func SetupRouter() *gin.Engine {
 
 	router.GET("/api/stats", handler.GetApiStats)
 
-	// TODO: ============== plugin-manager routes ==============
+	// ============== plugin-manager routes ==============
 
-	// should return plugins + versions + core version
+	// get plugin manager data (plugins + coreversion)
 	router.GET("/plugin-manager/get-data", handler.GetPluginsData)
-
+	// adds new plugin to plugin manager
 	router.POST("/plugin-manager/add-new-plugin", handler.AddNewPlugin)
+	// changes core version in plugin manager
+	router.POST("/plugin-manager/edit-core-version", handler.EditCoreVersion)
+	// download formated file with plugin list from plugin manager
+	router.GET("/plugin-manager/download-file", handler.DownloadFilePluginManager)
+	// read plugin manifest data
+	router.POST("/plugin-manager/get-manifest-attrs", handler.GetManifestAttrs)
+	// delete plugin from plugin manager
 	router.DELETE("/plugin-manager/delete-plugin", handler.DeletePlugin)
-	router.GET("/plugin-manager/check-deps", handler.CheckDeps)
-	router.GET("/plugin-manager/get-fixed-deps-diff", handler.GetFixedDepsDiff)
+	// ============== END ^ plugin-manager routes ==============
+
+	// ============== plugin-changes routes ==============
+	router.GET("/plugin-manager/check-deps-with-update", handler.CheckDeps)
+	router.GET("/plugin-manager/check-deps-without-update", func(ctx *gin.Context) {})
+
+	router.GET("/plugin-manager/get-fixed-deps-diff", handler.GetVersionsDiff)
+	router.POST("/plugin-manager/get-release-notes-diff", handler.GetReleaseNotesDiff)
 
 	router.GET("/plugin-changes/download-file", handler.DownloadFilePluginChanges)
-	router.GET("/plugin-manager/download-file", handler.DownloadFilePluginManager)
 
 	router.POST("/plugin-manager/rescan", handler.RescanProjectNow)
-	router.POST("/plugin-manager/get-manifest-attrs", handler.GetManifestAttrs)
 
-	router.POST("/plugin-manager/edit-core-version", handler.EditCoreVersion)
-	router.GET("/plugin-manager/get-core-version", handler.GetCoreVersion)
+	// router.GET("/plugin-manager/get-core-version", handler.GetCoreVersion)
 
-	router.POST("/plugin-manager/check-versions", func(ctx *gin.Context) {})
-	router.POST("/plugin-manager/resolve-deps", func(ctx *gin.Context) {})
+	// router.POST("/plugin-manager/check-versions", func(ctx *gin.Context) {})
+	// router.POST("/plugin-manager/resolve-deps", func(ctx *gin.Context) {})
 
 	router.GET("/add-plugin-list/get-data", handler.GetPluginList)
 	router.POST("/add-plugin-list/add-plugins", handler.AddPluginsFile)

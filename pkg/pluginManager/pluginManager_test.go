@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/emelianrus/jenkins-update-center/pkg/jenkinsSite"
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 )
@@ -121,6 +122,42 @@ func TestPluginManager_LoadWarnings(t *testing.T) {
 	}
 }
 
+type MockJenkinsSite struct {
+}
+
+func (js MockJenkinsSite) GetPluginVersions() (*jenkinsSite.PluginVersions, error) {
+	pv := jenkinsSite.PluginVersions{}
+	return &pv, nil
+}
+func (js MockJenkinsSite) GetUpdateCenter(coreVersion string) (*jenkinsSite.UpdateCenter, error) {
+	uc := jenkinsSite.UpdateCenter{}
+	return &uc, nil
+}
+func (js MockJenkinsSite) GetStableCoreVersion() (string, error) {
+	return "222", nil
+}
+func (js MockJenkinsSite) GetLatestCoreVersion() (string, error) {
+	return "111", nil
+}
+
+// TODO: add tests with mocks. Do not use real api each tim
+// func TestPluginManager1_init(t *testing.T) {
+// 	jsMock := MockJenkinsSite{}
+// 	pvMock, _ := jsMock.GetPluginVersions()
+// 	ucMock, _ := jsMock.GetUpdateCenter("mock-version")
+// 	stableCoreVersion, _ := jsMock.GetStableCoreVersion()
+
+// 	pm := NewPluginManager()
+// 	pm.SetJenkinsSite(jsMock)
+// 	pm.SetPluginVersions(pvMock)
+// 	pm.SetUpdateCenter(ucMock)
+// 	pm.SetCoreVersion(stableCoreVersion)
+
+//		t.Run("1111", func(t *testing.T) {
+//			cv := pm.GetCoreVersion()
+//			fmt.Println(cv)
+//		})
+//	}
 func TestPluginManager_FixWarnings(t *testing.T) {
 	pm := NewPluginManager()
 

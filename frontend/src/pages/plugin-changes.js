@@ -8,29 +8,13 @@ import Button from 'react-bootstrap/Button';
 function PluginChanges() {
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [backendStatus, setBackendStatus] = useState("Loading...");
+  const [backendStatus, setBackendStatus] = useState("");
 
   useEffect(() => {
-    fetchData();
+    fetchDiffUpdated();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const response = await fetch(`http://localhost:8080/add-updated-plugins/get-data`);
-      const data = await response.json();
-      if (Object.keys(data).length < 1) {
-        try {
-          await fetch(`http://localhost:8080/plugin-manager/check-deps`);
-        } catch (error) {
-          console.error(error);
-          setBackendStatus(error.message);
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      setBackendStatus(error.message);
-    }
-
+  const fetchDiffUpdated = async () => {
     try {
       const response = await fetch(`http://localhost:8080/plugin-manager/get-fixed-deps-diff`);
       const data = await response.json();
@@ -71,7 +55,7 @@ function PluginChanges() {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'file.txt'; // Set the desired file name
+        link.download = 'file.txt';
         link.click();
         window.URL.revokeObjectURL(url);
       } else {
@@ -92,10 +76,11 @@ function PluginChanges() {
 
     window.location.replace('/plugin-manager');
   }
-  async function forceRescan() {
+
+  async function checkDiffsWithUpgrade() {
     try {
-      await fetch(`http://localhost:8080/plugin-manager/check-deps`);
-      window.location.reload(false);
+      await fetch(`http://localhost:8080/plugin-manager/check-deps-with-update`);
+      fetchDiffUpdated();
     } catch (error) {
       console.error(error);
     }
@@ -112,13 +97,27 @@ function PluginChanges() {
   const pluginCards = pluginsArray.map(plugin => (
     <PluginChangesCard key={plugin.key} project={plugin.project} />
   ));
-
+  const footerStyle = {
+    marginTop: '20px', // Adjust the margin as needed
+    backgroundColor: '#f0f0f0', // Set your desired background color
+    padding: '10px', // Set padding if needed
+    textAlign: 'center',
+  };
   return (
     <div>
       <div className="project-list">
       <div className="container-sm mt-5 ml-5 mr-5">
         <h3>Plugin changes</h3>
         <div className="table-responsive">
+          <Button variant="primary" style={{ marginRight: '10px' }} onClick={fetchDiffUpdated}>
+            Show diff between updated
+          </Button>
+          <Button variant="primary" style={{ marginRight: '10px' }} onClick={checkDiffsWithUpgrade}>
+            Get deps plugins (with core update)
+          </Button>
+          <Button variant="primary" disabled>
+            Get deps plugins (without core update)
+          </Button>
           {isLoading ? (
             <div style={{ fontSize: "44px", fontWeight: "bold", textAlign: "center" }}>{backendStatus}</div>
             ) : (
@@ -145,7 +144,7 @@ function PluginChanges() {
                   <div style={{ width: '10px' }}></div> {/* Margin */}
                   <Button variant="primary" onClick={handleDoApply}>Apply to plugin manager list</Button>
                   <div style={{ width: '10px' }}></div> {/* Margin */}
-                  <Button variant="warning" onClick={forceRescan}>Force rescan</Button>
+                  {/* <Button variant="warning" onClick={forceRescan}>Force rescan</Button> */}
                 </div>
 
                 <b>RELEASE NOTES</b>
@@ -154,6 +153,10 @@ function PluginChanges() {
             )}
           </div>
         </div>
+
+        <footer style={footerStyle}>
+          © 2023 Jenkins Plugin Manager
+        </footer>
       </div>
     </div>
   );
